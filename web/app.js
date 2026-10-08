@@ -17,12 +17,14 @@ const $=id=>document.getElementById(id);
 let allApps=[];
 let activeCategory="All";
 let progressListener=null;
-let speedSample={bytes:0,time:0};
+let pendingDownloadApp=null;
+let searchTimer=null;
 
 function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 function size(v){if(!v)return"Unknown Size";const n=Number(v);if(!Number.isNaN(n))return n>1048576?(n/1048576).toFixed(1)+" MB":Math.round(n/1024)+" KB";return String(v);}
 function showAuth(){ $("authModal").classList.remove("hidden"); }
-function hideAuth(){ $("authModal").classList.add("hidden"); }
+function hideAuth(){ $("authModal").classList.add("hidden"); $("authError").textContent=""; }
+function authError(e){const m={"auth/invalid-credential":"Email or password is incorrect.","auth/invalid-login-credentials":"Email or password is incorrect.","auth/wrong-password":"Email or password is incorrect.","auth/user-not-found":"No account found with this email.","auth/email-already-in-use":"An account already exists with this email.","auth/invalid-email":"Please enter a valid email address.","auth/weak-password":"Password must be at least 6 characters.","auth/too-many-requests":"Too many attempts. Try again later.","auth/popup-closed-by-user":"Google login was cancelled.","auth/network-request-failed":"Network error. Check your internet connection."};return m[e?.code]||e?.message||"Authentication failed.";}
 
 async function loadApps(){
  $("status").textContent="Loading apps...";
@@ -34,11 +36,7 @@ async function loadApps(){
  renderApps();
 }
 function renderApps(){
- const term=($("search").value||"").trim().toLowerCase();
- const list=allApps.filter(a=>{
-   if(!term)return true;
-   return [a.name,a.developer,a.category,a.description].some(v=>String(v||"").toLowerCase().includes(term));
- });
+ const list=getMatches($("search").value||"");
  $("status").textContent=list.length+" apps available";
  $("appGrid").innerHTML=list.map(a=>{
    const url=a.icon_url||"assets/header-android-12-visible.svg";
@@ -62,12 +60,12 @@ function setProgress(p){
  const pct=total>0?Math.min(100,done/total*100):0;
  $("progressBar").style.width=pct+"%";
  $("progressText").textContent=total?pct.toFixed(0)+"%":(p.status==="completed"?"100%":"Downloading");
- $("speedText").textContent=speed>1048576?(speed/1048576).toFixed(1)+" MB/s":(speed>1024?(speed/1024).toFixed(0)+" KB/s":"Starting...");
+ $("speedText").textContent=speed>1048576?(speed/1048576).toFixed(1)+" MB/s":(speed>1024?(speed/1024).toFixed(0)+" KB/s":"Starting..."); if($("downloadedText")) $("downloadedText").textContent=formatBytes(done)+(total?" / "+formatBytes(total):"");
 }
 async function startDownload(a){
  if(!a)return;
  const user=auth.currentUser;
- if(!user){showAuth();return;}
+ if(!user){pendingDownloadApp=a;showAuth();return;}
  const url=a.apk_url||a.download_url||(a.telegram_message_id?("https://paliaapk-telegram-api.onrender.com/download-apk/"+a.telegram_message_id):"");
  if(!url){alert("APK download is currently unavailable.");return;}
  const plugin=window.Capacitor?.registerPlugin?.("PaliaDownloader");
@@ -92,14 +90,17 @@ async function startDownload(a){
    alert(e?.message||"Download failed");
  }
 }
-$("search").addEventListener("input",renderApps);
+function searchScore(a,q){const fields=[["name",100],["package_name",80],["developer",65],["category",50],["description",20]];let score=0;for(const [k,w] of fields){const v=String(a?.[k]||"").toLowerCase();if(v===q)score+=w+100;else if(v.startsWith(q))score+=w+50;else if(v.includes(q))score+=w;}return score;}
+function getMatches(q,limit=1000){q=String(q||"").trim().toLowerCase();let list=allApps.filter(a=>activeCategory==="All"||String(a.category||"")===activeCategory);if(!q)return list;return list.map(a=>({a,score:searchScore(a,q)})).filter(x=>x.score>0).sort((a,b)=>b.score-a.score).slice(0,limit).map(x=>x.a);}
+function renderSuggestions(){const q=$("search").value.trim(),box=$("searchSuggestions");if(!box)return;if(!q){box.classList.add("hidden");box.innerHTML="";return;}const m=getMatches(q,7);box.innerHTML=m.length?m.map(a=>`<button type="button" class="suggestion" data-id="${esc(a.id)}"><img src="${esc(a.icon_url||"assets/header-android-12-visible.svg")}" alt=""><span><b>${esc(a.name||"App")}</b><small>${esc(a.category||"App")} • ${esc(a.developer||"ShanPalia")}</small></span></button>`).join(""):`<div class="no-suggestion">No apps found for <b>${esc(q)}</b></div>`;box.classList.remove("hidden");}
+$("search").addEventListener("input",()=>{clearTimeout(searchTimer);renderApps();searchTimer=setTimeout(renderSuggestions,120);});
+$("search").addEventListener("focus",renderSuggestions);
+$("search").addEventListener("keydown",e=>{if(e.key==="Escape"){$("searchSuggestions").classList.add("hidden");$("search").blur();}if(e.key==="Enter"){const x=$("searchSuggestions").querySelector("[data-id]");if(x){const a=allApps.find(v=>String(v.id)===String(x.dataset.id));if(a)location.href=`app.html?id=${encodeURIComponent(a.id)}`;}}});
+$("searchSuggestions").addEventListener("click",e=>{const x=e.target.closest("[data-id]");if(x){location.href=`app.html?id=${encodeURIComponent(x.dataset.id)}`;}});
 $("refresh").addEventListener("click",loadApps);
 $("authBtn").addEventListener("click",showAuth);
 $("closeAuth").addEventListener("click",hideAuth);
-$("login").addEventListener("click",async()=>{
- const email=$("email").value.trim(),password=$("password").value;
- try{await auth.signInWithEmailAndPassword(email,password);hideAuth();}catch(e){$("authError").textContent=e.message;}
-});
+$("login").addEventListener("click",async()=>{const email=$("authEmail").value.trim(),password=$("authPassword").value;try{const r=await auth.signInWithEmailAndPassword(email,password);hideAuth();if(pendingDownloadApp){const a=pendingDownloadApp;pendingDownloadApp=null;await startDownload(a);}}catch(e){$("authError").textContent=authError(e);}});
 $("signup").addEventListener("click",async()=>{
  const email=$("email").value.trim(),password=$("password").value;
  try{await auth.createUserWithEmailAndPassword(email,password);hideAuth();}catch(e){$("authError").textContent=e.message;}
@@ -118,3 +119,5 @@ auth.onAuthStateChanged(user=>{
  else{$("authBtn").classList.remove("hidden");$("profileBox").classList.add("hidden");}
 });
 loadApps();
+$("logoutBtn")?.addEventListener("click",()=>auth.signOut());
+$("googleLogin")?.addEventListener("click",async()=>{const b=$("googleLogin");b.disabled=true;b.textContent="Opening Google…";try{let r;if(window.PaliaNativeGoogle?.signIn){const n=await window.PaliaNativeGoogle.signIn();r=await auth.signInWithCredential(firebase.auth.GoogleAuthProvider.credential(n.idToken));}else{const p=new firebase.auth.GoogleAuthProvider();p.setCustomParameters({prompt:"select_account"});r=await auth.signInWithPopup(p);}hideAuth();if(pendingDownloadApp){const a=pendingDownloadApp;pendingDownloadApp=null;await startDownload(a);}}catch(e){console.error(e);$("authError").textContent=authError(e);}finally{b.disabled=false;b.textContent="Continue with Google";}});
