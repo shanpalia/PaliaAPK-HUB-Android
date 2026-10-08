@@ -17,7 +17,7 @@
   <div class="header-inner">
     <button id="menuBtn" class="icon-btn" aria-label="Menu"><span>☰</span></button>
     <div id="adminTriggerLogo" class="brand">
-      <div class="brand-logo"><img src="assets/palia-app-icon.svg" alt="PaliaAPK HUB"></div>
+      <div class="brand-logo"><img src="assets/icon.png" alt="PaliaAPK HUB"></div>
       <div><div class="brand-name">PaliaAPK <span>HUB</span></div><div class="brand-sub">Android Store</div></div>
     </div>
     <div class="header-search"><span>⌕</span><input id="search" autocomplete="off" placeholder="Search apps, games, tools..."><button id="clearSearch" class="search-clear hidden" type="button">×</button><div id="searchSuggestions" class="search-suggestions hidden"></div></div>
@@ -58,7 +58,7 @@
   </section>
 </main>
 
-<div id="authModal" class="modal hidden"><div class="modal-card"><button id="closeAuth" class="close-btn">×</button><div class="auth-brand"><img src="assets/palia-app-icon.svg" alt=""><div><b>PaliaAPK HUB</b><small>Premium Android Store</small></div></div><h2>Sign in to continue</h2><p>Login is required before downloading an APK.</p><button id="googleLogin" class="google-btn"><span class="google-g">G</span> Continue with Google</button><div class="auth-divider"><span>OR</span></div><input id="authEmail" type="email" autocomplete="email" placeholder="Email address"><input id="authPassword" type="password" autocomplete="current-password" placeholder="Password"><div class="auth-row"><button id="login" class="primary-btn">Login</button><button id="signup" class="secondary-btn">Sign Up</button></div><div id="authError" class="error"></div></div></div>
+<div id="authModal" class="modal hidden"><div class="modal-card"><button id="closeAuth" class="close-btn">×</button><div class="auth-brand"><img src="assets/icon.png" alt=""><div><b>PaliaAPK HUB</b><small>Premium Android Store</small></div></div><h2 id="authHeading">Sign in to continue</h2><p id="authSub">Login is required before downloading an APK.</p><button id="googleLogin" class="google-btn"><span class="google-g">G</span> Continue with Google</button><div class="auth-divider"><span>OR</span></div><input id="authName" class="hidden" type="text" autocomplete="name" placeholder="Your name"><input id="authEmail" type="email" autocomplete="email" placeholder="Email address"><input id="authPassword" type="password" autocomplete="current-password" placeholder="Password"><label class="remember-row"><input id="rememberMe" type="checkbox"> Remember Me</label><button id="forgotPassword" class="forgot-btn" type="button">Forgot Password?</button><div class="auth-row"><button id="login" class="primary-btn">Login</button><button id="signup" class="secondary-btn">Sign Up</button></div><div id="authError" class="error"></div></div></div>
 
 <div id="downloadToast" class="download-toast hidden">
   <div class="toast-head"><strong id="downloadName">Downloading APK</strong><span id="progressText">0%</span></div>
