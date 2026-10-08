@@ -24,8 +24,8 @@ let speedSample={bytes:0,time:0};
 function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 function size(v){if(!v)return"Unknown Size";const n=Number(v);if(!Number.isNaN(n))return n>1048576?(n/1048576).toFixed(1)+" MB":Math.round(n/1024)+" KB";return String(v);}
 function formatBytes(v){const n=Number(v||0);if(!Number.isFinite(n)||n<=0)return"0 MB";if(n>=1073741824)return(n/1073741824).toFixed(2)+" GB";if(n>=1048576)return(n/1048576).toFixed(1)+" MB";return Math.round(n/1024)+" KB";}
-function showAuth(){ $("authModal").classList.remove("hidden"); }
-function hideAuth(){ $("authModal").classList.add("hidden"); $("authError").textContent=""; }
+function showAuth(){ $("authModal").classList.remove("hidden"); setAuthMode("login"); }
+function hideAuth(){ $("authModal").classList.add("hidden"); $("authError").textContent=""; }\nfunction setAuthMode(mode){ const signup=mode==="signup"; $("authName")?.classList.toggle("hidden",!signup); $("authHeading").textContent=signup?"Create your account":"Sign in to continue"; $("authSub").textContent=signup?"Create a free account to download APKs.":"Login is required before downloading an APK."; $("login").classList.toggle("hidden",signup); $("signup").classList.toggle("hidden",!signup); $("forgotPassword")?.classList.toggle("hidden",signup); $("rememberMe")?.closest("label")?.classList.toggle("hidden",signup); }\nasync function applyPersistence(){ const keep=!!$("rememberMe")?.checked; localStorage.setItem("palia_remember_me",keep?"true":"false"); await auth.setPersistence(keep?firebase.auth.Auth.Persistence.LOCAL:firebase.auth.Auth.Persistence.SESSION); }
 function authError(e){const m={"auth/invalid-credential":"Email or password is incorrect.","auth/invalid-login-credentials":"Email or password is incorrect.","auth/wrong-password":"Email or password is incorrect.","auth/user-not-found":"No account found with this email.","auth/email-already-in-use":"An account already exists with this email.","auth/invalid-email":"Please enter a valid email address.","auth/weak-password":"Password must be at least 6 characters.","auth/too-many-requests":"Too many attempts. Try again later.","auth/popup-closed-by-user":"Google login was cancelled.","auth/network-request-failed":"Network error. Check your internet connection."};return m[e?.code]||e?.message||"Authentication failed.";}
 
 async function loadApps(){
@@ -100,9 +100,9 @@ $("search").addEventListener("focus",renderSuggestions);
 $("search").addEventListener("keydown",e=>{if(e.key==="Escape"){$("searchSuggestions").classList.add("hidden");$("search").blur();}if(e.key==="Enter"){const x=$("searchSuggestions").querySelector("[data-id]");if(x){const a=allApps.find(v=>String(v.id)===String(x.dataset.id));if(a)location.href=`app.html?id=${encodeURIComponent(a.id)}`;}}});
 $("searchSuggestions").addEventListener("click",e=>{const x=e.target.closest("[data-id]");if(x){location.href=`app.html?id=${encodeURIComponent(x.dataset.id)}`;}});
 $("refresh").addEventListener("click",loadApps);
-$("authBtn").addEventListener("click",showAuth);
+$("authBtn").addEventListener("click",showAuth);\n$("forgotPassword")?.addEventListener("click",async()=>{const email=$("authEmail").value.trim();if(!email){$("authError").textContent="Enter your email address first.";return;}try{await auth.sendPasswordResetEmail(email);$("authError").textContent="Password reset link sent to your email.";}catch(e){$("authError").textContent=authError(e);}});\n$("authName")?.addEventListener("input",()=>setAuthMode("signup"));
 $("closeAuth").addEventListener("click",hideAuth);
-$("login").addEventListener("click",async()=>{const email=$("authEmail").value.trim(),password=$("authPassword").value;try{const r=await auth.signInWithEmailAndPassword(email,password);hideAuth();if(pendingDownloadApp){const a=pendingDownloadApp;pendingDownloadApp=null;await startDownload(a);}}catch(e){$("authError").textContent=authError(e);}});
+$("login").addEventListener("click",async()=>{const email=$("authEmail").value.trim(),password=$("authPassword").value;try{await applyPersistence();const r=await auth.signInWithEmailAndPassword(email,password);hideAuth();if(pendingDownloadApp){const a=pendingDownloadApp;pendingDownloadApp=null;await startDownload(a);}}catch(e){$("authError").textContent=authError(e);}});
 $("signup").addEventListener("click",async()=>{
  const email=$("authEmail").value.trim(),password=$("authPassword").value;
  try{const r=await auth.createUserWithEmailAndPassword(email,password);hideAuth();if(pendingDownloadApp){const a=pendingDownloadApp;pendingDownloadApp=null;await startDownload(a);}}catch(e){$("authError").textContent=authError(e);}
@@ -117,7 +117,7 @@ document.querySelectorAll(".category").forEach(b=>b.addEventListener("click",()=
  b.classList.add("active");activeCategory=b.dataset.category;loadApps(); checkForStoreUpdate();
 }));
 auth.onAuthStateChanged(user=>{
- if(user){$("authBtn").classList.add("hidden");$("profileBox").classList.remove("hidden");$("profileBtn").textContent=(user.email||"U").slice(0,2).toUpperCase();}
+ if(user){$("authBtn").classList.add("hidden");$("profileBox").classList.remove("hidden");const n=user.displayName||user.email||"U";$("profileBtn").textContent=n.slice(0,2).toUpperCase();}
  else{$("authBtn").classList.remove("hidden");$("profileBox").classList.add("hidden");}
 });
 loadApps();
@@ -145,3 +145,4 @@ async function checkForStoreUpdate(){
     };
   }catch(e){console.warn("Store update check skipped:",e);}
 }
+\n(async()=>{try{const keep=localStorage.getItem("palia_remember_me")==="true";if(keep)await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);}catch(e){}})();
