@@ -1,11 +1,86 @@
-<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#16a34a"><title>PaliaAPK HUB</title><script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><link rel="stylesheet" href="styles.css"></head><body>
-<header class="topbar"><button class="icon-btn">☰</button><div class="brand"><div class="logo">P</div><div><b>PaliaAPK <span>HUB</span></b><small>APPS • GAMES • TOOLS</small></div></div><div class="head-actions"><button class="icon-btn">♢</button><button id="authBtn" class="profile-btn">Sign in</button></div></header>
-<section class="hero"><div><p class="eyebrow">PALIAAPK HUB</p><h1>Discover Best Android Apps</h1><p>Real apps published on PaliaAPK HUB. Download APK files directly with background download support.</p></div><div class="hero-badge">P<br><strong>APK</strong></div></section>
-<div class="search-wrap"><span>⌕</span><input id="search" placeholder="Search apps, games, tools..."></div>
-<div class="categories"><button class="category active" data-category="All">All</button><button class="category" data-category="Apps">Apps</button><button class="category" data-category="Games">Games</button><button class="category" data-category="Tools">Tools</button><button class="category" data-category="Social">Social</button></div>
-<main><div class="section-head"><h2>Latest Apps</h2><button id="refresh">Refresh</button></div><div id="status" class="status">Loading apps…</div><div id="latestGrid" class="grid"></div>
-<section><div class="section-head"><h2>Popular Games</h2></div><div id="gamesGrid" class="grid"></div></section>
-<section><div class="section-head"><h2>Top Tools</h2></div><div id="toolsGrid" class="grid"></div></section></main>
-<div id="authModal" class="modal hidden"><div class="modal-card"><button id="closeAuth" class="close">×</button><h2>Sign in to PaliaAPK HUB</h2><p>Firebase account is required before downloading APKs.</p><input id="email" type="email" placeholder="Email address"><input id="password" type="password" placeholder="Password"><div class="auth-row"><button id="login">Login</button><button id="signup" class="secondary">Sign Up</button></div><div id="authError" class="error"></div><button id="logout" class="logout hidden">Logout</button></div></div>
-<div id="downloadToast" class="toast hidden"><div class="toast-title" id="downloadName">Downloading APK</div><div class="progress"><div id="progressBar"></div></div><div class="progress-info"><span id="progressText">0%</span><span id="speedText">Starting…</span></div><div class="download-note">Download continues through Android Download Manager.</div></div>
-<nav class="bottom-nav"><a class="active">⌂<small>Home</small></a><a>▦<small>Categories</small></a><a>⌕<small>Search</small></a><a>↓<small>Downloads</small></a><a id="bottomAuth">◉<small>Profile</small></a></nav><script src="app.js"></script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#16a34a">
+<title>PaliaAPK HUB | Premium Android Store</title>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="header-inner">
+    <button id="menuBtn" class="icon-btn" aria-label="Menu"><span>☰</span></button>
+    <div id="adminTriggerLogo" class="brand">
+      <div class="brand-logo"><img src="assets/header-android-12-visible.svg" alt="PaliaAPK HUB"></div>
+      <div><div class="brand-name">PaliaAPK <span>HUB</span></div><div class="brand-sub">Android Store</div></div>
+    </div>
+    <div class="header-search"><span>⌕</span><input id="search" placeholder="Search apps, games, tools..."></div>
+    <div class="header-actions">
+      <button id="updatesBtn" class="updates-btn">↻ <span>Updates</span></button>
+      <button id="authBtn" class="login-btn">Login</button>
+      <div id="profileBox" class="profile-box hidden"><button id="profileBtn" class="profile-btn">U</button><button id="logoutBtn" class="logout-btn hidden">Logout</button></div>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <section class="hero">
+    <div class="hero-copy">
+      <div class="eyebrow">PREMIUM ANDROID STORE</div>
+      <h1>Discover apps you actually want.</h1>
+      <p>Browse real apps published on PaliaAPK HUB and download their APK files directly.</p>
+      <div class="hero-actions"><button id="heroExplore" class="primary-btn">Explore Apps</button><button id="heroUpdates" class="secondary-btn">Latest Updates</button></div>
+    </div>
+    <div class="hero-art"><img src="assets/home-half-android-large.svg" alt=""></div>
+  </section>
+
+  <section class="section">
+    <div class="section-title"><h2>Categories</h2><button id="allCategories">View all</button></div>
+    <div class="categories" id="categories">
+      <button class="category active" data-category="All">All Apps</button>
+      <button class="category" data-category="Social">Social</button>
+      <button class="category" data-category="AI">AI</button>
+      <button class="category" data-category="Tools">Tools</button>
+      <button class="category" data-category="Games">Games</button>
+      <button class="category" data-category="Utilities">Utilities</button>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-title"><div><h2>Latest Apps</h2><p id="status">Loading apps...</p></div><button id="refresh" class="outline-btn">Refresh</button></div>
+    <div id="appGrid" class="app-grid"></div>
+  </section>
+</main>
+
+<div id="authModal" class="modal hidden">
+  <div class="modal-card">
+    <button id="closeAuth" class="close-btn">×</button>
+    <h2>Sign in to PaliaAPK HUB</h2><p>Sign in to download APK files.</p>
+    <input id="email" type="email" placeholder="Email address">
+    <input id="password" type="password" placeholder="Password">
+    <div class="auth-row"><button id="login" class="primary-btn">Login</button><button id="signup" class="secondary-btn">Sign Up</button></div>
+    <div id="authError" class="error"></div>
+  </div>
+</div>
+
+<div id="downloadToast" class="download-toast hidden">
+  <div class="toast-head"><strong id="downloadName">Downloading APK</strong><span id="progressText">0%</span></div>
+  <div class="progress"><div id="progressBar"></div></div>
+  <div class="toast-info"><span id="speedText">Starting...</span><span>Downloading inside PaliaAPK HUB</span></div>
+</div>
+
+<nav class="bottom-nav">
+  <button class="active">⌂<small>Home</small></button>
+  <button id="bottomCategories">▦<small>Categories</small></button>
+  <button id="bottomSearch">⌕<small>Search</small></button>
+  <button id="bottomDownloads">↓<small>Downloads</small></button>
+  <button id="bottomProfile">◉<small>Profile</small></button>
+</nav>
+<script src="assets/header-android-12-visible.svg"></script>
+<script src="app.js"></script>
+</body>
+</html>
