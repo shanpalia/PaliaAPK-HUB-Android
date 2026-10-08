@@ -114,7 +114,7 @@ $("heroExplore").addEventListener("click",()=>document.querySelector(".app-grid"
 $("heroUpdates").addEventListener("click",loadApps);
 document.querySelectorAll(".category").forEach(b=>b.addEventListener("click",()=>{
  document.querySelectorAll(".category").forEach(x=>x.classList.remove("active"));
- b.classList.add("active");activeCategory=b.dataset.category;loadApps();
+ b.classList.add("active");activeCategory=b.dataset.category;loadApps(); checkForStoreUpdate();
 }));
 auth.onAuthStateChanged(user=>{
  if(user){$("authBtn").classList.add("hidden");$("profileBox").classList.remove("hidden");$("profileBtn").textContent=(user.email||"U").slice(0,2).toUpperCase();}
@@ -123,3 +123,24 @@ auth.onAuthStateChanged(user=>{
 loadApps();
 $("logoutBtn")?.addEventListener("click",()=>auth.signOut());
 $("googleLogin")?.addEventListener("click",async()=>{const b=$("googleLogin");b.disabled=true;b.textContent="Opening Google…";try{let r;if(window.PaliaNativeGoogle?.signIn){const n=await window.PaliaNativeGoogle.signIn();r=await auth.signInWithCredential(firebase.auth.GoogleAuthProvider.credential(n.idToken));}else{const p=new firebase.auth.GoogleAuthProvider();p.setCustomParameters({prompt:"select_account"});r=await auth.signInWithPopup(p);}hideAuth();if(pendingDownloadApp){const a=pendingDownloadApp;pendingDownloadApp=null;await startDownload(a);}}catch(e){console.error(e);$("authError").textContent=authError(e);}finally{b.disabled=false;b.textContent="Continue with Google";}});
+
+async function checkForStoreUpdate(){
+  try{
+    const current=String(window.PaliaAppVersion||"1.0.0");
+    const {data,error}=await db.from("app_updates").select("*").eq("app_id","paliaapk-hub-android").order("created_at",{ascending:false}).limit(1).maybeSingle();
+    if(error||!data)return;
+    const latest=String(data.version||current);
+    const newer=latest!==current && latest.split(".").map(Number).join(".")>current.split(".").map(Number).join(".");
+    if(!newer)return;
+    const banner=$("appUpdateBanner"); if(!banner)return;
+    $("appUpdateTitle").textContent="PaliaAPK HUB update available — v"+latest;
+    $("appUpdateText").textContent=data.release_notes||"A new version is ready to install.";
+    banner.classList.remove("hidden");
+    $("appUpdateBtn").onclick=async()=>{
+      const url=data.apk_url||data.download_url;
+      if(!url){$("appUpdateText").textContent="Update APK link is not available yet.";return;}
+      if(!auth.currentUser){pendingDownloadApp={name:"PaliaAPK HUB",version:latest,apk_url:url,id:"paliaapk-hub-android-update"};showAuth();return;}
+      await startDownload({name:"PaliaAPK HUB Update",version:latest,apk_url:url,id:"paliaapk-hub-android-update"});
+    };
+  }catch(e){console.warn("Store update check skipped:",e);}
+}
