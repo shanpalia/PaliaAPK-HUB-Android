@@ -158,21 +158,18 @@ const manifest = path.join(root, "app/src/main/AndroidManifest.xml");
 if (fs.existsSync(manifest)) {
     let source = fs.readFileSync(manifest, "utf8");
 
-    source = source.replace(
-        /<uses-permission[^>]*android:name=["']android\\.permission\\.INTERNET["'][^>]*\\/>\\s*/g,
-        ""
-    );
-    source = source.replace(
-        /<uses-permission[^>]*android:name=["']android\\.permission\\.REQUEST_INSTALL_PACKAGES["'][^>]*\\/>\\s*/g,
-        ""
-    );
+    const internetPermission =
+        '<uses-permission android:name="android.permission.INTERNET" />';
+    const installPermission =
+        '<uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />';
 
-    source = source.replace(
-        "</manifest>",
-        '    <uses-permission android:name="android.permission.INTERNET" />\n' +
-        '    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />\n' +
-        "</manifest>"
-    );
+    if (!source.includes(internetPermission)) {
+        source = source.replace("</manifest>", "    " + internetPermission + "\n</manifest>");
+    }
+
+    if (!source.includes(installPermission)) {
+        source = source.replace("</manifest>", "    " + installPermission + "\n</manifest>");
+    }
 
     fs.writeFileSync(manifest, source);
 }
