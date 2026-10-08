@@ -1,0 +1,21 @@
+workflows:
+  paliaapk-hub-android:
+    name: PaliaAPK HUB Android
+    max_build_duration: 120
+    instance_type: mac_mini_m2
+    environment:
+      android_signing:
+        - paliaapk-release
+      node: 22.11.0
+    scripts:
+      - name: Install dependencies
+        script: npm install --no-audit --no-fund
+      - name: Prepare Android project
+        script: npm run android:prepare
+      - name: Build signed APK
+        script: |
+          cd android
+          gradle clean
+          gradle assembleRelease
+    artifacts:
+      - android/app/build/outputs/apk/release/*.apk
