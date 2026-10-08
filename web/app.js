@@ -127,17 +127,18 @@ $("googleLogin")?.addEventListener("click",async()=>{const b=$("googleLogin");b.
 async function checkForStoreUpdate(){
   try{
     const current=String(window.PaliaAppVersion||"1.0.0");
-    const {data,error}=await db.from("app_updates").select("*").eq("app_id","paliaapk-hub-android").order("created_at",{ascending:false}).limit(1).maybeSingle();
+    const {data,error}=await db.from("apps").select("id,name,package_name,version,apk_url,download_url,telegram_message_id,description").or("package_name.eq.com.shanpalia.paliaapkhub,name.eq.PaliaAPK HUB").order("created_at",{ascending:false}).limit(1).maybeSingle();
     if(error||!data)return;
     const latest=String(data.version||current);
-    const newer=latest!==current && latest.split(".").map(Number).join(".")>current.split(".").map(Number).join(".");
-    if(!newer)return;
+    const parts=v=>v.replace(/[^0-9.]/g,"").split(".").map(n=>parseInt(n||"0",10));
+    const newer=(a,b)=>{const x=parts(a),y=parts(b);for(let i=0;i<Math.max(x.length,y.length);i++){if((x[i]||0)!==(y[i]||0))return (y[i]||0)>(x[i]||0);}return false;};
+    if(!newer(current,latest))return;
     const banner=$("appUpdateBanner"); if(!banner)return;
     $("appUpdateTitle").textContent="PaliaAPK HUB update available — v"+latest;
-    $("appUpdateText").textContent=data.release_notes||"A new version is ready to install.";
+    $("appUpdateText").textContent=data.description||"A new version is ready to install.";
     banner.classList.remove("hidden");
     $("appUpdateBtn").onclick=async()=>{
-      const url=data.apk_url||data.download_url;
+      const url=data.telegram_message_id?`https://paliaapk-telegram-api.onrender.com/download-apk/${data.telegram_message_id}`:String(data.apk_url||data.download_url||"");
       if(!url){$("appUpdateText").textContent="Update APK link is not available yet.";return;}
       if(!auth.currentUser){pendingDownloadApp={name:"PaliaAPK HUB",version:latest,apk_url:url,id:"paliaapk-hub-android-update"};showAuth();return;}
       await startDownload({name:"PaliaAPK HUB Update",version:latest,apk_url:url,id:"paliaapk-hub-android-update"});
