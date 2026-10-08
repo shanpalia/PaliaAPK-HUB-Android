@@ -82,6 +82,7 @@ public class PaliaDownloaderPlugin extends Plugin {
                         progress.put("downloadId", downloadId);
                         progress.put("downloadedBytes", downloaded);
                         progress.put("totalBytes", total);
+                        progress.put("timestampMs", android.os.SystemClock.elapsedRealtime());
                         notifyListeners("downloadProgress", progress);
 
                         if (status == DownloadManager.STATUS_PENDING
