@@ -6,9 +6,9 @@ const pkg = "com.shanpalia.paliaapkhub";
 const javaDir = path.join(root, "app/src/main/java/com/shanpalia/paliaapkhub");
 const res = path.join(root, "app/src/main/res");
 
-fs.mkdirSync(javaDir, { recursive: true });
+fs.mkdirSync(javaDir, { recursive: true });\nconst exactIconSource = path.join(process.cwd(), "www", "assets", "icon.png");\nconst exactIconDest = path.join(res, "drawable", "palia_exact_icon.png");
 for (const d of ["drawable", "mipmap-anydpi-v26", "values", "xml"]) {
-  fs.mkdirSync(path.join(res, d), { recursive: true });
+  fs.mkdirSync(path.join(res, d), { recursive: true });\nif (fs.existsSync(exactIconSource)) fs.copyFileSync(exactIconSource, exactIconDest);
 }
 
 // Native downloader: stays inside the PaliaAPK HUB app process.
@@ -260,7 +260,7 @@ if (fs.existsSync(manifest)) {
       let next = attrs
         .replace(/\s+android:icon="[^"]*"/g, "")
         .replace(/\s+android:roundIcon="[^"]*"/g, "");
-      return `<application${next} android:icon="@drawable/ic_palia_android" android:roundIcon="@drawable/ic_palia_android">`;
+      return `<application${next} android:icon="@drawable/palia_exact_icon" android:roundIcon="@drawable/palia_exact_icon">`;
     }
   );
 
