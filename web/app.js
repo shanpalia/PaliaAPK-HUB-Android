@@ -23,6 +23,7 @@ let speedSample={bytes:0,time:0};
 
 function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 function size(v){if(!v)return"Unknown Size";const n=Number(v);if(!Number.isNaN(n))return n>1048576?(n/1048576).toFixed(1)+" MB":Math.round(n/1024)+" KB";return String(v);}
+function formatBytes(v){const n=Number(v||0);if(!Number.isFinite(n)||n<=0)return"0 MB";if(n>=1073741824)return(n/1073741824).toFixed(2)+" GB";if(n>=1048576)return(n/1048576).toFixed(1)+" MB";return Math.round(n/1024)+" KB";}
 function showAuth(){ $("authModal").classList.remove("hidden"); }
 function hideAuth(){ $("authModal").classList.add("hidden"); $("authError").textContent=""; }
 function authError(e){const m={"auth/invalid-credential":"Email or password is incorrect.","auth/invalid-login-credentials":"Email or password is incorrect.","auth/wrong-password":"Email or password is incorrect.","auth/user-not-found":"No account found with this email.","auth/email-already-in-use":"An account already exists with this email.","auth/invalid-email":"Please enter a valid email address.","auth/weak-password":"Password must be at least 6 characters.","auth/too-many-requests":"Too many attempts. Try again later.","auth/popup-closed-by-user":"Google login was cancelled.","auth/network-request-failed":"Network error. Check your internet connection."};return m[e?.code]||e?.message||"Authentication failed.";}
