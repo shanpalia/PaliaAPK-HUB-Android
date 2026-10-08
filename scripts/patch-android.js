@@ -6,9 +6,12 @@ const pkg = "com.shanpalia.paliaapkhub";
 const javaDir = path.join(root, "app/src/main/java/com/shanpalia/paliaapkhub");
 const res = path.join(root, "app/src/main/res");
 
-fs.mkdirSync(javaDir, { recursive: true });\nconst exactIconSource = path.join(process.cwd(), "www", "assets", "icon.png");\nconst exactIconDest = path.join(res, "drawable", "palia_exact_icon.png");
+fs.mkdirSync(javaDir, { recursive: true });
+const exactIconSource = path.join(process.cwd(), "www", "assets", "icon.png");
+const exactIconDest = path.join(res, "drawable", "palia_exact_icon.png");
 for (const d of ["drawable", "mipmap-anydpi-v26", "values", "xml"]) {
-  fs.mkdirSync(path.join(res, d), { recursive: true });\nif (fs.existsSync(exactIconSource)) fs.copyFileSync(exactIconSource, exactIconDest);
+  fs.mkdirSync(path.join(res, d), { recursive: true });
+if (fs.existsSync(exactIconSource)) fs.copyFileSync(exactIconSource, exactIconDest);
 }
 
 // Native downloader: stays inside the PaliaAPK HUB app process.
@@ -172,11 +175,17 @@ if (fs.existsSync(mainJava)) {
   if (!source.includes("PaliaDownloaderPlugin")) {
     source = source.replace(
       "import com.getcapacitor.BridgeActivity;",
-      "import com.getcapacitor.BridgeActivity;\nimport com.shanpalia.paliaapkhub.PaliaDownloaderPlugin;"
+      "import com.getcapacitor.BridgeActivity;
+import com.shanpalia.paliaapkhub.PaliaDownloaderPlugin;"
     );
     source = source.replace(
       "public class MainActivity extends BridgeActivity {",
-      "public class MainActivity extends BridgeActivity {\n    @Override\n    public void onCreate(android.os.Bundle savedInstanceState) {\n        super.onCreate(savedInstanceState);\n        registerPlugin(PaliaDownloaderPlugin.class);\n    }"
+      "public class MainActivity extends BridgeActivity {
+    @Override
+    public void onCreate(android.os.Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        registerPlugin(PaliaDownloaderPlugin.class);
+    }"
     );
   }
 
@@ -187,11 +196,16 @@ if (fs.existsSync(mainJava)) {
   if (!source.includes("PaliaDownloaderPlugin")) {
     source = source.replace(
       "import com.getcapacitor.BridgeActivity",
-      "import com.getcapacitor.BridgeActivity\nimport com.shanpalia.paliaapkhub.PaliaDownloaderPlugin"
+      "import com.getcapacitor.BridgeActivity
+import com.shanpalia.paliaapkhub.PaliaDownloaderPlugin"
     );
     source = source.replace(
       "class MainActivity : BridgeActivity()",
-      "class MainActivity : BridgeActivity() {\n    override fun onCreate(savedInstanceState: android.os.Bundle?) {\n        super.onCreate(savedInstanceState)\n        bridge.registerPlugin(PaliaDownloaderPlugin::class.java)\n    }"
+      "class MainActivity : BridgeActivity() {
+    override fun onCreate(savedInstanceState: android.os.Bundle?) {
+        super.onCreate(savedInstanceState)
+        bridge.registerPlugin(PaliaDownloaderPlugin::class.java)
+    }"
     );
   }
 
@@ -201,8 +215,11 @@ if (fs.existsSync(mainJava)) {
 const props = path.join(root, "gradle.properties");
 if (fs.existsSync(props)) {
   let source = fs.readFileSync(props, "utf8");
-  if (!source.includes("android.useAndroidX=true")) source += "\nandroid.useAndroidX=true\n";
-  if (!source.includes("android.enableJetifier=true")) source += "android.enableJetifier=true\n";
+  if (!source.includes("android.useAndroidX=true")) source += "
+android.useAndroidX=true
+";
+  if (!source.includes("android.enableJetifier=true")) source += "android.enableJetifier=true
+";
   fs.writeFileSync(props, source);
 }
 
@@ -210,7 +227,8 @@ const appGradle = path.join(root, "app/build.gradle");
 if (fs.existsSync(appGradle)) {
   let gradle = fs.readFileSync(appGradle, "utf8");
   if (!gradle.includes("androidx.core:core:")) {
-    gradle = gradle.replace(/dependencies\s*\{/m, `dependencies {\n    implementation "androidx.core:core:1.13.1"`);
+    gradle = gradle.replace(/dependencies\s*\{/m, `dependencies {
+    implementation "androidx.core:core:1.13.1"`);
   }
   fs.writeFileSync(appGradle, gradle);
 }
@@ -223,7 +241,8 @@ if (fs.existsSync(manifest)) {
     if (!source.includes(permission)) {
       source = source.replace(
         "</manifest>",
-        `    ${permission}\n</manifest>`
+        `    ${permission}
+</manifest>`
       );
     }
   };
@@ -283,7 +302,8 @@ fs.writeFileSync(
 
 fs.writeFileSync(
   path.join(res, "drawable", "ic_palia_logo.xml"),
-  `<?xml version="1.0" encoding="utf-8"?>\n<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108"><path android:fillColor="#40D88B" android:pathData="M6,82C8,50 31,27 54,27s46,23 48,55H6Z"/><path android:strokeColor="#40D88B" android:strokeWidth="4" android:strokeLineCap="round" android:pathData="M28,27L21,16M80,27L87,16"/><path android:fillColor="#FFFFFF" android:pathData="M38,51A4,4 0,1 0,38,59A4,4 0,1 0,38,51M70,51A4,4 0,1 0,70,59A4,4 0,1 0,70,51"/></vector>`
+  `<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108"><path android:fillColor="#40D88B" android:pathData="M6,82C8,50 31,27 54,27s46,23 48,55H6Z"/><path android:strokeColor="#40D88B" android:strokeWidth="4" android:strokeLineCap="round" android:pathData="M28,27L21,16M80,27L87,16"/><path android:fillColor="#FFFFFF" android:pathData="M38,51A4,4 0,1 0,38,59A4,4 0,1 0,38,51M70,51A4,4 0,1 0,70,59A4,4 0,1 0,70,51"/></vector>`
 );
 
 fs.writeFileSync(
@@ -377,20 +397,25 @@ fs.writeFileSync(googleJava, [
 '        } catch (Exception e) { call.reject("Google sign-in could not start: " + e.getMessage()); }',
 '    }',
 '}'
-].join("\n"));
+].join("
+"));
 
 if (fs.existsSync(mainJava)) {
   let source = fs.readFileSync(mainJava, "utf8");
   if (!source.includes("PaliaGoogleAuthPlugin")) {
-    source = source.replace("import com.shanpalia.paliaapkhub.PaliaDownloaderPlugin;", "import com.shanpalia.paliaapkhub.PaliaDownloaderPlugin;\nimport com.shanpalia.paliaapkhub.PaliaGoogleAuthPlugin;");
-    source = source.replace("registerPlugin(PaliaDownloaderPlugin.class);", "registerPlugin(PaliaDownloaderPlugin.class);\n        registerPlugin(PaliaGoogleAuthPlugin.class);");
+    source = source.replace("import com.shanpalia.paliaapkhub.PaliaDownloaderPlugin;", "import com.shanpalia.paliaapkhub.PaliaDownloaderPlugin;
+import com.shanpalia.paliaapkhub.PaliaGoogleAuthPlugin;");
+    source = source.replace("registerPlugin(PaliaDownloaderPlugin.class);", "registerPlugin(PaliaDownloaderPlugin.class);
+        registerPlugin(PaliaGoogleAuthPlugin.class);");
     fs.writeFileSync(mainJava, source);
   }
 } else if (fs.existsSync(mainKotlin)) {
   let source = fs.readFileSync(mainKotlin, "utf8");
   if (!source.includes("PaliaGoogleAuthPlugin")) {
-    source = source.replace("import com.shanpalia.paliaapkhub.PaliaDownloaderPlugin", "import com.shanpalia.paliaapkhub.PaliaDownloaderPlugin\nimport com.shanpalia.paliaapkhub.PaliaGoogleAuthPlugin");
-    source = source.replace("bridge.registerPlugin(PaliaDownloaderPlugin::class.java)", "bridge.registerPlugin(PaliaDownloaderPlugin::class.java)\n        bridge.registerPlugin(PaliaGoogleAuthPlugin::class.java)");
+    source = source.replace("import com.shanpalia.paliaapkhub.PaliaDownloaderPlugin", "import com.shanpalia.paliaapkhub.PaliaDownloaderPlugin
+import com.shanpalia.paliaapkhub.PaliaGoogleAuthPlugin");
+    source = source.replace("bridge.registerPlugin(PaliaDownloaderPlugin::class.java)", "bridge.registerPlugin(PaliaDownloaderPlugin::class.java)
+        bridge.registerPlugin(PaliaGoogleAuthPlugin::class.java)");
     fs.writeFileSync(mainKotlin, source);
   }
 }
@@ -398,7 +423,10 @@ if (fs.existsSync(mainJava)) {
 if (fs.existsSync(appGradle)) {
   let gradle = fs.readFileSync(appGradle, "utf8");
   if (!gradle.includes("androidx.credentials:credentials:")) {
-    gradle = gradle.replace(/dependencies\s*\{/m, 'dependencies {\n    implementation "androidx.credentials:credentials:1.3.0"\n    implementation "androidx.credentials:credentials-play-services-auth:1.3.0"\n    implementation "com.google.android.libraries.identity.googleid:googleid:1.1.1"');
+    gradle = gradle.replace(/dependencies\s*\{/m, 'dependencies {
+    implementation "androidx.credentials:credentials:1.3.0"
+    implementation "androidx.credentials:credentials-play-services-auth:1.3.0"
+    implementation "com.google.android.libraries.identity.googleid:googleid:1.1.1"');
   }
   fs.writeFileSync(appGradle, gradle);
 }
