@@ -19,6 +19,7 @@ let activeCategory="All";
 let progressListener=null;
 let pendingDownloadApp=null;
 let searchTimer=null;
+let speedSample={bytes:0,time:0};
 
 function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 function size(v){if(!v)return"Unknown Size";const n=Number(v);if(!Number.isNaN(n))return n>1048576?(n/1048576).toFixed(1)+" MB":Math.round(n/1024)+" KB";return String(v);}
@@ -102,8 +103,8 @@ $("authBtn").addEventListener("click",showAuth);
 $("closeAuth").addEventListener("click",hideAuth);
 $("login").addEventListener("click",async()=>{const email=$("authEmail").value.trim(),password=$("authPassword").value;try{const r=await auth.signInWithEmailAndPassword(email,password);hideAuth();if(pendingDownloadApp){const a=pendingDownloadApp;pendingDownloadApp=null;await startDownload(a);}}catch(e){$("authError").textContent=authError(e);}});
 $("signup").addEventListener("click",async()=>{
- const email=$("email").value.trim(),password=$("password").value;
- try{await auth.createUserWithEmailAndPassword(email,password);hideAuth();}catch(e){$("authError").textContent=e.message;}
+ const email=$("authEmail").value.trim(),password=$("authPassword").value;
+ try{const r=await auth.createUserWithEmailAndPassword(email,password);hideAuth();if(pendingDownloadApp){const a=pendingDownloadApp;pendingDownloadApp=null;await startDownload(a);}}catch(e){$("authError").textContent=authError(e);}
 });
 $("bottomProfile").addEventListener("click",()=>auth.currentUser?null:showAuth());
 $("bottomSearch").addEventListener("click",()=>$("search").focus());
