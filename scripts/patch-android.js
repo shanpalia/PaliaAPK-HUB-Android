@@ -330,7 +330,7 @@ fs.writeFileSync(googleJava, [
 'import com.getcapacitor.Plugin;',
 'import com.getcapacitor.PluginCall;',
 'import com.getcapacitor.annotation.CapacitorPlugin;',
-'import com.getcapacitor.annotation.PluginMethod;',
+'import com.getcapacitor.PluginMethod;',
 'import com.google.android.libraries.identity.googleid.GetGoogleIdOption;',
 'import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential;',
 '',
