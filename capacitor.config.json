@@ -1,0 +1,4 @@
+{
+  "appId":"com.shanpalia.paliaapkhub","appName":"PaliaAPK HUB","webDir":"www","bundledWebRuntime":false,
+  "server":{"androidScheme":"https"}
+}
