@@ -175,4 +175,18 @@ if (fs.existsSync(manifest)) {
     fs.writeFileSync(manifest, source);
 }
 
-console.log("patched Android native downloader");
+if (fs.existsSync(manifest)) { let s=fs.readFileSync(manifest,"utf8"); if(!s.includes("PaliaDownloadReceiver")) s=s.replace("</application>","<receiver android:name=\".PaliaDownloadReceiver\" android:exported=\"false\"><intent-filter><action android:name=\"android.intent.action.DOWNLOAD_COMPLETE\"/></intent-filter></receiver></application>"); s=s.replace("<application","<application android:icon=\"@drawable/ic_palia_logo\" android:roundIcon=\"@drawable/ic_palia_logo\""); fs.writeFileSync(manifest,s); }
+console.log("patched Android native downloader, install flow and launcher icon");
+
+// PaliaAPK HUB launcher icon and APK completion receiver are generated here.
+const res = path.join(root, "app/src/main/res");
+for (const d of ["drawable", "mipmap-anydpi-v26", "values"]) fs.mkdirSync(path.join(res,d), {recursive:true});
+fs.writeFileSync(path.join(res,"drawable","ic_palia_logo.xml"), `<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108"><path android:fillColor="#16A34A" android:pathData="M54,2A52,52 0,1 0,54 106A52,52 0,1 0,54 2"/><path android:fillColor="#FFFFFF" android:pathData="M31,25h27c13,0 21,7 21,18s-8,18-21,18H44v22H31V25M44,36v14h13c6,0 9,-2 9,-7s-3,-7-9,-7H44"/><path android:fillColor="#FFFFFF" android:pathData="M54,66l-10,10h7v10h6V76h7z"/></vector>`);
+fs.writeFileSync(path.join(res,"mipmap-anydpi-v26","ic_launcher.xml"), `<?xml version="1.0" encoding="utf-8"?><adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android"><background android:drawable="@color/ic_launcher_bg"/><foreground android:drawable="@drawable/ic_palia_logo"/></adaptive-icon>`);
+fs.writeFileSync(path.join(res,"mipmap-anydpi-v26","ic_launcher_round.xml"), `<?xml version="1.0" encoding="utf-8"?><adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android"><background android:drawable="@color/ic_launcher_bg"/><foreground android:drawable="@drawable/ic_palia_logo"/></adaptive-icon>`);
+fs.writeFileSync(path.join(res,"values","palia_colors.xml"), `<?xml version="1.0" encoding="utf-8"?><resources><color name="ic_launcher_bg">#16A34A</color></resources>`);
+const receiver = `package com.shanpalia.paliaapkhub;
+import android.app.DownloadManager;import android.content.*;import android.net.Uri;
+public class PaliaDownloadReceiver extends BroadcastReceiver { public void onReceive(Context c, Intent i){ if(!DownloadManager.ACTION_DOWNLOAD_COMPLETE.equals(i.getAction())) return; long id=i.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID,-1); if(id<0)return; DownloadManager dm=(DownloadManager)c.getSystemService(Context.DOWNLOAD_SERVICE); Uri uri=dm.getUriForDownloadedFile(id); if(uri==null)return; Intent open=new Intent(Intent.ACTION_VIEW);open.setDataAndType(uri,"application/vnd.android.package-archive");open.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION|Intent.FLAG_ACTIVITY_NEW_TASK);try{c.startActivity(open);}catch(Exception ignored){} } }`;
+fs.writeFileSync(path.join(dir,"PaliaDownloadReceiver.java"),receiver);
