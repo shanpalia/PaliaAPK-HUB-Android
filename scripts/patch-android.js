@@ -312,3 +312,93 @@ fs.writeFileSync(
 );
 
 console.log("patched Android native downloader, FileProvider installer, permissions and launcher icon");
+
+const googleJava = path.join(javaDir, "PaliaGoogleAuthPlugin.java");
+fs.writeFileSync(googleJava, [
+'package ' + pkg + ';',
+'',
+'import android.os.CancellationSignal;',
+'import androidx.annotation.NonNull;',
+'import androidx.core.content.ContextCompat;',
+'import androidx.credentials.Credential;',
+'import androidx.credentials.CredentialManager;',
+'import androidx.credentials.CredentialManagerCallback;',
+'import androidx.credentials.GetCredentialRequest;',
+'import androidx.credentials.GetCredentialResponse;',
+'import androidx.credentials.exceptions.GetCredentialException;',
+'import com.getcapacitor.JSObject;',
+'import com.getcapacitor.Plugin;',
+'import com.getcapacitor.PluginCall;',
+'import com.getcapacitor.annotation.CapacitorPlugin;',
+'import com.getcapacitor.annotation.PluginMethod;',
+'import com.google.android.libraries.identity.googleid.GetGoogleIdOption;',
+'import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential;',
+'',
+'@CapacitorPlugin(name = "PaliaGoogleAuth")',
+'public class PaliaGoogleAuthPlugin extends Plugin {',
+'    private static final String WEB_CLIENT_ID = "H270953807883-btnln51tlh1e1b2dtjfo6bsoasjhoc3s.apps.googleusercontent.com";',
+'',
+'    @PluginMethod',
+'    public void signIn(PluginCall call) {',
+'        try {',
+'            GetGoogleIdOption option = new GetGoogleIdOption.Builder()',
+'                    .setServerClientId(WEB_CLIENT_ID)',
+'                    .setFilterByAuthorizedAccounts(false)',
+'                    .setAutoSelectEnabled(true)',
+'                    .build();',
+'            GetCredentialRequest request = new GetCredentialRequest.Builder()',
+'                    .addCredentialOption(option)',
+'                    .build();',
+'            CredentialManager manager = CredentialManager.create(getActivity());',
+'            manager.getCredentialAsync(getActivity(), request, new CancellationSignal(),',
+'                    ContextCompat.getMainExecutor(getActivity()),',
+'                    new CredentialManagerCallback<GetCredentialResponse, GetCredentialException>() {',
+'                        @Override public void onResult(@NonNull GetCredentialResponse response) {',
+'                            try {',
+'                                Credential credential = response.getCredential();',
+'                                if (!GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL.equals(credential.getType())) {',
+'                                    call.reject("Google account credential was not returned."); return;',
+'                                }',
+'                                GoogleIdTokenCredential google = GoogleIdTokenCredential.createFrom(credential.getData());',
+'                                JSObject result = new JSObject();',
+'                                result.put("idToken", google.getIdToken());',
+'                                result.put("displayName", google.getDisplayName());',
+'                                result.put("givenName", google.getGivenName());',
+'                                result.put("familyName", google.getFamilyName());',
+'                                result.put("email", google.getId());',
+'                                result.put("photoUrl", google.getProfilePictureUri() == null ? null : google.getProfilePictureUri().toString());',
+'                                call.resolve(result);',
+'                            } catch (Exception e) { call.reject("Unable to read Google account: " + e.getMessage()); }',
+'                        }',
+'                        @Override public void onError(@NonNull GetCredentialException e) {',
+'                            call.reject("Google sign-in failed: " + e.getMessage());',
+'                        }',
+'                    });',
+'        } catch (Exception e) { call.reject("Google sign-in could not start: " + e.getMessage()); }',
+'    }',
+'}'
+].join("\n"));
+
+if (fs.existsSync(mainJava)) {
+  let source = fs.readFileSync(mainJava, "utf8");
+  if (!source.includes("PaliaGoogleAuthPlugin")) {
+    source = source.replace("import com.shanpalia.paliaapkhub.PaliaDownloaderPlugin;", "import com.shanpalia.paliaapkhub.PaliaDownloaderPlugin;\nimport com.shanpalia.paliaapkhub.PaliaGoogleAuthPlugin;");
+    source = source.replace("registerPlugin(PaliaDownloaderPlugin.class);", "registerPlugin(PaliaDownloaderPlugin.class);\n        registerPlugin(PaliaGoogleAuthPlugin.class);");
+    fs.writeFileSync(mainJava, source);
+  }
+} else if (fs.existsSync(mainKotlin)) {
+  let source = fs.readFileSync(mainKotlin, "utf8");
+  if (!source.includes("PaliaGoogleAuthPlugin")) {
+    source = source.replace("import com.shanpalia.paliaapkhub.PaliaDownloaderPlugin", "import com.shanpalia.paliaapkhub.PaliaDownloaderPlugin\nimport com.shanpalia.paliaapkhub.PaliaGoogleAuthPlugin");
+    source = source.replace("bridge.registerPlugin(PaliaDownloaderPlugin::class.java)", "bridge.registerPlugin(PaliaDownloaderPlugin::class.java)\n        bridge.registerPlugin(PaliaGoogleAuthPlugin::class.java)");
+    fs.writeFileSync(mainKotlin, source);
+  }
+}
+
+if (fs.existsSync(appGradle)) {
+  let gradle = fs.readFileSync(appGradle, "utf8");
+  if (!gradle.includes("androidx.credentials:credentials:")) {
+    gradle = gradle.replace(/dependencies\s*\{/m, 'dependencies {\n    implementation "androidx.credentials:credentials:1.3.0"\n    implementation "androidx.credentials:credentials-play-services-auth:1.3.0"\n    implementation "com.google.android.libraries.identity.googleid:googleid:1.1.1"');
+  }
+  fs.writeFileSync(appGradle, gradle);
+}
