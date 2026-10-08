@@ -266,9 +266,9 @@ fs.writeFileSync(
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <path android:fillColor="#16A34A" android:pathData="M54,2A52,52 0,1 0,54,106A52,52 0,1 0,54,2"/>
-    <path android:fillColor="#FFFFFF" android:pathData="M31,25h27c13,0 21,7 21,18s-8,18-21,18H44v22H31V25M44,36v14h13c6,0 9,-2 9,-7s-3,-7-9,-7H44"/>
-    <path android:fillColor="#FFFFFF" android:pathData="M54,66l-10,10h7v10h6V76h7z"/>
+    <path android:fillColor="#40D88B" android:pathData="M6,82C8,50 31,27 54,27s46,23 48,55H6Z"/>
+    <path android:strokeColor="#40D88B" android:strokeWidth="4" android:strokeLineCap="round" android:pathData="M28,27L21,16M80,27L87,16"/>
+    <path android:fillColor="#FFFFFF" android:pathData="M38,51A4,4 0,1 0,38,59A4,4 0,1 0,38,51M70,51A4,4 0,1 0,70,59A4,4 0,1 0,70,51"/>
 </vector>`
 );
 
