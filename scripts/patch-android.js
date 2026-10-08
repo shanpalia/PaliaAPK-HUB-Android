@@ -13,9 +13,6 @@ for (const d of ["drawable", "mipmap-anydpi-v26", "values", "xml"]) {
   fs.mkdirSync(path.join(res, d), { recursive: true });
 }
 if (fs.existsSync(exactIconSource)) fs.copyFileSync(exactIconSource, exactIconDest);
-for (const d of []);
-}
-
 // Native downloader: stays inside the PaliaAPK HUB app process.
 // It does NOT use Android DownloadManager or its system notification.
 const newPlugin = `package ${pkg};
