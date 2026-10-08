@@ -206,6 +206,15 @@ if (fs.existsSync(props)) {
   fs.writeFileSync(props, source);
 }
 
+const appGradle = path.join(root, "app/build.gradle");
+if (fs.existsSync(appGradle)) {
+  let gradle = fs.readFileSync(appGradle, "utf8");
+  if (!gradle.includes("androidx.core:core:")) {
+    gradle = gradle.replace(/dependencies\\s*\\{/m, `dependencies {\\n    implementation "androidx.core:core:1.13.1"`);
+  }
+  fs.writeFileSync(appGradle, gradle);
+}
+
 const manifest = path.join(root, "app/src/main/AndroidManifest.xml");
 if (fs.existsSync(manifest)) {
   let source = fs.readFileSync(manifest, "utf8");
