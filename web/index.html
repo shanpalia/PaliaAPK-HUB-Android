@@ -9,6 +9,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="native-google-auth.js"></script>
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -19,7 +20,7 @@
       <div class="brand-logo"><img src="assets/header-android-12-visible.svg" alt="PaliaAPK HUB"></div>
       <div><div class="brand-name">PaliaAPK <span>HUB</span></div><div class="brand-sub">Android Store</div></div>
     </div>
-    <div class="header-search"><span>⌕</span><input id="search" placeholder="Search apps, games, tools..."></div>
+    <div class="header-search"><span>⌕</span><input id="search" autocomplete="off" placeholder="Search apps, games, tools..."><button id="clearSearch" class="search-clear hidden" type="button">×</button><div id="searchSuggestions" class="search-suggestions hidden"></div></div>
     <div class="header-actions">
       <button id="updatesBtn" class="updates-btn">↻ <span>Updates</span></button>
       <button id="authBtn" class="login-btn">Login</button>
@@ -57,21 +58,12 @@
   </section>
 </main>
 
-<div id="authModal" class="modal hidden">
-  <div class="modal-card">
-    <button id="closeAuth" class="close-btn">×</button>
-    <h2>Sign in to PaliaAPK HUB</h2><p>Sign in to download APK files.</p>
-    <input id="email" type="email" placeholder="Email address">
-    <input id="password" type="password" placeholder="Password">
-    <div class="auth-row"><button id="login" class="primary-btn">Login</button><button id="signup" class="secondary-btn">Sign Up</button></div>
-    <div id="authError" class="error"></div>
-  </div>
-</div>
+<div id="authModal" class="modal hidden"><div class="modal-card"><button id="closeAuth" class="close-btn">×</button><div class="auth-brand"><img src="assets/header-android-12-visible.svg" alt=""><div><b>PaliaAPK HUB</b><small>Premium Android Store</small></div></div><h2>Sign in to continue</h2><p>Login is required before downloading an APK.</p><button id="googleLogin" class="google-btn"><span class="google-g">G</span> Continue with Google</button><div class="auth-divider"><span>OR</span></div><input id="authEmail" type="email" autocomplete="email" placeholder="Email address"><input id="authPassword" type="password" autocomplete="current-password" placeholder="Password"><div class="auth-row"><button id="login" class="primary-btn">Login</button><button id="signup" class="secondary-btn">Sign Up</button></div><div id="authError" class="error"></div></div></div>
 
 <div id="downloadToast" class="download-toast hidden">
   <div class="toast-head"><strong id="downloadName">Downloading APK</strong><span id="progressText">0%</span></div>
   <div class="progress"><div id="progressBar"></div></div>
-  <div class="toast-info"><span id="speedText">Starting...</span><span>Downloading inside PaliaAPK HUB</span></div>
+  <div class="toast-info"><span id="downloadedText">0 MB</span><span id="speedText">Connecting…</span></div><div class="toast-foot">Download stays inside PaliaAPK HUB</div>
 </div>
 
 <nav class="bottom-nav">
