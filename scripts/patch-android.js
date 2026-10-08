@@ -159,11 +159,11 @@ if (fs.existsSync(manifest)) {
     let source = fs.readFileSync(manifest, "utf8");
 
     source = source.replace(
-        /\s*<uses-permission[^>]+android\\.permission\\.INTERNET[^>]*\\/>/g,
+        /\s*<uses-permission[^>]+android\.permission\.INTERNET[^>]*\\/>/g,
         ""
     );
     source = source.replace(
-        /\s*<uses-permission[^>]+android\\.permission\\.REQUEST_INSTALL_PACKAGES[^>]*\\/>/g,
+        /\s*<uses-permission[^>]+android\.permission\.REQUEST_INSTALL_PACKAGES[^>]*\\/>/g,
         ""
     );
 
