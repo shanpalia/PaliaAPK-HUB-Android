@@ -210,7 +210,7 @@ const appGradle = path.join(root, "app/build.gradle");
 if (fs.existsSync(appGradle)) {
   let gradle = fs.readFileSync(appGradle, "utf8");
   if (!gradle.includes("androidx.core:core:")) {
-    gradle = gradle.replace(/dependencies\\s*\\{/m, `dependencies {\\n    implementation "androidx.core:core:1.13.1"`);
+    gradle = gradle.replace(/dependencies\s*\{/m, `dependencies {\n    implementation "androidx.core:core:1.13.1"`);
   }
   fs.writeFileSync(appGradle, gradle);
 }
