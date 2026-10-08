@@ -41,7 +41,7 @@ function renderApps(){
  const list=getMatches($("search").value||"");
  $("status").textContent=list.length+" apps available";
  $("appGrid").innerHTML=list.map(a=>{
-   const url=a.icon_url||"assets/header-android-12-visible.svg";
+   const url=a.icon_url||"assets/palia-app-icon.svg";
    return `<article class="app-card">
      <img class="app-icon" src="${esc(url)}" alt="${esc(a.name)}">
      <div class="app-body">
@@ -94,7 +94,7 @@ async function startDownload(a){
 }
 function searchScore(a,q){const fields=[["name",100],["package_name",80],["developer",65],["category",50],["description",20]];let score=0;for(const [k,w] of fields){const v=String(a?.[k]||"").toLowerCase();if(v===q)score+=w+100;else if(v.startsWith(q))score+=w+50;else if(v.includes(q))score+=w;}return score;}
 function getMatches(q,limit=1000){q=String(q||"").trim().toLowerCase();let list=allApps.filter(a=>activeCategory==="All"||String(a.category||"")===activeCategory);if(!q)return list;return list.map(a=>({a,score:searchScore(a,q)})).filter(x=>x.score>0).sort((a,b)=>b.score-a.score).slice(0,limit).map(x=>x.a);}
-function renderSuggestions(){const q=$("search").value.trim(),box=$("searchSuggestions");if(!box)return;if(!q){box.classList.add("hidden");box.innerHTML="";return;}const m=getMatches(q,7);box.innerHTML=m.length?m.map(a=>`<button type="button" class="suggestion" data-id="${esc(a.id)}"><img src="${esc(a.icon_url||"assets/header-android-12-visible.svg")}" alt=""><span><b>${esc(a.name||"App")}</b><small>${esc(a.category||"App")} • ${esc(a.developer||"ShanPalia")}</small></span></button>`).join(""):`<div class="no-suggestion">No apps found for <b>${esc(q)}</b></div>`;box.classList.remove("hidden");}
+function renderSuggestions(){const q=$("search").value.trim(),box=$("searchSuggestions");if(!box)return;if(!q){box.classList.add("hidden");box.innerHTML="";return;}const m=getMatches(q,7);box.innerHTML=m.length?m.map(a=>`<button type="button" class="suggestion" data-id="${esc(a.id)}"><img src="${esc(a.icon_url||"assets/palia-app-icon.svg")}" alt=""><span><b>${esc(a.name||"App")}</b><small>${esc(a.category||"App")} • ${esc(a.developer||"ShanPalia")}</small></span></button>`).join(""):`<div class="no-suggestion">No apps found for <b>${esc(q)}</b></div>`;box.classList.remove("hidden");}
 $("search").addEventListener("input",()=>{clearTimeout(searchTimer);renderApps();searchTimer=setTimeout(renderSuggestions,120);});
 $("search").addEventListener("focus",renderSuggestions);
 $("search").addEventListener("keydown",e=>{if(e.key==="Escape"){$("searchSuggestions").classList.add("hidden");$("search").blur();}if(e.key==="Enter"){const x=$("searchSuggestions").querySelector("[data-id]");if(x){const a=allApps.find(v=>String(v.id)===String(x.dataset.id));if(a)location.href=`app.html?id=${encodeURIComponent(a.id)}`;}}});
