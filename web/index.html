@@ -1065,7 +1065,18 @@ if (appsSection) {
                 ? app.category.toString().toLowerCase()
                 : '';
 
-            return name.includes(query) || appCategory.includes(query);
+            const searchable = [
+                name,
+                appCategory,
+                app && app.description,
+                app && app.developer,
+                app && app.package_name,
+                app && app.version,
+                app && app.tags
+            ].map(function(value) {
+                return Array.isArray(value) ? value.join(' ') : String(value || '');
+            }).join(' ').toLowerCase();
+            return searchable.includes(query);
         });
     }
 
@@ -1180,7 +1191,19 @@ window.openAppDetails = function(appId) {
                     return;
                 }
 
-                const matches = (window.allAppsCache || []).filter(app => app.name.toLowerCase().includes(q.toLowerCase()) || app.category.toLowerCase().includes(q.toLowerCase())).slice(0, 5);
+                const normalizedQuery = q.trim().toLowerCase();
+                const matches = (window.allAppsCache || []).filter(app => {
+                    const searchable = [
+                        app && app.name,
+                        app && app.category,
+                        app && app.description,
+                        app && app.developer,
+                        app && app.package_name,
+                        app && app.version,
+                        app && app.tags
+                    ].map(value => Array.isArray(value) ? value.join(' ') : String(value || '')).join(' ').toLowerCase();
+                    return searchable.includes(normalizedQuery);
+                }).slice(0, 5);
 
                 if (matches.length === 0) {
                     autocomplete.classList.add('hidden');
