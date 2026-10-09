@@ -389,10 +389,19 @@ if (fs.existsSync(mainJava)) {
   }
 }
 
-if (fs.existsSync(appGradle)) {
-  let gradle = fs.readFileSync(appGradle, "utf8");
+const googleDeps = [
+  "androidx.credentials:credentials:1.3.0",
+  "androidx.credentials:credentials-play-services-auth:1.3.0",
+  "com.google.android.libraries.identity.googleid:googleid:1.1.1"
+];
+if (fs.existsSync(appGradle) || fs.existsSync(appGradleKts)) {
+  const gradlePath = fs.existsSync(appGradle) ? appGradle : appGradleKts;
+  let gradle = fs.readFileSync(gradlePath, "utf8");
   if (!gradle.includes("androidx.credentials:credentials:")) {
-    gradle = gradle.replace(/dependencies\s*\{/m, 'dependencies {\n    implementation "androidx.credentials:credentials:1.3.0"\n    implementation "androidx.credentials:credentials-play-services-auth:1.3.0"\n    implementation "com.google.android.libraries.identity.googleid:googleid:1.1.1"');
+    const lines = gradlePath.endsWith(".kts")
+      ? googleDeps.map(dep => '    implementation("' + dep + '")').join("\n")
+      : googleDeps.map(dep => '    implementation "' + dep + '"').join("\n");
+    gradle = gradle.replace(/dependencies\s*\{/m, "dependencies {\n" + lines);
   }
-  fs.writeFileSync(appGradle, gradle);
+  fs.writeFileSync(gradlePath, gradle);
 }
