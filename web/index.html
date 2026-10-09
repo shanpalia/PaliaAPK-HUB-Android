@@ -1633,5 +1633,65 @@ body{padding-bottom:calc(82px + env(safe-area-inset-bottom))!important}
 })();
 </script>
 
+
+<style id="palia-android-layout-fix">
+/* PaliaAPK HUB mobile store layout */
+@media (max-width: 767px) {
+  html, body { width:100%; max-width:100%; overflow-x:hidden; }
+  body { padding-bottom:calc(78px + env(safe-area-inset-bottom)) !important; }
+  body > nav.glass { padding-top:8px !important; padding-bottom:8px !important; }
+  body > nav.glass > .container {
+    width:100% !important; max-width:100% !important; padding-left:10px !important; padding-right:10px !important;
+    gap:6px !important; flex-wrap:nowrap !important;
+  }
+  #adminTriggerLogo { flex:1 1 auto !important; min-width:0 !important; gap:7px !important; }
+  #adminTriggerLogo > div:first-child { width:42px !important; height:42px !important; min-width:42px !important; border-radius:13px !important; }
+  #adminTriggerLogo h1 { font-size:clamp(14px,4.2vw,17px) !important; line-height:1.1 !important; white-space:nowrap !important; }
+  #adminTriggerLogo p { font-size:8px !important; letter-spacing:.8px !important; white-space:nowrap !important; }
+  #mobileSearchBtn { display:flex !important; flex:0 0 36px !important; width:36px !important; height:40px !important; align-items:center !important; justify-content:center !important; margin:0 !important; }
+  body > nav.glass > .container > .flex.items-center.gap-2,
+  body > nav.glass > .container > .flex.items-center.gap-2.sm\:gap-3 {
+    flex:0 0 auto !important; gap:5px !important; min-width:0 !important;
+  }
+  #notificationToggleBtn, #darkModeToggle, #themeToggleBtn {
+    width:38px !important; height:40px !important; min-width:38px !important;
+  }
+  #loginBtn { height:40px !important; padding:0 9px !important; gap:5px !important; font-size:11px !important; white-space:nowrap !important; }
+  #loginBtn i { font-size:12px !important; }
+  .hero-card { margin:14px 0 24px !important; border-radius:22px !important; overflow:hidden !important; }
+  .hero-card .heroSwiper, .hero-card .swiper { height:auto !important; min-height:0 !important; overflow:hidden !important; }
+  #featured-slider { align-items:stretch !important; }
+  #featured-slider .swiper-slide {
+    height:auto !important; min-height:235px !important; max-height:none !important;
+    padding:18px 14px 34px !important; align-items:center !important;
+  }
+  #featured-slider .swiper-slide > .relative.z-10 { gap:10px !important; align-items:center !important; }
+  #featured-slider .swiper-slide > .relative.z-10 > div:first-child { gap:10px !important; max-width:100% !important; min-width:0 !important; }
+  #featured-slider .swiper-slide > .relative.z-10 > div:first-child > div:first-child {
+    width:76px !important; height:76px !important; flex:0 0 76px !important; border-radius:18px !important;
+  }
+  #featured-slider .swiper-slide h2 { font-size:clamp(19px,5.4vw,25px) !important; line-height:1.15 !important; overflow-wrap:anywhere !important; }
+  #featured-slider .swiper-slide p { font-size:11px !important; flex-wrap:wrap !important; }
+  #featured-slider .swiper-slide .download-btn { max-width:100% !important; white-space:normal !important; padding:11px 12px !important; font-size:11px !important; }
+  .hero-card .swiper-pagination { bottom:8px !important; }
+  .hero-card .swiper-button-prev, .hero-card .swiper-button-next { transform:scale(.72); }
+  #categoriesSection, #topChartsSection, #appsGrid, #recentlyUpdatedGrid { scroll-margin-top:78px; }
+  #categoriesSection { margin-bottom:28px !important; }
+  #categoriesContainer { gap:10px !important; }
+  .category-card { min-height:116px !important; padding:14px 8px !important; }
+  .store-bottom-nav {
+    min-height:62px !important; padding:5px 6px calc(5px + env(safe-area-inset-bottom)) !important;
+    bottom:0 !important; z-index:99990 !important;
+  }
+  .store-nav-item { gap:3px !important; font-size:18px !important; padding:4px 2px !important; }
+  .store-nav-item.active i { padding:5px 14px !important; }
+  .store-nav-item span { font-size:10px !important; }
+}
+@media (min-width:768px) {
+  .hero-card .heroSwiper, .hero-card .swiper { height:auto !important; min-height:0 !important; }
+  #featured-slider .swiper-slide { height:auto !important; min-height:260px !important; }
+}
+</style>
+
 </body>
 </html>
