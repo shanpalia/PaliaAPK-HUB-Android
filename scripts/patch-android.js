@@ -170,33 +170,31 @@ const mainKotlin = path.join(javaDir, "MainActivity.kt");
 
 if (fs.existsSync(mainJava)) {
   let source = fs.readFileSync(mainJava, "utf8");
-
-  if (!source.includes("PaliaDownloaderPlugin")) {
-    source = source.replace(
-      "import com.getcapacitor.BridgeActivity;",
-      "import com.getcapacitor.BridgeActivity;\nimport com.shanpalia.paliaapkhub.PaliaDownloaderPlugin;"
-    );
-    source = source.replace(
-      "public class MainActivity extends BridgeActivity {",
-      "public class MainActivity extends BridgeActivity {\n    @Override\n    public void onCreate(android.os.Bundle savedInstanceState) {\n        super.onCreate(savedInstanceState);\n        registerPlugin(PaliaDownloaderPlugin.class);\n    }"
-    );
+  if (!source.includes("import com.shanpalia.paliaapkhub.PaliaDownloaderPlugin;")) {
+    source = source.replace("import com.getcapacitor.BridgeActivity;", "import com.getcapacitor.BridgeActivity;\\nimport com.shanpalia.paliaapkhub.PaliaDownloaderPlugin;");
   }
-
+  if (!source.includes("import com.shanpalia.paliaapkhub.PaliaGoogleAuthPlugin;")) {
+    source = source.replace("import com.getcapacitor.BridgeActivity;", "import com.getcapacitor.BridgeActivity;\\nimport com.shanpalia.paliaapkhub.PaliaGoogleAuthPlugin;");
+  }
+  if (!source.includes("registerPlugin(PaliaDownloaderPlugin.class)")) {
+    source = source.replace("public class MainActivity extends BridgeActivity {", "public class MainActivity extends BridgeActivity {\\n    @Override\\n    public void onCreate(android.os.Bundle savedInstanceState) {\\n        super.onCreate(savedInstanceState);\\n        registerPlugin(PaliaDownloaderPlugin.class);\\n        registerPlugin(PaliaGoogleAuthPlugin.class);\\n    }");
+  } else if (!source.includes("registerPlugin(PaliaGoogleAuthPlugin.class)")) {
+    source = source.replace("registerPlugin(PaliaDownloaderPlugin.class);", "registerPlugin(PaliaDownloaderPlugin.class);\\n        registerPlugin(PaliaGoogleAuthPlugin.class);");
+  }
   fs.writeFileSync(mainJava, source);
 } else if (fs.existsSync(mainKotlin)) {
   let source = fs.readFileSync(mainKotlin, "utf8");
-
-  if (!source.includes("PaliaDownloaderPlugin")) {
-    source = source.replace(
-      "import com.getcapacitor.BridgeActivity",
-      "import com.getcapacitor.BridgeActivity\nimport com.shanpalia.paliaapkhub.PaliaDownloaderPlugin"
-    );
-    source = source.replace(
-      "class MainActivity : BridgeActivity()",
-      "class MainActivity : BridgeActivity() {\n    override fun onCreate(savedInstanceState: android.os.Bundle?) {\n        super.onCreate(savedInstanceState)\n        bridge.registerPlugin(PaliaDownloaderPlugin::class.java)\n    }"
-    );
+  if (!source.includes("import com.shanpalia.paliaapkhub.PaliaDownloaderPlugin")) {
+    source = source.replace("import com.getcapacitor.BridgeActivity", "import com.getcapacitor.BridgeActivity\\nimport com.shanpalia.paliaapkhub.PaliaDownloaderPlugin");
   }
-
+  if (!source.includes("import com.shanpalia.paliaapkhub.PaliaGoogleAuthPlugin")) {
+    source = source.replace("import com.getcapacitor.BridgeActivity", "import com.getcapacitor.BridgeActivity\\nimport com.shanpalia.paliaapkhub.PaliaGoogleAuthPlugin");
+  }
+  if (!source.includes("bridge.registerPlugin(PaliaDownloaderPlugin::class.java)")) {
+    source = source.replace("class MainActivity : BridgeActivity()", "class MainActivity : BridgeActivity() {\\n    override fun onCreate(savedInstanceState: android.os.Bundle?) {\\n        super.onCreate(savedInstanceState)\\n        bridge.registerPlugin(PaliaDownloaderPlugin::class.java)\\n        bridge.registerPlugin(PaliaGoogleAuthPlugin::class.java)\\n    }");
+  } else if (!source.includes("bridge.registerPlugin(PaliaGoogleAuthPlugin::class.java)")) {
+    source = source.replace("bridge.registerPlugin(PaliaDownloaderPlugin::class.java)", "bridge.registerPlugin(PaliaDownloaderPlugin::class.java)\\n        bridge.registerPlugin(PaliaGoogleAuthPlugin::class.java)");
+  }
   fs.writeFileSync(mainKotlin, source);
 }
 
