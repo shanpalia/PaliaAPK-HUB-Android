@@ -1,0 +1,409 @@
+<!-- publish-app.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- PaliaAPK HUB social sharing preview -->
+    <meta property="og:site_name" content="PaliaAPK HUB">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="PaliaAPK HUB | Premium Android Store & Verified APKs">
+    <meta property="og:description" content="Discover apps, games and verified Android APKs on PaliaAPK HUB.">
+    <meta property="og:image" content="/WebsitePaliaAPK_V.2/assets/paliaapk-hub-share.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="PaliaAPK HUB | Premium Android Store & Verified APKs">
+    <meta name="twitter:description" content="Discover apps, games and verified Android APKs on PaliaAPK HUB.">
+    <meta name="twitter:image" content="/WebsitePaliaAPK_V.2/assets/paliaapk-hub-share.png">
+
+
+<script id="paliaDarkModeController">
+(function () {
+  const KEY = 'paliaapk_theme';
+
+  function applyTheme(theme) {
+    const root = document.documentElement;
+    const dark = theme === 'dark';
+    root.classList.toggle('dark', dark);
+    root.style.colorScheme = dark ? 'dark' : 'light';
+
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', dark ? '#111827' : '#16a34a');
+  }
+
+  function getTheme() {
+    const saved = localStorage.getItem(KEY);
+    if (saved === 'dark' || saved === 'light') return saved;
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+      ? 'dark' : 'light';
+  }
+
+  applyTheme(getTheme());
+
+  document.addEventListener('DOMContentLoaded', function () {
+    applyTheme(getTheme());
+
+    const btn = document.getElementById('darkModeToggle');
+    if (!btn || btn.dataset.darkModeBound === '1') return;
+
+    btn.dataset.darkModeBound = '1';
+    btn.addEventListener('click', function (event) {
+      event.preventDefault();
+      event.stopPropagation();
+
+      const next = document.documentElement.classList.contains('dark')
+        ? 'light' : 'dark';
+
+      localStorage.setItem(KEY, next);
+      applyTheme(next);
+    });
+  });
+})();
+</script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Publish App - PaliaAPK HUB</title>
+    <link rel="stylesheet" href="publish-app.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+   
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Top Navigation -->
+        <header class="top-nav">
+            <div class="nav-brand">
+                <i class="fa-solid fa-cube brand-icon"></i>
+                <span>PaliaAPK <small class="hub-tag">HUB</small></span>
+            </div>
+            <div class="nav-user">
+                <span class="user-badge"><i class="fa-solid fa-shield-halved"></i> Publisher</span>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <div class="page-header">
+                <div class="header-titles">
+                    <h1>Publish Application</h1>
+                    <p>Deploy your uploaded application package via your preferred storage provider.</p>
+                </div>
+                <div class="app-context-pill" id="appContextPill">
+                    <i class="fa-solid fa-box-archive"></i> <span id="summaryAppName">Loading App...</span>
+                </div>
+            </div>
+
+            <!-- Publishing Workflow Form -->
+            <div class="publish-card">
+                <div class="section-title">
+                    <i class="fa-solid fa-server"></i>
+                    <h2>Select Storage Provider</h2>
+                </div>
+
+                <!-- Storage Provider Grid -->
+                <div class="provider-grid">
+                    <div class="provider-option active" data-provider="supabase">
+                        <div class="provider-radio"><i class="fa-solid fa-circle-check"></i></div>
+                        <div class="provider-icon supabase-ic">
+                            <i class="fa-solid fa-database"></i>
+                        </div>
+                        <div class="provider-details">
+                            <h3>Supabase Storage</h3>
+                            <p>Direct bucket storage deployment</p>
+                        </div>
+                        <span class="provider-badge active-badge">Active</span>
+                    </div>
+
+                   <div class="provider-option" data-provider="telegram">
+
+    <div class="provider-radio">
+        <i class="fa-solid fa-circle"></i>
+    </div>
+
+    <div class="provider-icon telegram-ic">
+        <i class="fa-brands fa-telegram"></i>
+    </div>
+
+    <div class="provider-details">
+        <h3>Telegram Storage</h3>
+        <p>Upload APKs via Cloudflare Worker</p>
+    </div>
+
+    <span class="provider-badge active-badge">
+        Active
+    </span>
+
+</div>
+
+                    <!-- Future Ready Providers (Disabled) -->
+                    <div class="provider-option disabled" data-provider="cloudflare">
+                        <div class="provider-radio"><i class="fa-solid fa-circle"></i></div>
+                        <div class="provider-icon">
+                            <i class="fa-solid fa-cloud"></i>
+                        </div>
+                        <div class="provider-details">
+                            <h3>Cloudflare R2</h3>
+                            <p>Zero egress object storage</p>
+                        </div>
+                        <span class="provider-badge future-badge">Coming Soon</span>
+                    </div>
+
+                    <div class="provider-option disabled" data-provider="backblaze">
+                        <div class="provider-radio"><i class="fa-solid fa-circle"></i></div>
+                        <div class="provider-icon">
+                            <i class="fa-solid fa-hard-drive"></i>
+                        </div>
+                        <div class="provider-details">
+                            <h3>Backblaze B2</h3>
+                            <p>Cost-effective cloud storage</p>
+                        </div>
+                        <span class="provider-badge future-badge">Coming Soon</span>
+                    </div>
+
+                    <div class="provider-option disabled" data-provider="gdrive">
+                        <div class="provider-radio"><i class="fa-solid fa-circle"></i></div>
+                        <div class="provider-icon">
+                            <i class="fa-brands fa-google-drive"></i>
+                        </div>
+                        <div class="provider-details">
+                            <h3>Google Drive</h3>
+                            <p>Personal or shared drive storage</p>
+                        </div>
+                        <span class="provider-badge future-badge">Coming Soon</span>
+                    </div>
+
+                    <div class="provider-option disabled" data-provider="ftp">
+                        <div class="provider-radio"><i class="fa-solid fa-circle"></i></div>
+                        <div class="provider-icon">
+                            <i class="fa-solid fa-network-wired"></i>
+                        </div>
+                        <div class="provider-details">
+                            <h3>FTP Server</h3>
+                            <p>Traditional file transfer protocol</p>
+                        </div>
+                        <span class="provider-badge future-badge">Coming Soon</span>
+                    </div>
+                </div>
+
+                <!-- Dynamic Configuration Panels -->
+                
+                <!-- 1. Supabase Panel -->
+                <div class="config-panel active" id="panel-supabase">
+                    <div class="panel-header-sub">
+                        <h3>Supabase Configuration</h3>
+                        <p>Verify your bucket parameters before initiating deployment.</p>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group full-width">
+                            <label for="sbBucket">Storage Bucket</label>
+                            <div class="input-with-icon">
+                                <i class="fa-solid fa-bucket"></i>
+                                <input type="text" id="sbBucket" value="paliaapk-storage-bucket" readonly>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Storage Used</label>
+                            <div class="storage-meter-display">
+                                <span id="sbStorageUsed">4.2 GB</span>
+                                <div class="mini-progress-track">
+                                    <div class="mini-progress-fill" style="width: 42%;"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Remaining Storage</label>
+                            <div class="storage-numeric-display" id="sbRemainingStorage">
+                                5.8 GB Available
+                            </div>
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label for="sbPublicUrl">Generated Public URL Base</label>
+                            <div class="input-with-icon">
+                                <i class="fa-solid fa-link"></i>
+                                <input type="text" id="sbPublicUrl" value="https://xyzcompany.supabase.co/storage/v1/object/public/paliaapk-storage-bucket/" readonly>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel-actions">
+                        <button type="button" class="btn-mint-solid" id="btnPublishSupabase">
+                            <i class="fa-solid fa-cloud-arrow-up"></i> Publish App
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 2. GitHub Releases Panel -->
+                <div class="config-panel" id="panel-telegram">
+                   <div class="panel-header-sub">
+    <h3>Telegram Storage Configuration</h3>
+    <p>Upload APK files to Telegram Channel using Cloudflare Worker.</p>
+</div>
+
+<div class="form-grid">
+
+    <div class="form-group full-width">
+        <label>Storage Provider</label>
+        <div class="input-with-icon">
+            <i class="fa-brands fa-telegram"></i>
+            <input type="text" value="Telegram Channel" readonly>
+        </div>
+    </div>
+
+    <div class="form-group full-width">
+        <label>Upload Method</label>
+        <div class="input-with-icon">
+            <i class="fa-solid fa-cloud-arrow-up"></i>
+            <input type="text" value="Cloudflare Worker" readonly>
+        </div>
+    </div>
+
+    <div class="form-group full-width">
+        <label>Worker URL</label>
+        <div class="input-with-icon">
+            <i class="fa-solid fa-link"></i>
+            <input
+                id="workerUrl"
+                type="text"
+                value="https://paliaapk-worker.shanpalia786.workers.dev"
+                readonly>
+        </div>
+    </div>
+
+    <div class="form-group full-width">
+        <label>Status</label>
+        <div class="input-with-icon">
+            <i class="fa-solid fa-circle-check"></i>
+            <input type="text" value="Ready to Upload" readonly>
+        </div>
+    </div>
+
+</div>
+                    <div class="panel-actions">
+                        <button type="button" class="btn-mint-solid" id="btnPublishTelegram">
+                            <i class="fa-solid fa-rocket"></i> Publish App
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Publish Progress Dialog -->
+    <div class="modal-overlay" id="publishModal">
+        <div class="modal-card">
+            <!-- Step 1: Uploading Progress State -->
+            <div class="modal-state active" id="modalStateProgress">
+                <div class="modal-icon-header spinning-glow">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                </div>
+                <h3>Publishing Application</h3>
+                <p id="progressStatusText">Initializing secure connection...</p>
+                
+                <div class="progress-container">
+                    <div class="progress-bar-track">
+                        <div class="progress-bar-fill" id="progressBarFill" style="width: 0%;"></div>
+                    </div>
+                    <div class="progress-stats">
+                        <span id="progressPercent">0%</span>
+                        <span id="progressDetail">0 MB / 0 MB</span>
+                    </div>
+                </div>
+
+                <div class="steps-checklist" id="stepsChecklist">
+                    <div class="checklist-item pending" id="chkStep1">
+                        <i class="fa-regular fa-circle"></i> Authenticating Storage Provider
+                    </div>
+                    <div class="checklist-item pending" id="chkStep2">
+                        <i class="fa-regular fa-circle"></i> Validating APK Binary Payload
+                    </div>
+                    <div class="checklist-item pending" id="chkStep3">
+                        <i class="fa-regular fa-circle"></i> Uploading Application Package
+                    </div>
+                    <div class="checklist-item pending" id="chkStep4">
+                        <i class="fa-regular fa-circle"></i> Finalizing Endpoint & Generating URL
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: Success State -->
+            <div class="modal-state" id="modalStateSuccess">
+                <div class="modal-icon-header success-glow">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+                <h3>Published Successfully!</h3>
+                <p>Your application package has been successfully deployed and is ready for users.</p>
+                
+                <div class="success-url-box">
+                    <span id="successDeploymentUrl">https://paliaapk.hub/app/download-link</span>
+                    <button type="button" id="btnCopyUrl" title="Copy URL"><i class="fa-regular fa-copy"></i></button>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-mint-solid" id="btnCloseSuccess">
+                        <i class="fa-solid fa-check"></i> Done & Return
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 3: Failed State -->
+            <div class="modal-state" id="modalStateFailed">
+                <div class="modal-icon-header failed-glow">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <h3>Publishing Failed</h3>
+                <p id="failedReasonText">An error occurred while uploading the file to the selected storage provider.</p>
+                
+                <div class="error-log-box" id="errorLogBox">
+                    ERR_CONNECTION_TIMEOUT: Could not establish secure socket stream. Check your credentials or network connection.
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-outline-mint" id="btnCancelPublish">
+                        Cancel
+                    </button>
+                    <button type="button" class="btn-mint-solid" id="btnRetryPublish">
+                        <i class="fa-solid fa-rotate-right"></i> Retry Upload
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const providers = document.querySelectorAll(".provider-option");
+    const panels = document.querySelectorAll(".config-panel");
+
+    providers.forEach(provider => {
+
+        if (provider.classList.contains("disabled")) return;
+
+        provider.addEventListener("click", function () {
+
+            providers.forEach(p => p.classList.remove("active"));
+            this.classList.add("active");
+
+            panels.forEach(panel => panel.classList.remove("active"));
+
+            const name = this.dataset.provider;
+
+            const panel = document.getElementById("panel-" + name);
+
+            if(panel){
+                panel.classList.add("active");
+            }
+
+        });
+
+    });
+
+});
+</script>
+<script type="module" src="telegram-publisher.js"></script>
+</body>
+</html>
