@@ -391,37 +391,43 @@ const auth = firebase.auth();
                 document.getElementById('appVersion').textContent = app.version || '1.0';
 
 // ===============================
-// DOWNLOAD APK
+// DOWNLOAD APK — native in-app downloader
 // ===============================
 const downloadBtn = document.getElementById("downloadBtn");
 
 if (downloadBtn) {
-
     downloadBtn.onclick = async function(e) {
         e.preventDefault();
         e.stopPropagation();
 
         let downloadUrl = "";
-
         if (String(app.name || '').toLowerCase().includes('paliaapk hub')) {
-            // PaliaAPK HUB APK is hosted directly with this GitHub Pages site.
-            // Use normal navigation so Facebook/in-app browsers can download it
-            // without CORS/blob handling or any Render redirect.
             downloadUrl = 'https://raw.githubusercontent.com/shanpalia/WebsitePaliaAPK_V.2/main/PaliaAPK-HUB.apk';
         } else if (app.apk_url) {
-            downloadUrl = app.apk_url;
+            downloadUrl = String(app.apk_url).trim();
         } else {
             alert("APK download is currently unavailable.");
             return;
         }
 
-        // Save download history
-        const user = auth.currentUser;
+        // A Telegram channel/post URL is a webpage, not the APK file itself.
+        // Never launch Telegram; require the admin to store a direct APK URL.
+        if (/^(tg:|https?:\/\/(www\.)?(t\.me|telegram\.me)\/)/i.test(downloadUrl)) {
+            alert("This app has a Telegram post link, not a direct APK file. Please ask the PaliaAPK HUB admin to update its APK URL to a direct .apk download link. Telegram will not be opened.");
+            return;
+        }
 
-        if (user) {
-            const result = await _supabase
-                .from("downloads")
-                .insert({
+        const originalButtonHtml = downloadBtn.innerHTML;
+        const originalDisabled = downloadBtn.getAttribute("aria-disabled") === "true";
+        downloadBtn.setAttribute("aria-disabled", "true");
+        downloadBtn.style.pointerEvents = "none";
+        downloadBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Downloading inside app…';
+
+        try {
+            // Keep download history, but do not let a history failure block the download.
+            const user = auth.currentUser;
+            if (user) {
+                const result = await _supabase.from("downloads").insert({
                     user_id: user.uid,
                     app_id: app.id,
                     app_name: app.name || "Unknown App",
@@ -429,17 +435,43 @@ if (downloadBtn) {
                     icon_url: app.icon_url || null,
                     download_url: downloadUrl
                 });
-
-            if (result.error) {
-                console.error(
-                    "Download history error:",
-                    result.error
-                );
+                if (result.error) console.error("Download history error:", result.error);
             }
-        }
 
-        // Direct APK navigation: no Render, no fetch(), no blob/CORS dependency.
-        window.open(downloadUrl, '_blank', 'noopener');
+            const capacitor = window.Capacitor;
+            const nativePlugins = capacitor && capacitor.Plugins;
+            const downloader = nativePlugins && nativePlugins.PaliaDownloader;
+
+            if (capacitor && typeof capacitor.isNativePlatform === "function" &&
+                capacitor.isNativePlatform() && downloader && typeof downloader.download === "function") {
+                const safeName = String(app.name || "PaliaAPK-HUB-App")
+                    .replace(/[^a-z0-9._-]+/gi, "_").replace(/^\.+/, "").slice(0, 70) || "PaliaAPK-HUB-App";
+                const filename = safeName.toLowerCase().endsWith(".apk") ? safeName : safeName + ".apk";
+
+                const result = await downloader.download({ url: downloadUrl, filename });
+                downloadBtn.innerHTML = '<i class="fa-solid fa-check"></i> Download complete';
+                const installNow = confirm("Download complete!\n\n" + filename + " is saved in PaliaAPK HUB app storage. Install it now?");
+                if (installNow) {
+                    if (typeof downloader.openDownloadedApk === "function") {
+                        await downloader.openDownloadedApk();
+                    } else {
+                        alert("APK downloaded, but this app build does not include the installer hand-off yet.");
+                    }
+                } else {
+                    alert("APK downloaded inside PaliaAPK HUB. You can install it later from the app's download storage.");
+                }
+            } else {
+                // Website fallback: direct file URLs only. Native APK downloads stay in-app.
+                window.location.href = downloadUrl;
+            }
+        } catch (err) {
+            console.error("In-app APK download failed:", err);
+            alert("Download failed: " + (err && err.message ? err.message : "Please check the APK link and try again."));
+        } finally {
+            downloadBtn.innerHTML = originalButtonHtml;
+            downloadBtn.style.pointerEvents = "";
+            if (!originalDisabled) downloadBtn.removeAttribute("aria-disabled");
+        }
     };
 }
                 // Description
