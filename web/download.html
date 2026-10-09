@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="hi" class="h-full">
+<head>
+    <!-- PaliaAPK HUB social sharing preview -->
+    <meta property="og:site_name" content="PaliaAPK HUB">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="PaliaAPK HUB | Premium Android Store & Verified APKs">
+    <meta property="og:description" content="Discover apps, games and verified Android APKs on PaliaAPK HUB.">
+    <meta property="og:image" content="/WebsitePaliaAPK_V.2/assets/paliaapk-hub-share.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="PaliaAPK HUB | Premium Android Store & Verified APKs">
+    <meta name="twitter:description" content="Discover apps, games and verified Android APKs on PaliaAPK HUB.">
+    <meta name="twitter:image" content="/WebsitePaliaAPK_V.2/assets/paliaapk-hub-share.png">
+
+
+<script id="paliaDarkModeController">
+(function () {
+  const KEY = 'paliaapk_theme';
+
+  function applyTheme(theme) {
+    const root = document.documentElement;
+    const dark = theme === 'dark';
+    root.classList.toggle('dark', dark);
+    root.style.colorScheme = dark ? 'dark' : 'light';
+
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', dark ? '#111827' : '#16a34a');
+  }
+
+  function getTheme() {
+    const saved = localStorage.getItem(KEY);
+    if (saved === 'dark' || saved === 'light') return saved;
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+      ? 'dark' : 'light';
+  }
+
+  applyTheme(getTheme());
+
+  document.addEventListener('DOMContentLoaded', function () {
+    applyTheme(getTheme());
+
+    const btn = document.getElementById('darkModeToggle');
+    if (!btn || btn.dataset.darkModeBound === '1') return;
+
+    btn.dataset.darkModeBound = '1';
+    btn.addEventListener('click', function (event) {
+      event.preventDefault();
+      event.stopPropagation();
+
+      const next = document.documentElement.classList.contains('dark')
+        ? 'light' : 'dark';
+
+      localStorage.setItem(KEY, next);
+      applyTheme(next);
+    });
+  });
+})();
+</script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Download App - PaliaAPK HUB</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        mint: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Supabase JS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Firebase App & Auth CDN -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+</head>
+<body class="h-full bg-gray-50 text-gray-800 flex flex-col font-sans antialiased selection:bg-mint-100 selection:text-mint-700">
+
+    <!-- HEADER -->
+    <header class="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <a id="backBtn" href="index.html" class="w-10 h-10 rounded-xl bg-mint-50 text-mint-600 flex items-center justify-center hover:bg-mint-100 transition" aria-label="Back">
+                    <i class="fa-solid fa-arrow-left text-lg"></i>
+                </a>
+                <a href="index.html" class="flex items-center gap-2">
+                    <div class="w-9 h-9 rounded-xl bg-white flex items-center justify-center overflow-hidden shadow-md shadow-mint-500/20"><img src="assets/palia-android-icon.png" alt="PaliaAPK HUB" class="w-full h-full object-contain"></div>
+                    <span class="font-bold text-lg tracking-tight text-gray-900 hidden sm:inline">PaliaAPK<span class="text-mint-600">HUB</span></span>
+                </a>
+            </div>
+
+            <!-- USER PROFILE / AUTH HEADER SECTION -->
+            <div class="relative">
+                <div id="authHeaderLoggedOut" class="hidden">
+                    <button id="headerLoginBtn" class="bg-mint-600 hover:bg-mint-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition shadow-sm">Login</button>
+                </div>
+                <div id="authHeaderLoggedIn" class="hidden items-center gap-3 cursor-pointer select-none" id="profileDropdownTrigger">
+                    <div id="avatarContainer" class="w-10 h-10 rounded-full overflow-hidden bg-mint-100 text-mint-700 font-bold flex items-center justify-center border-2 border-mint-500/20">
+                        <!-- Dynamic Avatar Image or Initials -->
+                    </div>
+                    <div class="hidden md:block text-left">
+                        <p id="headerUserName" class="text-xs font-bold text-gray-800 truncate max-w-[120px]">User</p>
+                        <p id="headerUserEmail" class="text-[10px] text-gray-400 truncate max-w-[140px]">email@example.com</p>
+                    </div>
+                    <i class="fa-solid fa-chevron-down text-xs text-gray-400 ml-1"></i>
+                </div>
+
+                <!-- DROPDOWN MENU -->
+                <div id="profileDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white border border-gray-100 rounded-2xl shadow-xl py-2 z-50">
+                    <a href="dashboard.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition"><i class="fa-solid fa-download mr-2 text-gray-400"></i> My Downloads</a>
+                    <a href="dashboard.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition"><i class="fa-solid fa-bookmark mr-2 text-gray-400"></i> Favorites</a>
+                    <a href="dashboard.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition"><i class="fa-solid fa-gear mr-2 text-gray-400"></i> Settings</a>
+                    <div class="border-t border-gray-100 my-1"></div>
+                    <button id="logoutBtn" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition"><i class="fa-solid fa-right-from-bracket mr-2"></i> Logout</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-grow max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10 flex items-center justify-center">
+
+        <!-- LOADING SKELETON -->
+        <div id="pageLoader" class="w-full bg-white rounded-3xl p-8 border border-gray-100 shadow-sm animate-pulse space-y-6">
+            <div class="flex items-center gap-4">
+                <div class="w-20 h-20 bg-gray-200 rounded-2xl"></div>
+                <div class="space-y-2 flex-1">
+                    <div class="h-6 bg-gray-200 rounded-lg w-1/2"></div>
+                    <div class="h-4 bg-gray-200 rounded-lg w-1/4"></div>
+                </div>
+            </div>
+            <div class="h-40 bg-gray-200 rounded-2xl"></div>
+        </div>
+
+        <!-- AUTH CARD (Shown if not logged in) -->
+        <div id="authCard" class="hidden w-full bg-white rounded-3xl p-8 border border-gray-100 shadow-sm space-y-6 max-w-md mx-auto text-center">
+            <div class="w-16 h-16 bg-mint-50 text-mint-600 rounded-2xl mx-auto flex items-center justify-center text-2xl font-bold">
+                <i class="fa-solid fa-lock"></i>
+            </div>
+            <div class="space-y-1">
+                <h2 class="text-xl font-bold text-gray-900">Authentication Required</h2>
+                <p class="text-sm text-gray-500">Please login or sign up to download this APK securely.</p>
+            </div>
+
+            <!-- Google Login Button -->
+            <button id="googleLoginBtn" class="w-full bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 font-semibold py-3 px-4 rounded-2xl transition flex items-center justify-center gap-3 shadow-sm text-sm">
+                <i class="fa-brands fa-google text-red-500"></i> Continue with Google
+            </button>
+
+            <div class="flex items-center my-4">
+                <div class="flex-grow border-t border-gray-100"></div>
+                <span class="px-3 text-xs text-gray-400 uppercase font-medium">Or email</span>
+                <div class="flex-grow border-t border-gray-100"></div>
+            </div>
+
+            <!-- Email Auth Form -->
+            <form id="emailAuthForm" class="space-y-4 text-left">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Email Address</label>
+                    <input type="email" id="authEmail" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:bg-white focus:border-mint-500 transition" placeholder="name@example.com">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Password</label>
+                    <input type="password" id="authPassword" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:bg-white focus:border-mint-500 transition" placeholder="••••••••">
+                </div>
+                <div id="authErrorMsg" class="text-xs text-red-500 hidden"></div>
+                <div class="flex gap-3 pt-2">
+                    <button type="submit" id="loginSubmitBtn" class="flex-1 bg-mint-600 hover:bg-mint-700 text-white font-semibold py-3 rounded-xl transition text-sm shadow-md shadow-mint-600/20">Login</button>
+                    <button type="button" id="signupSubmitBtn" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-3 rounded-xl transition text-sm">Sign Up</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- DOWNLOAD CARD (Shown if logged in) -->
+        <div id="downloadCard" class="hidden w-full bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-sm space-y-6">
+            <div class="flex flex-col sm:flex-row items-center gap-6 text-center sm:text-left">
+                <img id="appIcon" src="" alt="App Icon" class="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-gray-100 object-cover shadow-md border border-gray-100">
+                <div class="space-y-2 flex-1">
+                    <h1 id="appName" class="text-2xl font-bold text-gray-900 tracking-tight">App Name</h1>
+                    <p class="text-sm text-gray-500 font-medium">Developer: <span id="appDeveloper" class="text-gray-700">Developer</span></p>
+                    <div class="flex flex-wrap justify-center sm:justify-start gap-2 pt-1">
+                        <span class="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-xs font-semibold">Version: <span id="appVersion">1.0</span></span>
+                        <span class="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-xs font-semibold">Size: <span id="appSize">Varies</span></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- COUNTDOWN / PROGRESS BOX -->
+            <div id="countdownBox" class="bg-mint-50 border border-mint-100 rounded-2xl p-6 text-center space-y-3">
+                <div class="w-12 h-12 rounded-full bg-mint-600 text-white flex items-center justify-center mx-auto text-lg font-bold shadow-md shadow-mint-500/20" id="countdownTimer">
+                    5
+                </div>
+                <h3 class="font-bold text-gray-900">Your download is getting ready...</h3>
+                <p class="text-xs text-gray-500">Please wait while we prepare your secure APK package.</p>
+            </div>
+
+            <!-- DOWNLOAD READY BOX (Hidden initially) -->
+            <div id="readyBox" class="hidden bg-mint-50 border border-mint-100 rounded-2xl p-6 text-center space-y-4">
+                <div class="w-12 h-12 rounded-full bg-mint-600 text-white flex items-center justify-center mx-auto text-lg font-bold shadow-md shadow-mint-500/20">
+                    <i class="fa-solid fa-check"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-gray-900 text-lg">Ready to Download</h3>
+                    <p class="text-xs text-gray-500 mt-0.5">Click the button below to start downloading your app.</p>
+                </div>
+                <a id="finalDownloadBtn" href="#" class="inline-flex items-center justify-center gap-2 bg-mint-600 hover:bg-mint-700 text-white font-semibold py-3.5 px-8 rounded-2xl transition shadow-lg shadow-mint-600/20 w-full sm:w-auto">
+                    <i class="fa-solid fa-download"></i> Download APK Now
+                </a>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-white border-t border-gray-100 mt-16 py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-500">
+            <div class="flex items-center gap-2">
+                <div class="w-7 h-7 rounded-lg bg-white flex items-center justify-center overflow-hidden"><img src="assets/palia-android-icon.png" alt="PaliaAPK HUB" class="w-full h-full object-contain"></div>
+                <span class="font-bold text-gray-900">PaliaAPK HUB</span>
+            </div>
+            <p>&copy; 2026 PaliaAPK HUB. All rights reserved. Developer by ShanPalia</p>
+            <div class="flex items-center gap-4">
+                <a href="index.html" class="hover:text-mint-600 transition">Home</a>
+                <a href="dashboard.html" class="hover:text-mint-600 transition">Dashboard</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- CONFIGURATION & COMPLETE APP LOGIC -->
+    <script>
+        // Supabase Configuration
+        const SUPABASE_URL = 'https://ralinnuegsbuvlhwpzln.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhbGlubnVlZ3NidXZsaHdwemxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyOTU2NDIsImV4cCI6MjA5NTg3MTY0Mn0.hIec6UxRx5gzSMTi5oJ3_xXw3d1QKCmKsPF-stBwIFE';
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Firebase Configuration
+       const firebaseConfig = {
+  apiKey: "AIzaSyCn7GUkOaFO4l0x1zM5mwW4hFkW2ISxR10",
+  authDomain: "shanpalia-apk-hub.firebaseapp.com",
+  projectId: "shanpalia-apk-hub",
+  storageBucket: "shanpalia-apk-hub.firebasestorage.app",
+  messagingSenderId: "270953807883",
+  appId: "1:270953807883:web:c900f4409938f16477870e",
+  measurementId: "G-7BMQEGPY8C"
+};
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const auth = firebase.auth();
+
+        // URL Parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const appId = urlParams.get('id');
+
+        // DOM Elements
+        const pageLoader = document.getElementById('pageLoader');
+        const authCard = document.getElementById('authCard');
+        const downloadCard = document.getElementById('downloadCard');
+        const authHeaderLoggedOut = document.getElementById('authHeaderLoggedOut');
+        const authHeaderLoggedIn = document.getElementById('authHeaderLoggedIn');
+        const avatarContainer = document.getElementById('avatarContainer');
+        const headerUserName = document.getElementById('headerUserName');
+        const headerUserEmail = document.getElementById('headerUserEmail');
+        const profileDropdown = document.getElementById('profileDropdown');
+        const profileDropdownTrigger = document.getElementById('authHeaderLoggedIn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const googleLoginBtn = document.getElementById('googleLoginBtn');
+        const emailAuthForm = document.getElementById('emailAuthForm');
+        const authEmailInput = document.getElementById('authEmail');
+        const authPasswordInput = document.getElementById('authPassword');
+        const authErrorMsg = document.getElementById('authErrorMsg');
+        const loginSubmitBtn = document.getElementById('loginSubmitBtn');
+        const signupSubmitBtn = document.getElementById('signupSubmitBtn');
+        const countdownTimer = document.getElementById('countdownTimer');
+        const countdownBox = document.getElementById('countdownBox');
+        const readyBox = document.getElementById('readyBox');
+        const finalDownloadBtn = document.getElementById('finalDownloadBtn');
+        const backBtn = document.getElementById('backBtn');
+
+        let currentAppData = null;
+
+        // Set back button link to app page if ID is present
+        if (appId) {
+            backBtn.href = `app.html?id=${appId}`;
+        }
+
+        // Toggle Profile Dropdown
+        profileDropdownTrigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            profileDropdown.classList.toggle('hidden');
+        });
+        document.addEventListener('click', () => {
+            profileDropdown.classList.add('hidden');
+        });
+
+        // Initialize App & Auth state listener
+        async function init() {
+            if (!appId) {
+                document.body.innerHTML = '<div class="flex items-center justify-center h-screen text-gray-500 font-medium">No App ID specified in URL.</div>';
+                return;
+            }
+
+            try {
+                // Fetch app data from Supabase
+                const { data: app, error } = await _supabase
+                    .from('apps')
+                    .select('*')
+                    .eq('id', appId)
+                    .single();
+
+                if (error || !app) {
+                    document.body.innerHTML = '<div class="flex items-center justify-center h-screen text-gray-500 font-medium">App not found.</div>';
+                    return;
+                }
+
+                currentAppData = app;
+
+                // Populate App Details UI
+                document.getElementById('appIcon').src = app.icon_url || 'https://via.placeholder.com/150';
+                document.getElementById('appName').textContent = app.name || 'App Name';
+                document.getElementById('appDeveloper').textContent = app.developer || 'Unknown';
+                document.getElementById('appVersion').textContent = app.version || '1.0';
+                document.getElementById('appSize').textContent = app.apk_size || 'Varies';
+
+                pageLoader.classList.add('hidden');
+
+                // Listen to Firebase Auth state changes
+                auth.onAuthStateChanged(async (user) => {
+                    if (user) {
+                        // User is logged in
+                        renderUserProfile(user);
+                        authCard.classList.add('hidden');
+                        authHeaderLoggedOut.classList.add('hidden');
+                        authHeaderLoggedIn.classList.remove('hidden');
+                        authHeaderLoggedIn.classList.add('flex');
+                        downloadCard.classList.remove('hidden');
+
+                        // Start download countdown process
+                        startDownloadProcess(app);
+                    } else {
+                        // User is not logged in
+                        authHeaderLoggedIn.classList.add('hidden');
+                        authHeaderLoggedIn.classList.remove('flex');
+                        authHeaderLoggedOut.classList.remove('hidden');
+                        downloadCard.classList.add('hidden');
+                        authCard.classList.remove('hidden');
+                    }
+                });
+
+            } catch (err) {
+                console.error('Initialization error:', err);
+            }
+        }
+
+        // Render User Avatar and Details in Header
+        function renderUserProfile(user) {
+            const email = user.email || 'user@example.com';
+            const displayName = user.displayName || email.split('@')[0];
+            const photoURL = user.photoURL;
+
+            headerUserName.textContent = displayName;
+            headerUserEmail.textContent = email;
+
+            if (photoURL) {
+                avatarContainer.innerHTML = `<img src="${photoURL}" alt="Avatar" class="w-full h-full object-cover">`;
+            } else {
+                // Generate initials from email username (e.g. shanpalia786@gmail.com -> SP)
+                const usernamePart = email.split('@')[0];
+                let initials = 'U';
+                const letters = usernamePart.replace(/[^a-zA-Z]/g, '');
+                if (letters.length >= 2) {
+                    initials = letters.substring(0, 2).toUpperCase();
+                } else if (usernamePart.length >= 2) {
+                    initials = usernamePart.substring(0, 2).toUpperCase();
+                } else if (usernamePart.length === 1) {
+                    initials = usernamePart.toUpperCase();
+                }
+                avatarContainer.innerHTML = `<span class="text-xs font-bold text-mint-700">${initials}</span>`;
+            }
+        }
+
+        // Handle Download Countdown & Counter Update
+        let countdownStarted = false;
+        function startDownloadProcess(app) {
+            if (countdownStarted) return;
+            countdownStarted = true;
+
+            let timeLeft = 5;
+            countdownTimer.textContent = timeLeft;
+            countdownBox.classList.remove('hidden');
+            readyBox.classList.add('hidden');
+
+            const timerInterval = setInterval(async () => {
+                timeLeft--;
+                countdownTimer.textContent = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    countdownBox.classList.add('hidden');
+                    readyBox.classList.remove('hidden');
+
+                    // Increment downloads count in Supabase safely
+                    try {
+                        const newDownloads = (app.downloads || 0) + 1;
+                        await _supabase
+                            .from('apps')
+                            .update({ downloads: newDownloads })
+                            .eq('id', app.id);
+                    } catch (e) {
+                        console.error('Failed to update download count:', e);
+                    }
+
+                    // Setup clean custom download filename <App Name>.apk
+                    const safeName = (app.name || 'App').replace(/[^a-zA-Z0-9 _-]/g, '').trim();
+                    const filename = `${safeName}.apk`;
+
+                    finalDownloadBtn.onclick = async (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (!app.apk_url) {
+                            alert('APK download URL is invalid.');
+                            return;
+                        }
+                        try {
+                            const response = await fetch(app.apk_url, {
+                                method: 'GET',
+                                mode: 'cors',
+                                credentials: 'omit',
+                                redirect: 'follow',
+                                cache: 'no-store'
+                            });
+                            if (!response.ok) throw new Error('HTTP ' + response.status);
+                            const blob = await response.blob();
+                            if (!blob.size) throw new Error('Empty APK response');
+                            const blobUrl = URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = blobUrl;
+                            a.download = filename;
+                            a.rel = 'noopener';
+                            document.body.appendChild(a);
+                            a.click();
+                            a.remove();
+                            setTimeout(() => URL.revokeObjectURL(blobUrl), 120000);
+                        } catch (err) {
+                            console.error('APK download failed without redirect:', err);
+                            alert('APK download could not start. PaliaAPK HUB was not redirected.');
+                        }
+                    };
+                }
+            }, 1000);
+        }
+
+        // Firebase Google Login
+        googleLoginBtn.addEventListener('click', async () => {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            try {
+                authErrorMsg.classList.add('hidden');
+                await auth.signInWithPopup(provider);
+            } catch (error) {
+                authErrorMsg.textContent = error.message;
+                authErrorMsg.classList.remove('hidden');
+            }
+        });
+
+        // Email Login / Signup Handlers
+        loginSubmitBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const email = authEmailInput.value.trim();
+            const password = authPasswordInput.value.trim();
+            if (!email || !password) {
+                authErrorMsg.textContent = 'Please enter both email and password.';
+                authErrorMsg.classList.remove('hidden');
+                return;
+            }
+            try {
+                authErrorMsg.classList.add('hidden');
+                await auth.signInWithEmailAndPassword(email, password);
+            } catch (error) {
+                authErrorMsg.textContent = error.message;
+                authErrorMsg.classList.remove('hidden');
+            }
+        });
+
+        signupSubmitBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const email = authEmailInput.value.trim();
+            const password = authPasswordInput.value.trim();
+            if (!email || !password) {
+                authErrorMsg.textContent = 'Please enter both email and password.';
+                authErrorMsg.classList.remove('hidden');
+                return;
+            }
+            try {
+                authErrorMsg.classList.add('hidden');
+                await auth.createUserWithEmailAndPassword(email, password);
+            } catch (error) {
+                authErrorMsg.textContent = error.message;
+                authErrorMsg.classList.remove('hidden');
+            }
+        });
+
+        // Header Login Button Click action to focus auth card
+        document.getElementById('headerLoginBtn')?.addEventListener('click', () => {
+            authCard.scrollIntoView({ behavior: 'smooth' });
+        });
+
+        // Logout Action
+        logoutBtn.addEventListener('click', async () => {
+            try {
+                await auth.signOut();
+                countdownStarted = false;
+                window.location.reload();
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
+        });
+
+        // Run initialization on load
+        init();
+    </script>
+</body>
+</html>

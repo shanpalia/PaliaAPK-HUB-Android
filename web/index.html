@@ -1,78 +1,1673 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full scroll-smooth">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#16a34a">
-<script src="capacitor.js"></script>
-<title>PaliaAPK HUB | Premium Android Store</title>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="native-google-auth.js"></script>
-<link rel="stylesheet" href="styles.css">
+    <!-- PaliaAPK HUB social sharing preview -->
+    <meta property="og:site_name" content="PaliaAPK HUB">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="PaliaAPK HUB | Premium Android Store & Verified APKs">
+    <meta property="og:description" content="Discover apps, games and verified Android APKs on PaliaAPK HUB.">
+    <meta property="og:image" content="/WebsitePaliaAPK_V.2/assets/paliaapk-hub-share.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="PaliaAPK HUB | Premium Android Store & Verified APKs">
+    <meta name="twitter:description" content="Discover apps, games and verified Android APKs on PaliaAPK HUB.">
+    <meta name="twitter:image" content="/WebsitePaliaAPK_V.2/assets/paliaapk-hub-share.png">
+
+
+<script id="paliaDarkModeController">
+(function () {
+  const KEY = 'paliaapk_theme';
+
+  function applyTheme(theme) {
+    const root = document.documentElement;
+    const dark = theme === 'dark';
+    root.classList.toggle('dark', dark);
+    root.style.colorScheme = dark ? 'dark' : 'light';
+
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', dark ? '#111827' : '#16a34a');
+  }
+
+  function getTheme() {
+    const saved = localStorage.getItem(KEY);
+    if (saved === 'dark' || saved === 'light') return saved;
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+      ? 'dark' : 'light';
+  }
+
+  applyTheme(getTheme());
+
+  document.addEventListener('DOMContentLoaded', function () {
+    applyTheme(getTheme());
+
+    const btn = document.getElementById('darkModeToggle');
+    if (!btn || btn.dataset.darkModeBound === '1') return;
+
+    btn.dataset.darkModeBound = '1';
+    btn.addEventListener('click', function (event) {
+      event.preventDefault();
+      event.stopPropagation();
+
+      const next = document.documentElement.classList.contains('dark')
+        ? 'light' : 'dark';
+
+      localStorage.setItem(KEY, next);
+      applyTheme(next);
+    });
+  });
+})();
+</script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PaliaAPK HUB | Premium Android Store & Verified APKs</title>
+    
+    <!-- SEO & Performance Meta Tags -->
+    <meta name="description" content="Download verified, secure, and latest Android APKs, games, and tools on PaliaAPK HUB. Fast downloads, 100% safe, and zero malware guaranteed.">
+    <meta name="theme-color" content="#16a34a">
+    
+    <!-- Preload Critical Assets -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Font Inter & FontAwesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        mint: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            200: '#bbf7d0',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'soft': '0 10px 30px rgba(0,0,0,.06)',
+                        'hover-card': '0 20px 40px rgba(22, 163, 74, 0.12)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Swiper CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
+
+    <!-- Firebase App & Auth Compat CDN -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        :root {
+            --primary: #16a34a;
+            --primary-light: #22c55e;
+            --bg: #ffffff;
+            --card: #ffffff;
+            --text: #0f172a;
+            --muted: #64748b;
+            --border: #e5e7eb;
+        }
+
+        .dark {
+            --bg: #0b0f19;
+            --card: #131b2e;
+            --text: #f8fafc;
+            --muted: #94a3b8;
+            --border: #1e293b;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', system-ui, sans-serif;
+            text-rendering: optimizeLegibility;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+        }
+        .dark .glass {
+            background: rgba(19, 27, 46, 0.92);
+            border-color: #1e293b !important;
+        }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, #16a34a, #22c55e);
+        }
+
+        .app-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,.04);
+        }
+
+        .app-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(22, 163, 74, 0.1);
+            border-color: #bbf7d0;
+        }
+
+        .hero-card {
+            background: var(--card);
+            border-radius: 28px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            border: 1px solid var(--border);
+        }
+
+        .download-btn {
+            background: #16a34a;
+            color: #fff;
+            border-radius: 12px;
+            padding: 10px 16px;
+            font-weight: 700;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(22, 163, 74, 0.2);
+        }
+        .download-btn:hover {
+            background: #15803d;
+        }
+
+        .hero-img-contain {
+            object-fit: contain;
+            background-color: rgba(0,0,0,0.02);
+        }
+
+        /* Play Store Category Card Styles & Ripple Effect */
+        .category-card {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            flex-shrink: 0;
+            width: 130px;
+        }
+        .category-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(22, 163, 74, 0.12);
+            border-color: #bbf7d0;
+        }
+        .category-ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            transform: scale(0);
+            animation: category-ripple-anim 0.6s linear;
+            pointer-events: none;
+        }
+        @keyframes category-ripple-anim {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+    </style>
+
+<style id="paliaMobileAppPromptCSS">
+#paliaMobileAppPrompt{position:fixed;left:12px;right:12px;bottom:12px;z-index:9998;display:none}
+#paliaMobileAppPrompt .pm-card{background:#fff;border:1px solid #e5e7eb;border-radius:20px;box-shadow:0 18px 55px rgba(0,0,0,.20);padding:12px}
+.dark #paliaMobileAppPrompt .pm-card{background:#111827;border-color:#374151}
+</style>
 </head>
-<body>
-<header class="site-header">
-  <div class="header-inner">
-    <button id="menuBtn" class="icon-btn" aria-label="Menu"><span>☰</span></button>
-    <div id="adminTriggerLogo" class="brand">
-      <div class="brand-logo"><img src="assets/icon.png" alt="PaliaAPK HUB"></div>
-      <div><div class="brand-name">PaliaAPK <span>HUB</span></div><div class="brand-sub">Android Store</div></div>
-    </div>
-    <div class="header-search"><span>⌕</span><input id="search" autocomplete="off" placeholder="Search apps, games, tools..."><button id="clearSearch" class="search-clear hidden" type="button">×</button><div id="searchSuggestions" class="search-suggestions hidden"></div></div>
-    <div class="header-actions">
-      <button id="updatesBtn" class="updates-btn">↻ <span>Updates</span></button>
-      <button id="authBtn" class="login-btn">Login</button>
-      <div id="profileBox" class="profile-box hidden"><button id="profileBtn" class="profile-btn">U</button><button id="logoutBtn" class="logout-btn hidden">Logout</button></div>
-    </div>
-  </div>
-</header>
+<body class="flex flex-col min-h-full selection:bg-mint-100 selection:text-mint-700">
 
-<div id="appUpdateBanner" class="app-update-banner hidden"><div><b id="appUpdateTitle">Update available</b><small id="appUpdateText">A new version of PaliaAPK HUB is available.</small></div><button id="appUpdateBtn">Update</button></div><main class="container">
-  <section class="hero">
-    <div class="hero-copy">
-      <div class="eyebrow">PREMIUM ANDROID STORE</div>
-      <h1>Discover apps you actually want.</h1>
-      <p>Browse real apps published on PaliaAPK HUB and download their APK files directly.</p>
-      <div class="hero-actions"><button id="heroExplore" class="primary-btn">Explore Apps</button><button id="heroUpdates" class="secondary-btn">Latest Updates</button></div>
-    </div>
-    <div class="hero-art"><img src="assets/home-half-android-large.svg" alt=""></div>
-  </section>
+    <!-- Header & Navigation -->
+    <nav class="glass sticky top-0 z-50 border-b border-gray-200/80 py-3 transition-all duration-300">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
+            
+            <!-- Logo Brand with Hidden Admin Trigger (5 clicks in 2 seconds) -->
+            <div id="adminTriggerLogo" class="flex items-center gap-3 group focus:outline-none cursor-pointer" role="button" aria-label="PaliaAPK HUB Home">
+                <div class="bg-white w-11 h-11 rounded-2xl flex items-center justify-center overflow-hidden shadow-lg shadow-mint-600/20 group-hover:scale-105 transition-transform"><img src="assets/palia-android-icon.png" alt="PaliaAPK HUB" class="w-full h-full object-contain"></div>
+                <div>
+                    <h1 class="text-lg font-black tracking-tight text-gray-900 dark:text-white">
+                        PaliaAPK <span class="text-mint-600">HUB</span>
+                    </h1>
+                    <p class="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Android Store</p>
+                </div>
+            </div>
 
-  <section class="section">
-    <div class="section-title"><h2>Categories</h2><button id="allCategories">View all</button></div>
-    <div class="categories" id="categories">
-      <button class="category active" data-category="All">All Apps</button>
-      <button class="category" data-category="Social">Social</button>
-      <button class="category" data-category="AI">AI</button>
-      <button class="category" data-category="Tools">Tools</button>
-      <button class="category" data-category="Games">Games</button>
-      <button class="category" data-category="Utilities">Utilities</button>
-    </div>
-  </section>
+            <!-- Search Bar with Autocomplete Dropdown -->
+            <div class="hidden md:flex flex-1 max-w-lg mx-4 relative">
+                <div class="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full w-full px-4 py-2.5 flex items-center relative">
+                    <i class="fa-solid fa-magnifying-glass text-gray-400 text-sm"></i>
+                    <input type="text" id="searchInput" placeholder="Search apps, games, tools..." class="bg-transparent outline-none w-full ml-3 text-sm text-gray-800 dark:text-gray-200 placeholder-gray-400">
+                    <div id="searchAutocomplete" class="absolute left-0 right-0 top-full mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-xl hidden z-50 max-h-80 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-700"></div>
+                </div>
+            </div>
 
-  <section class="section">
-    <div class="section-title"><div><h2>Latest Apps</h2><p id="status">Loading apps...</p></div><button id="refresh" class="outline-btn">Refresh</button></div>
-    <div id="appGrid" class="app-grid"></div>
-  </section>
-</main>
+            <!-- Right Actions & Controls: Notifications, Dark Mode, Profile/Login -->
+            <div class="flex items-center gap-2 sm:gap-3 shrink-0 flex-nowrap">
+                
+                <!-- Notification Dropdown -->
+                <div class="relative">
+                    <button id="notificationToggleBtn" class="relative w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-mint-50 text-gray-600 dark:text-gray-300 transition flex items-center justify-center border border-gray-200 dark:border-gray-700">
+                        <i class="fa-solid fa-bell text-sm"></i>
+                        <span id="notificationBadge" class="absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-red-500 text-white text-[9px] font-bold items-center justify-center shadow hidden">0</span>
+                    </button>
+                    <div id="notificationDropdown" class="absolute right-0 top-full mt-2 w-72 sm:w-80 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-xl hidden z-50 p-3">
+                        <div class="flex items-center justify-between pb-2 mb-2 border-b border-gray-100 dark:border-gray-700">
+                            <h4 class="font-bold text-xs text-gray-900 dark:text-white uppercase tracking-wider">Notifications</h4>
+                            <span class="text-[10px] text-mint-600 dark:text-mint-400 font-bold cursor-pointer hover:underline" onclick="markNotificationsRead()">Mark read</span>
+                        </div>
+                        <div class="space-y-2 text-xs" id="notificationList"><div class="p-4 text-center text-xs text-gray-500 dark:text-gray-400">No notifications</div></div>
+                    </div>
+                </div>
 
-<div id="authModal" class="modal hidden"><div class="modal-card"><button id="closeAuth" class="close-btn">×</button><div class="auth-brand"><img src="assets/icon.png" alt=""><div><b>PaliaAPK HUB</b><small>Premium Android Store</small></div></div><h2 id="authHeading">Sign in to continue</h2><p id="authSub">Login is required before downloading an APK.</p><button id="googleLogin" class="google-btn"><span class="google-g">G</span> Continue with Google</button><div class="auth-divider"><span>OR</span></div><input id="authName" class="hidden" type="text" autocomplete="name" placeholder="Your name"><input id="authEmail" type="email" autocomplete="email" placeholder="Email address"><input id="authPassword" type="password" autocomplete="current-password" placeholder="Password"><label class="remember-row"><input id="rememberMe" type="checkbox"> Remember Me</label><button id="forgotPassword" class="forgot-btn" type="button">Forgot Password?</button><div class="auth-row"><button id="login" class="primary-btn">Login</button><button id="signup" class="secondary-btn">Sign Up</button></div><div id="authError" class="error"></div></div></div>
+                <!-- Dark Mode Toggle -->
+                <button id="darkModeToggle" class="w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-mint-50 text-gray-600 dark:text-gray-300 transition flex items-center justify-center border border-gray-200 dark:border-gray-700">
+                    <i class="fa-solid fa-moon dark:hidden"></i>
+                    <i class="fa-solid fa-sun hidden dark:block text-amber-400"></i>
+                </button>
+                
+                <!-- Authentication & Profile Avatar Dropdown -->
+                <div class="relative" id="userArea">
+                    <button id="loginBtn" class="px-4 h-10 rounded-xl bg-mint-600 hover:bg-mint-700 text-white font-bold text-xs transition shadow-md shadow-mint-600/20 flex items-center gap-2">
+                        <i class="fa-solid fa-user"></i> Login
+                    </button>
+                    
+                    <div id="profileBox" class="hidden relative">
+                        <div id="profileAvatarBtn" class="flex items-center gap-2 cursor-pointer p-1 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800">
+                            <div id="profileAvatar" class="w-9 h-9 rounded-lg gradient-bg text-white flex items-center justify-center font-bold text-xs shadow">SP</div>
+                        </div>
+                        
+                        <!-- Profile Dropdown Menu -->
+                        <div id="profileDropdown" class="absolute right-0 top-full mt-2 w-52 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-xl hidden z-50 p-2 space-y-1">
+                            <a href="profile.html" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-200 hover:bg-mint-50 dark:hover:bg-mint-900/30 hover:text-mint-600 transition">
+    <i class="fa-solid fa-user text-mint-600"></i> My Profile
+</a>
+                    <a id="profileDropdownUpdates" href="profile.html#updates"
+                       class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-green-50 transition text-sm font-semibold text-gray-700">
+                        <i class="fa-solid fa-arrows-rotate text-green-600 w-4"></i>
+                        <span>App Updates</span>
+                    </a>
+                            <a href="downloads.html" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-200 hover:bg-mint-50 dark:hover:bg-mint-900/30 hover:text-mint-600 transition">
+                                <i class="fa-solid fa-download text-mint-600"></i> Downloads
+                            </a>
+                            <a href="favorites.html" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-200 hover:bg-mint-50 dark:hover:bg-mint-900/30 hover:text-mint-600 transition">
+                                <i class="fa-solid fa-heart text-mint-600"></i> Favorites
+                            </a>
+                            <a href="settings.html" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-200 hover:bg-mint-50 dark:hover:bg-mint-900/30 hover:text-mint-600 transition">
+                                <i class="fa-solid fa-gear text-mint-600"></i> Settings
+                            </a>
+                            <div class="border-t border-gray-100 dark:border-gray-700 pt-1 mt-1">
+                                <button id="logoutBtn" class="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition text-left">
+                                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
 
-<div id="downloadToast" class="download-toast hidden">
-  <div class="toast-head"><strong id="downloadName">Downloading APK</strong><span id="progressText">0%</span></div>
-  <div class="progress"><div id="progressBar"></div></div>
-  <div class="toast-info"><span id="downloadedText">0 MB</span><span id="speedText">Connecting…</span></div><div class="toast-foot">Download stays inside PaliaAPK HUB</div>
+    <!-- Main Content Area -->
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-grow">
+        
+        <!-- Hero Slider Section -->
+        <section class="hero-card relative mb-8">
+            <div class="swiper heroSwiper w-full">
+                <div class="swiper-wrapper" id="featured-slider">
+                    <!-- Dynamic Slider Items populated from Supabase -->
+                </div>
+                <div class="swiper-pagination"></div>
+                <div class="swiper-button-next text-mint-600"></div>
+                <div class="swiper-button-prev text-mint-600"></div>
+            </div>
+        </section>
+
+        <!-- Categories Section (Placed directly below Hero Slider and above Apps) -->
+        <section id="categoriesSection" class="mb-12"" id="categoriesSection">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-black tracking-tight text-gray-900 dark:text-white uppercase">Categories</h3>
+                
+                <!-- Desktop & Tablet Navigation Arrows -->
+                <div class="hidden sm:flex items-center gap-2">
+                    <button id="categoryPrevBtn" onclick="scrollCategories(-1)" class="w-11 h-11 rounded-full bg-white dark:bg-gray-800 text-mint-600 dark:text-mint-400 shadow-md border border-gray-200 dark:border-gray-700 flex items-center justify-center hover:bg-mint-600 hover:text-white transition-all transform hover:scale-105">
+                        <i class="fa-solid fa-chevron-left text-sm"></i>
+                    </button>
+                    <button id="categoryNextBtn" onclick="scrollCategories(1)" class="w-11 h-11 rounded-full bg-white dark:bg-gray-800 text-mint-600 dark:text-mint-400 shadow-md border border-gray-200 dark:border-gray-700 flex items-center justify-center hover:bg-mint-600 hover:text-white transition-all transform hover:scale-105">
+                        <i class="fa-solid fa-chevron-right text-sm"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Horizontal Scrolling Categories Container -->
+            <div id="categoriesContainer"
+     class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
 </div>
 
-<nav class="bottom-nav">
-  <button class="active">⌂<small>Home</small></button>
-  <button id="bottomCategories">▦<small>Categories</small></button>
-  <button id="bottomSearch">⌕<small>Search</small></button>
-  <button id="bottomDownloads">↓<small>Downloads</small></button>
-  <button id="bottomProfile">◉<small>Profile</small></button>
-</nav>
-<script src="app.js"></script>
+            <!-- View All Categories CTA Button -->
+            <div class="mt-6 text-center">
+               <button
+    id="viewAllCategoriesBtn"
+    onclick="toggleAllCategories()"
+    class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-mint-50 hover:bg-mint-100 text-mint-700 font-bold text-xs transition border border-mint-200 shadow-sm"
+>
+    <span id="viewAllCategoriesText">View All Categories</span>
+    <i id="viewAllCategoriesIcon" class="fa-solid fa-chevron-down text-[10px]"></i>
+</button>
+            </div>
+        </section>
+
+        <!-- Featured Collections Section -->
+        <section id="topChartsSection" class="mb-12">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-black tracking-tight text-gray-900 dark:text-white uppercase">Featured Collections</h3>
+            </div>
+            <div id="featuredCollectionsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Injected via Supabase data -->
+            </div>
+        </section>
+
+        <!-- Top Charts Section -->
+        <section class="mb-12">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-black tracking-tight text-gray-900 dark:text-white uppercase">Top Charts</h3>
+            </div>
+            <div id="topChartsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Injected via Supabase data -->
+            </div>
+        </section>
+
+        <!-- Recently Updated Section -->
+        <section class="mb-12">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-black tracking-tight text-gray-900 dark:text-white uppercase">Recently Updated</h3>
+            </div>
+            <div id="recentlyUpdatedGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                <!-- Injected via Supabase data -->
+            </div>
+        </section>
+
+        <!-- Apps Listing Section (Filtered by Category / Search) -->
+        <section class="mb-12">
+            <div class="flex items-center justify-between mb-6">
+                <h3 id="sectionHeading" class="text-xl font-black tracking-tight text-gray-900 dark:text-white uppercase">All Apps</h3>
+                <div class="flex items-center gap-2">
+                    <button onclick="triggerShareWebsite()" class="px-3.5 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-mint-50 dark:hover:bg-mint-900/30 text-gray-700 dark:text-gray-300 hover:text-mint-600 font-bold text-xs transition flex items-center gap-2 border border-gray-200 dark:border-gray-700">
+                        <i class="fa-solid fa-share-nodes"></i> Share Store
+                    </button>
+                </div>
+            </div>
+            <div id="appsGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                <!-- Dynamic App Cards -->
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 py-12 mt-12">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-8 mb-8">
+                <div>
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="bg-white w-9 h-9 rounded-xl flex items-center justify-center overflow-hidden"><img src="assets/palia-android-icon.png" alt="PaliaAPK HUB" class="w-full h-full object-contain"></div>
+                        <span class="font-black text-base text-gray-900 dark:text-white">PaliaAPK HUB</span>
+                    </div>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">Your ultimate destination for verified, secure, and fast Android app downloads.</p>
+                    <div class="flex items-center gap-3 text-gray-600 dark:text-gray-300">
+                        <a href="https://t.me/" target="_blank" class="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center hover:bg-mint-600 hover:text-white transition" aria-label="Telegram"><i class="fa-brands fa-telegram text-xs"></i></a>
+                        <a href="https://github.com/ShanPalia" target="_blank" class="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center hover:bg-mint-600 hover:text-white transition" aria-label="GitHub"><i class="fa-brands fa-github text-xs"></i></a>
+                        <a href="https://facebook.com/" target="_blank" class="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center hover:bg-mint-600 hover:text-white transition" aria-label="Facebook"><i class="fa-brands fa-facebook text-xs"></i></a>
+                        <a href="https://instagram.com/" target="_blank" class="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center hover:bg-mint-600 hover:text-white transition" aria-label="Instagram"><i class="fa-brands fa-instagram text-xs"></i></a>
+                        <a href="https://youtube.com/" target="_blank" class="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center hover:bg-mint-600 hover:text-white transition" aria-label="YouTube"><i class="fa-brands fa-youtube text-xs"></i></a>
+                        <a href="https://x.com/" target="_blank" class="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center hover:bg-mint-600 hover:text-white transition" aria-label="X"><i class="fa-brands fa-x-twitter text-xs"></i></a>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="font-bold text-xs uppercase tracking-wider text-gray-900 dark:text-white mb-3">Quick Links</h4>
+                    <ul class="space-y-2 text-xs text-gray-500 dark:text-gray-400">
+                        <li>
+    <a href="index.html" class="hover:text-mint-600 transition">
+        Home
+    </a>
+</li>
+
+<li>
+    <a href="index.html#categoriesSection" class="hover:text-mint-600 transition">
+        Categories
+    </a>
+</li>
+
+<li>
+    <a href="index.html#topChartsSection" class="hover:text-mint-600 transition">
+        Top Charts
+    </a>
+</li>
+
+<li>
+    <a href="dmca.html" class="hover:text-mint-600 transition">
+        DMCA Policy
+    </a>
+</li>
+                </div>
+                <div>
+                    <h4 class="font-bold text-xs uppercase tracking-wider text-gray-900 dark:text-white mb-3">Legal & Safety</h4>
+                    <ul class="space-y-2 text-xs text-gray-500 dark:text-gray-400">
+                        <li><a href="privacy.html" class="hover:text-mint-600 transition">Privacy Policy</a></li>
+                        <li><a href="terms.html" class="hover:text-mint-600 transition">Terms of Service</a></li>
+                        <li><a href="security.html" class="hover:text-mint-600 transition">Security Check</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold text-xs uppercase tracking-wider text-gray-900 dark:text-white mb-3">📤 Share Website</h4>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">Share PaliaAPK HUB with your friends and help them discover safe and verified Android APKs.</p>
+                    <button onclick="triggerShareWebsite()" class="w-full bg-mint-600 hover:bg-mint-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition shadow-md shadow-mint-600/20 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-share-nodes"></i> Share Website
+                    </button>
+                </div>
+                <div>
+                    <h4 class="font-bold text-xs uppercase tracking-wider text-gray-900 dark:text-white mb-3">Newsletter</h4>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">Subscribe for latest verified updates & app releases.</p>
+                    <form onsubmit="event.preventDefault(); alert('Subscribed successfully!');" class="flex gap-2">
+                        <input type="email" placeholder="Your email..." required class="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-3 py-2 rounded-xl text-xs w-full outline-none text-gray-800 dark:text-gray-200">
+                        <button type="submit" class="bg-mint-600 text-white px-3 py-2 rounded-xl text-xs font-bold hover:bg-mint-700 transition">Join</button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-100 dark:border-gray-800 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-400">
+                <p>&copy; 2026 PaliaAPK HUB. All rights reserved. • Developed with ❤️ by <a href="https://github.com/ShanPalia" target="_blank" class="text-mint-600 dark:text-mint-400 font-bold hover:underline">ShanPalia</a></p>
+                <p class="flex items-center gap-1.5 font-medium">
+                    <span>👨‍💻 Developed by</span>
+                    <a href="https://github.com/ShanPalia" target="_blank" class="text-mint-600 dark:text-mint-400 font-bold hover:underline">ShanPalia</a>
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Swiper JS -->
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
+    <!-- Main Logic Script -->
+    <script type="module">
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyCn7GUkOaFO4l0x1zM5mwW4hFkW2ISxR10",
+            authDomain: "shanpalia-apk-hub.firebaseapp.com",
+            projectId: "shanpalia-apk-hub",
+            storageBucket: "shanpalia-apk-hub.firebasestorage.app",
+            messagingSenderId: "270953807883",
+            appId: "1:270953807883:web:c900f4409938f16477870e"
+        };
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+
+        // Supabase Client
+        const SUPABASE_URL = 'https://ralinnuegsbuvlhwpzln.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhbGlubnVlZ3NidXZsaHdwemxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyOTU2NDIsImV4cCI6MjA5NTg3MTY0Mn0.hIec6UxRx5gzSMTi5oJ3_xXw3d1QKCmKsPF-stBwIFE';
+        const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+        window.paliaSupabaseClient = supabaseClient;
+
+        window.allAppsCache = [];
+        window.currentCategory = 'All';
+        window.currentSearchQuery = '';
+
+        // Exact 10 requested categories + All
+      const defaultCategoriesConfig = [
+    { name: 'All', icon: 'fa-fire' },
+    { name: 'AI', icon: 'fa-robot' },
+    { name: 'Social', icon: 'fa-comments' },
+    { name: 'Games', icon: 'fa-gamepad' },
+    { name: 'Tools', icon: 'fa-screwdriver-wrench' },
+    { name: 'Music', icon: 'fa-music' },
+    { name: 'Video', icon: 'fa-play' },
+    { name: 'Photography', icon: 'fa-camera' },
+    { name: 'Education', icon: 'fa-graduation-cap' },
+    { name: 'Business', icon: 'fa-briefcase' },
+
+    { name: 'Finance', icon: 'fa-wallet' },
+    { name: 'News', icon: 'fa-newspaper' },
+    { name: 'Entertainment', icon: 'fa-film' },
+    { name: 'Shopping', icon: 'fa-cart-shopping' },
+    { name: 'Travel', icon: 'fa-plane' },
+    { name: 'Food & Drink', icon: 'fa-utensils' },
+    { name: 'Lifestyle', icon: 'fa-heart' },
+    { name: 'Productivity', icon: 'fa-list-check' },
+    { name: 'Communication', icon: 'fa-message' },
+    { name: 'Security', icon: 'fa-shield-halved' },
+
+    { name: 'Weather', icon: 'fa-cloud-sun' },
+    { name: 'Sports', icon: 'fa-futbol' },
+    { name: 'Books', icon: 'fa-book' },
+    { name: 'Kids', icon: 'fa-child' },
+    { name: 'Health & Fitness', icon: 'fa-dumbbell' },
+    { name: 'Maps & Navigation', icon: 'fa-map-location-dot' },
+    { name: 'Photo Editing', icon: 'fa-image' },
+    { name: 'Video Editing', icon: 'fa-video' },
+    { name: 'Developer', icon: 'fa-code' },
+    { name: 'Internet', icon: 'fa-globe' },
+
+    { name: 'Browser', icon: 'fa-compass' },
+    { name: 'File Manager', icon: 'fa-folder-open' },
+    { name: 'Cloud Storage', icon: 'fa-cloud' },
+    { name: 'VPN', icon: 'fa-user-shield' },
+    { name: 'Launcher', icon: 'fa-mobile-screen-button' },
+    { name: 'Customization', icon: 'fa-palette' },
+    { name: 'Wallpaper', icon: 'fa-image' },
+    { name: 'Keyboard', icon: 'fa-keyboard' },
+    { name: 'Messaging', icon: 'fa-comment-dots' },
+    { name: 'Calling', icon: 'fa-phone' },
+
+    { name: 'Health', icon: 'fa-heart-pulse' },
+    { name: 'Fitness', icon: 'fa-person-running' },
+    { name: 'Utilities', icon: 'fa-toolbox' },
+    { name: 'OCR', icon: 'fa-file-lines' },
+    { name: 'Translation', icon: 'fa-language' },
+    { name: 'Audio', icon: 'fa-headphones' },
+    { name: 'Streaming', icon: 'fa-tv' },
+    { name: 'Remote Control', icon: 'fa-computer-mouse' },
+    { name: 'Developer Tools', icon: 'fa-terminal' },
+    { name: 'Other', icon: 'fa-layer-group' }
+];
+
+
+// ===============================
+// SITE VISIT TRACKING
+// ===============================
+
+async function recordSiteVisit() {
+
+    if (!supabaseClient) {
+        console.error("Supabase is not configured.");
+        return;
+    }
+
+    try {
+
+        const { error } = await supabaseClient
+            .from("site_visits")
+            .insert({
+                page: window.location.pathname
+            });
+
+        if (error) {
+            console.error("Site Visit Error:", error);
+            return;
+        }
+
+        console.log("Site visit recorded successfully.");
+
+    } catch (error) {
+
+        console.error("Site Visit Tracking Error:", error);
+
+    }
+}
+
+recordSiteVisit();
+
+        // Hidden Admin Trigger Logic: 5 clicks on logo within 2 seconds
+        let logoClickCount = 0;
+        let logoClickTimer = null;
+        const adminTriggerLogo = document.getElementById('adminTriggerLogo');
+        adminTriggerLogo?.addEventListener('click', () => {
+            logoClickCount++;
+            if (logoClickCount === 1) {
+                logoClickTimer = setTimeout(() => {
+                    logoClickCount = 0;
+                }, 2000);
+            }
+            if (logoClickCount >= 5) {
+                clearTimeout(logoClickTimer);
+                logoClickCount = 0;
+                window.location.href = 'admin.html';
+            }
+        });
+
+        // Real notifications: read ONLY from public.app_notifications.
+        // No hard-coded/fake notifications and no is_read column is assumed.
+        const notificationToggleBtn = document.getElementById('notificationToggleBtn');
+        const notificationDropdown = document.getElementById('notificationDropdown');
+        const notificationBadge = document.getElementById('notificationBadge');
+        const notificationList = document.getElementById('notificationList');
+        const NOTIFICATION_READ_KEY = 'paliaapk_read_notification_ids_v1';
+
+        function getReadNotificationIds(){
+            try { return JSON.parse(localStorage.getItem(NOTIFICATION_READ_KEY) || '[]'); }
+            catch(e){ return []; }
+        }
+        function saveReadNotificationIds(ids){
+            try { localStorage.setItem(NOTIFICATION_READ_KEY, JSON.stringify(ids.slice(-200))); } catch(e){}
+        }
+        function notificationTime(v){
+            if(!v) return '';
+            const d=new Date(v);
+            return isNaN(d.getTime()) ? '' : d.toLocaleString([], {dateStyle:'medium',timeStyle:'short'});
+        }
+        function escapeNotificationText(v){
+            return String(v ?? '').replace(/[&<>"']/g, function(c){
+                return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];
+            });
+        }
+
+        async function loadRealNotifications(){
+            if(!notificationList || !supabaseClient) return;
+            try{
+                const {data, error} = await supabaseClient
+                    .from('app_notifications')
+                    .select('id,app_id,type,title,message,previous_version,new_version,created_at')
+                    .order('created_at', {ascending:false})
+                    .limit(30);
+
+                if(error) throw error;
+
+                const rows = Array.isArray(data) ? data : [];
+                const readIds = getReadNotificationIds();
+                const unread = rows.filter(n => !readIds.includes(n.id));
+
+                notificationBadge.textContent = String(unread.length);
+                notificationBadge.classList.toggle('hidden', unread.length === 0);
+                notificationBadge.style.display = unread.length ? 'flex' : 'none';
+
+                if(!rows.length){
+                    notificationList.innerHTML =
+                        '<div class="p-4 text-center text-xs text-gray-500 dark:text-gray-400">No notifications</div>';
+                    return;
+                }
+
+                notificationList.innerHTML = rows.map(function(n){
+                    const appId=escapeNotificationText(n.app_id);
+                    const title=escapeNotificationText(n.title || 'Notification');
+                    const message=escapeNotificationText(n.message || '');
+                    const time=escapeNotificationText(notificationTime(n.created_at));
+                    const unreadClass=readIds.includes(n.id) ? '' : 'ring-1 ring-mint-200 dark:ring-mint-800';
+                    return `<button type="button" data-notification-app="${appId}" data-notification-id="${escapeNotificationText(n.id)}"
+                        class="w-full text-left p-2 rounded-xl bg-gray-50 dark:bg-gray-700/50 hover:bg-mint-50 dark:hover:bg-gray-700 flex items-start gap-2.5 ${unreadClass}">
+                        <div class="w-7 h-7 rounded-lg bg-mint-100 dark:bg-mint-900/40 text-mint-600 flex items-center justify-center shrink-0 mt-0.5">
+                            <i class="fa-solid ${n.type==='app_update' ? 'fa-arrows-rotate' : 'fa-bell'} text-xs"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="font-bold text-gray-800 dark:text-gray-200">${title}</p>
+                            <p class="text-[11px] text-gray-500 dark:text-gray-400">${message}</p>
+                            ${time ? `<p class="text-[10px] text-gray-400 mt-1">${time}</p>` : ''}
+                        </div>
+                    </button>`;
+                }).join('');
+
+                notificationList.querySelectorAll('[data-notification-app]').forEach(function(el){
+                    el.addEventListener('click',function(){
+                        const id=el.getAttribute('data-notification-id');
+                        const appId=el.getAttribute('data-notification-app');
+                        const ids=getReadNotificationIds();
+                        if(id && !ids.includes(id)){ids.push(id);saveReadNotificationIds(ids);}
+                        if(appId) window.location.href='app.html?id='+encodeURIComponent(appId);
+                    });
+                });
+            }catch(err){
+                console.error('REAL NOTIFICATIONS ERROR:',err);
+                notificationBadge.textContent='0';
+                notificationBadge.classList.add('hidden');
+                notificationBadge.style.display='none';
+                notificationList.innerHTML =
+                    '<div class="p-4 text-center text-xs text-gray-500 dark:text-gray-400">No notifications</div>';
+            }
+        }
+
+        notificationToggleBtn?.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            notificationDropdown?.classList.toggle('hidden');
+            if(!notificationDropdown?.classList.contains('hidden')) await loadRealNotifications();
+        });
+
+        window.markNotificationsRead = function(){
+            if(!notificationList) return;
+            const ids=[...notificationList.querySelectorAll('[data-notification-id]')].map(x=>x.getAttribute('data-notification-id')).filter(Boolean);
+            saveReadNotificationIds([...getReadNotificationIds(),...ids]);
+            notificationBadge.textContent='0';
+            notificationBadge.classList.add('hidden');
+            notificationBadge.style.display='none';
+            notificationList.querySelectorAll('[data-notification-app]').forEach(x=>x.classList.remove('ring-1','ring-mint-200','dark:ring-mint-800'));
+        };
+
+        loadRealNotifications();
+        window.addEventListener('focus', loadRealNotifications);
+        document.addEventListener('visibilitychange', function(){ if(!document.hidden) loadRealNotifications(); });
+
+        // Profile Avatar Dropdown Toggle
+        const profileAvatarBtn = document.getElementById('profileAvatarBtn');
+        const profileDropdown = document.getElementById('profileDropdown');
+
+        profileAvatarBtn?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            profileDropdown?.classList.toggle('hidden');
+        });
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', () => {
+            notificationDropdown?.classList.add('hidden');
+            profileDropdown?.classList.add('hidden');
+            const autocomplete = document.getElementById('searchAutocomplete');
+            if (autocomplete) autocomplete.classList.add('hidden');
+        });
+
+        // Initialize Data from Supabase
+       // ===============================
+// LOAD APPS FROM SUPABASE
+// ===============================
+async function initData() {
+
+    if (!supabaseClient) {
+        console.error("Supabase client not initialized");
+        return;
+    }
+
+    try {
+
+        const { data: apps, error } = await supabaseClient
+            .from("apps")
+            .select("*");
+
+        if (error) {
+            console.error("SUPABASE APPS ERROR:", error);
+            throw error;
+        }
+
+        console.log("SUPABASE APPS:", apps);
+        console.log("TOTAL APPS:", apps?.length || 0);
+
+        window.allAppsCache = apps || [];
+
+        renderPageData(window.allAppsCache);
+
+    } catch (err) {
+
+        console.error("FAILED TO LOAD APPS FROM SUPABASE:", err);
+
+        // IMPORTANT:
+        // Don't show fake fallback apps.
+        window.allAppsCache = [];
+
+        const appsGrid = document.getElementById("appsGrid");
+
+        if (appsGrid) {
+            appsGrid.innerHTML = `
+                <div class="col-span-full py-16 text-center">
+                    <div class="w-16 h-16 bg-red-50 text-red-600 rounded-full flex items-center justify-center mx-auto mb-3 text-xl">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+
+                    <p class="text-sm font-bold text-red-600">
+                        Unable to load apps from Supabase
+                    </p>
+
+                    <p class="text-xs text-gray-500 mt-2">
+                        Check browser console for the exact error.
+                    </p>
+                </div>
+            `;
+        }
+    }
+}
+
+        function renderPageData(apps) {
+            const featuredApps = apps.filter(a => a.featured || a.is_featured);
+            renderHeroSlider(featuredApps.length > 0 ? featuredApps : apps);
+            renderCategoriesSection(apps);
+            renderFeaturedCollections(apps);
+            renderTopCharts(apps);
+            renderRecentlyUpdated(apps);
+            filterAndRenderApps();
+            setupCategoryScrollListeners();
+            setupLiveSearch();
+        }
+// ===============================
+// VIEW ALL CATEGORIES
+// ===============================
+
+window.showAllCategories = false;
+
+window.toggleAllCategories = function () {
+
+    window.showAllCategories = !window.showAllCategories;
+
+    renderCategoriesSection(window.allAppsCache);
+
+    const text = document.getElementById("viewAllCategoriesText");
+    const icon = document.getElementById("viewAllCategoriesIcon");
+
+    if (window.showAllCategories) {
+
+        text.textContent = "Show Less Categories";
+
+        icon.className = "fa-solid fa-chevron-up text-[10px]";
+
+        // नीचे categories तक smooth scroll
+        setTimeout(() => {
+            document.getElementById("categoriesContainer")
+                ?.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start"
+                });
+        }, 100);
+
+    } else {
+
+        text.textContent = "View All Categories";
+
+        icon.className = "fa-solid fa-chevron-down text-[10px]";
+
+    }
+};
+        // Hero Slider with dynamic loop check (< 3 items disables loop)
+        function renderHeroSlider(apps) {
+            const wrapper = document.getElementById('featured-slider');
+            if (!wrapper) return;
+
+            const shouldLoop = apps.length >= 3;
+
+            wrapper.innerHTML = apps.map(app => {
+                const screenshots = app.screenshots && app.screenshots.length > 0 ? app.screenshots : [app.banner_url || app.icon_url, app.icon_url, app.icon_url];
+                const screenshotsHtml = screenshots.slice(0, 3).map(img => `
+                    <div class="w-24 h-44 sm:w-28 sm:h-52 rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm flex items-center justify-center p-1">
+                        <img src="${img}" alt="Screenshot" class="w-full h-full hero-img-contain rounded-lg">
+                    </div>
+                `).join('');
+
+                return `
+                   <div class="swiper-slide relative overflow-hidden p-6 sm:p-10 flex items-center cursor-pointer"
+     onclick="openAppDetails('${app.id}')">
+                        <div class="absolute inset-0 z-0 opacity-10 bg-cover bg-center" style="background-image: url('${app.banner_url || app.icon_url}')"></div>
+                        <div class="relative z-10 flex flex-wrap lg:flex-nowrap justify-between items-center w-full gap-6">
+                            <div class="flex items-start gap-4 max-w-lg">
+                                <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-white dark:bg-gray-800 shadow-md border border-gray-200 dark:border-gray-700 p-2 flex-shrink-0 flex items-center justify-center">
+                                    <img src="${app.icon_url}" alt="${app.name}" class="w-full h-full hero-img-contain rounded-xl">
+                                </div>
+                                <div class="space-y-2">
+                                    <div class="flex items-center gap-2">
+                                        <span class="bg-mint-100 dark:bg-mint-900/40 text-mint-700 dark:text-mint-400 px-2.5 py-0.5 rounded-full text-[11px] font-bold">Featured</span>
+                                        <span class="text-xs font-semibold text-gray-400">${app.version || 'v1.0'}</span>
+                                    </div>
+                                    <h2 class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white leading-tight">${app.name}</h2>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                                        <span>⭐ ${app.rating || '4.9'}</span>
+                                        <span>•</span>
+                                        <span>${app.downloads || '1M+ downloads'}</span>
+                                    </p>
+                                    <div class="pt-1">
+                                       <button onclick="event.stopPropagation(); handleDownloadClick('${app.id}')" class="download-btn text-xs flex items-center gap-2" data-app-id="${app.id}">
+                                            <i class="fa-solid fa-download"></i> Download (${app.apk_size || 'Unknown Size'})
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="hidden sm:flex gap-3">
+                                ${screenshotsHtml}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            if (typeof Swiper !== 'undefined') {
+                new Swiper('.heroSwiper', {
+                    loop: shouldLoop,
+                    autoplay: { delay: 5000, disableOnInteraction: false },
+                    pagination: { el: '.swiper-pagination', clickable: true },
+                    navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' }
+                });
+            }
+        }
+
+        // Render Categories Section
+        window.renderCategoriesSection = function(appsArray) {
+            const container = document.getElementById('categoriesContainer');
+            if (!container) return;
+
+           const categoriesToShow = window.showAllCategories
+    ? defaultCategoriesConfig
+    : defaultCategoriesConfig.slice(0, 10);
+
+container.innerHTML = categoriesToShow.map(catConfig => {
+                const matchedCount = catConfig.name === 'All' 
+                    ? (appsArray || []).length 
+                    : (appsArray || []).filter(a => a.category && a.category.toLowerCase() === catConfig.name.toLowerCase()).length;
+                
+                const isSelected = window.currentCategory.toLowerCase() === catConfig.name.toLowerCase();
+
+               const cardClasses = isSelected
+    ? "category-card snap-start p-4 rounded-2xl bg-mint-50 text-mint-700 border-2 border-mint-200 shadow-md shadow-mint-100 flex flex-col items-center justify-center gap-2 cursor-pointer transform -translate-y-1"
+    : "category-card snap-start p-4 rounded-2xl bg-white dark:bg-gray-800/90 hover:bg-mint-50 dark:hover:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-200/80 dark:border-gray-700/80 flex flex-col items-center justify-center gap-2 cursor-pointer shadow-sm";
+
+               const iconBoxClasses = isSelected
+    ? "w-11 h-11 rounded-xl bg-mint-100 text-mint-600 flex items-center justify-center text-base"
+    : "w-11 h-11 rounded-xl bg-mint-50 dark:bg-mint-900/40 text-mint-600 dark:text-mint-400 flex items-center justify-center text-base";
+                const countTextClasses = isSelected
+                    ? "text-[11px] text-white/90 font-medium mt-0.5"
+                    : "text-[11px] text-gray-400 font-medium mt-0.5";
+
+                return `
+                    <div onclick="handleCategoryCardClick(event, '${catConfig.name}')" data-category-name="${catConfig.name}" class="${cardClasses}">
+                        <div class="${iconBoxClasses}">
+                            <i class="fa-solid ${catConfig.icon}"></i>
+                        </div>
+                        <div class="text-center w-full">
+                            <h4 class="font-bold text-xs truncate max-w-[110px]">${catConfig.name}</h4>
+                            <p class="${countTextClasses}">${matchedCount} Apps</p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            setTimeout(updateCategoryArrowVisibility, 50);
+        };
+
+        window.handleCategoryCardClick = function(event, categoryName) {
+            const card = event.currentTarget;
+            const circle = document.createElement('span');
+            const diameter = Math.max(card.clientWidth, card.clientHeight);
+            const radius = diameter / 2;
+            circle.style.width = circle.style.height = `${diameter}px`;
+            circle.style.left = `${event.clientX - card.getBoundingClientRect().left - radius}px`;
+            circle.style.top = `${event.clientY - card.getBoundingClientRect().top - radius}px`;
+            circle.classList.add('category-ripple');
+            
+            const existingRipple = card.getElementsByClassName('category-ripple')[0];
+            if (existingRipple) existingRipple.remove();
+            card.appendChild(circle);
+
+            window.currentCategory = categoryName;
+
+console.log('CATEGORY CLICKED:', categoryName);
+
+renderCategoriesSection(window.allAppsCache);
+filterAndRenderApps();
+
+const appsSection = document.getElementById('appsGrid');
+
+if (appsSection) {
+    appsSection.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+    });
+}
+        };
+
+        window.scrollCategories = function(direction) {
+            const container = document.getElementById('categoriesContainer');
+            if (!container) return;
+            container.scrollBy({ left: direction * 300, behavior: 'smooth' });
+            setTimeout(updateCategoryArrowVisibility, 300);
+        };
+
+        function updateCategoryArrowVisibility() {
+            const container = document.getElementById('categoriesContainer');
+            const prevBtn = document.getElementById('categoryPrevBtn');
+            const nextBtn = document.getElementById('categoryNextBtn');
+            if (!container || !prevBtn || !nextBtn) return;
+
+            const scrollLeft = container.scrollLeft;
+            const maxScrollLeft = container.scrollWidth - container.clientWidth;
+
+            if (scrollLeft <= 5) {
+                prevBtn.classList.add('opacity-0', 'pointer-events-none');
+            } else {
+                prevBtn.classList.remove('opacity-0', 'pointer-events-none');
+            }
+
+            if (scrollLeft >= maxScrollLeft - 5) {
+                nextBtn.classList.add('opacity-0', 'pointer-events-none');
+            } else {
+                nextBtn.classList.remove('opacity-0', 'pointer-events-none');
+            }
+        }
+
+        function setupCategoryScrollListeners() {
+            const container = document.getElementById('categoriesContainer');
+            if (!container) return;
+            container.addEventListener('scroll', updateCategoryArrowVisibility);
+            container.addEventListener('wheel', (evt) => {
+                if (evt.deltaY !== 0) {
+                    evt.preventDefault();
+                    container.scrollLeft += evt.deltaY;
+                }
+            }, { passive: false });
+            window.addEventListener('resize', updateCategoryArrowVisibility);
+        }
+
+        // Render Featured Collections
+        function renderFeaturedCollections(apps) {
+            const grid = document.getElementById('featuredCollectionsGrid');
+            if (!grid) return;
+            const items = apps.slice(0, 3);
+            grid.innerHTML = items.map(app => `
+                <div class="app-card p-4 flex items-center gap-4 cursor-pointer" onclick="window.location.href='app.html?id=${app.id}'">
+                    <div class="w-16 h-16 rounded-xl bg-gray-50 dark:bg-gray-800 p-2 flex items-center justify-center shrink-0">
+                        <img src="${app.icon_url}" alt="${app.name}" class="w-full h-full hero-img-contain rounded-lg">
+                    </div>
+                    <div>
+                        <span class="text-[10px] font-bold text-mint-600 dark:text-mint-400 bg-mint-50 dark:bg-mint-900/30 px-2 py-0.5 rounded-full">Collection</span>
+                        <h4 class="font-bold text-sm text-gray-900 dark:text-white mt-1 truncate">${app.name}</h4>
+                        <p class="text-xs text-gray-400 mt-0.5">⭐ ${app.rating || '4.9'} • ${app.downloads || '1M+ downloads'}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Render Top Charts
+        function renderTopCharts(apps) {
+            const grid = document.getElementById('topChartsGrid');
+            if (!grid) return;
+            const items = apps.slice(0, 3);
+            grid.innerHTML = items.map((app, index) => `
+                <div class="app-card p-4 flex items-center gap-4 cursor-pointer" onclick="window.location.href='app.html?id=${app.id}'">
+                    <span class="text-xl font-black text-mint-600 w-6 text-center">#${index + 1}</span>
+                    <div class="w-16 h-16 rounded-xl bg-gray-50 dark:bg-gray-800 p-2 flex items-center justify-center shrink-0">
+                        <img src="${app.icon_url}" alt="${app.name}" class="w-full h-full hero-img-contain rounded-lg">
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-sm text-gray-900 dark:text-white truncate">${app.name}</h4>
+                        <p class="text-xs text-gray-400 mt-0.5">${app.category || 'App'} • ⭐ ${app.rating || '4.9'}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Render Recently Updated
+        function renderRecentlyUpdated(apps) {
+            const grid = document.getElementById('recentlyUpdatedGrid');
+            if (!grid) return;
+            const items = apps.slice(0, 6);
+            grid.innerHTML = items.map(app => `
+               <div class="app-card p-3.5 flex flex-col justify-between cursor-pointer"
+     onclick="openAppDetails('${app.id}')">
+                    <div>
+                        <div class="w-full h-28 bg-gray-50 dark:bg-gray-800 rounded-xl mb-3 p-2 flex items-center justify-center">
+                            <img src="${app.icon_url || ''}" alt="${app.name}" class="w-full h-full hero-img-contain rounded-lg">
+                        </div>
+                        <h5 class="font-bold text-xs text-gray-900 dark:text-white truncate">${app.name}</h5>
+                        <p class="text-[10px] text-gray-400 mt-0.5">${app.category || 'App'} • ⭐ ${app.rating || '4.9'}</p>
+                    </div>
+                   <button onclick="event.stopPropagation(); handleDownloadClick('${app.id}')"
+                   class="w-full mt-3 bg-mint-50 dark:bg-mint-900/30 text-mint-700 dark:text-mint-400 hover:bg-mint-600 hover:text-white py-2 rounded-xl font-bold text-[11px] transition">Install</button>
+                </div>
+            `).join('');
+        }
+
+        // Filter and Render Apps with live search highlight
+      window.filterAndRenderApps = function() {
+    const category = (window.currentCategory || 'All').toString().trim();
+    const query = (window.currentSearchQuery || '').toString().trim().toLowerCase();
+
+    const allApps = Array.isArray(window.allAppsCache)
+        ? window.allAppsCache
+        : [];
+
+    let filtered = allApps;
+
+    // Category filter
+    if (category.toLowerCase() !== 'all') {
+        filtered = allApps.filter(function(app) {
+            const appCategory = app && app.category
+                ? app.category.toString().trim().toLowerCase()
+                : '';
+
+            return appCategory.includes(category.toLowerCase());
+        });
+ }
+    // Search filter
+    if (query) {
+        filtered = filtered.filter(function(app) {
+            const name = app && app.name
+                ? app.name.toString().toLowerCase()
+                : '';
+
+            const appCategory = app && app.category
+                ? app.category.toString().toLowerCase()
+                : '';
+
+            return name.includes(query) || appCategory.includes(query);
+        });
+    }
+
+    console.log(
+        'CATEGORY FILTER:',
+        category,
+        'TOTAL:',
+        allApps.length,
+        'RESULT:',
+        filtered.length
+    );
+
+    const sectionHeading = document.getElementById('sectionHeading');
+
+    if (sectionHeading) {
+        sectionHeading.textContent =
+            query
+                ? `Search: "${query}"`
+                : (category.toLowerCase() === 'all' ? 'All Apps' : category);
+    }
+
+    const appsGrid = document.getElementById('appsGrid');
+
+    if (!appsGrid) return;
+
+    if (filtered.length === 0) {
+        appsGrid.innerHTML = `
+            <div class="col-span-full py-16 text-center">
+                <div class="w-16 h-16 bg-mint-50 dark:bg-mint-900/20 text-mint-600 rounded-full flex items-center justify-center mx-auto mb-3 text-xl">
+                    <i class="fa-solid fa-box-open"></i>
+                </div>
+
+                <p class="text-sm font-bold text-gray-700 dark:text-gray-300">
+                    No apps available in this category.
+                </p>
+            </div>
+        `;
+        return;
+    }
+
+   appsGrid.innerHTML = filtered.map(app => {
+
+    let displayName = app.name || "Unknown App";
+
+    if (query && app.name) {
+        const regex = new RegExp(`(${query})`, 'gi');
+        displayName = app.name.replace(
+            regex,
+            `<span class="bg-mint-200 dark:bg-mint-900/60 text-mint-800 dark:text-mint-200 px-0.5 rounded">$1</span>`
+        );
+    }
+
+    return `
+        <div
+            class="app-card p-3.5 flex flex-col justify-between cursor-pointer"
+            onclick="openAppDetails('${app.id}')"
+        >
+
+            <div>
+                <div class="w-full h-28 bg-gray-50 dark:bg-gray-800 rounded-xl mb-3 p-2 flex items-center justify-center">
+                    <img
+                        src="${app.icon_url || ''}"
+                        alt="${app.name || 'App'}"
+                        class="w-full h-full hero-img-contain rounded-lg"
+                    >
+                </div>
+
+                <h5 class="font-bold text-xs text-gray-900 dark:text-white truncate">
+                    ${displayName}
+                </h5>
+
+                <p class="text-[10px] text-gray-400 mt-0.5">
+                    ${app.category || 'App'} • ⭐ ${app.rating || '4.9'}
+                </p>
+            </div>
+
+            <button
+                onclick="event.stopPropagation(); handleDownloadClick('${app.id}')"
+                class="w-full mt-3 bg-mint-50 dark:bg-mint-900/30 text-mint-700 dark:text-mint-400 hover:bg-mint-600 hover:text-white py-2 rounded-xl font-bold text-[11px] transition">
+                Install
+            </button>
+
+        </div>
+    `;
+}).join('');
+};
+        // ===============================
+// OPEN APP DETAILS
+// ===============================
+window.openAppDetails = function(appId) {
+
+    if (!appId) {
+        console.error("App ID missing");
+        return;
+    }
+
+    window.location.href = `app.html?id=${encodeURIComponent(appId)}`;
+};
+        // Live Search & Autocomplete
+        function setupLiveSearch() {
+            const searchInput = document.getElementById('searchInput');
+            const autocomplete = document.getElementById('searchAutocomplete');
+            if (!searchInput || !autocomplete) return;
+
+            searchInput.addEventListener('input', (e) => {
+                const q = e.target.value;
+                window.currentSearchQuery = q;
+                filterAndRenderApps();
+
+                if (!q.trim()) {
+                    autocomplete.classList.add('hidden');
+                    return;
+                }
+
+                const matches = (window.allAppsCache || []).filter(app => app.name.toLowerCase().includes(q.toLowerCase()) || app.category.toLowerCase().includes(q.toLowerCase())).slice(0, 5);
+
+                if (matches.length === 0) {
+                    autocomplete.classList.add('hidden');
+                    return;
+                }
+
+                autocomplete.innerHTML = matches.map(app => `
+                    <div onclick="window.location.href='app.html?id=${app.id}'" class="p-3 flex items-center gap-3 hover:bg-mint-50 dark:hover:bg-gray-700/50 cursor-pointer transition">
+                        <img src="${app.icon_url}" class="w-9 h-9 rounded-lg hero-img-contain bg-gray-100 dark:bg-gray-700 p-1">
+                        <div>
+                            <h5 class="font-bold text-xs text-gray-900 dark:text-white">${app.name}</h5>
+                            <p class="text-[10px] text-gray-400">${app.category} • ⭐ ${app.rating || '4.9'}</p>
+                        </div>
+                    </div>
+                `).join('');
+
+                autocomplete.classList.remove('hidden');
+            });
+        }
+
+       // ===============================
+// HOMEPAGE DOWNLOAD
+// ===============================
+window.handleDownloadClick = async function(appId, event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+
+    if (!appId) {
+        console.error("App ID missing");
+        return;
+    }
+
+    try {
+
+        const { data: app, error } = await supabaseClient
+            .from("apps")
+            .select("*")
+            .eq("id", appId)
+            .single();
+
+        if (error || !app) {
+            console.error("App loading error:", error);
+            alert("App information not found.");
+            return;
+        }
+
+        let downloadUrl = "";
+
+        // PaliaAPK HUB itself is bundled with this GitHub Pages website.
+        // Use the same-origin APK directly so the browser never redirects to Render.
+        const isPaliaHub = String(app.name || "").toLowerCase().includes("paliaapk hub");
+        if (isPaliaHub) {
+            downloadUrl = 'https://raw.githubusercontent.com/shanpalia/WebsitePaliaAPK_V.2/main/PaliaAPK-HUB.apk';
+        }
+        // Direct APK for other apps
+        else if (app.apk_url) {
+            downloadUrl = app.apk_url;
+        }
+        else {
+            alert("APK download is currently unavailable.");
+            return;
+        }
+
+        // Firebase logged-in user
+        const user =
+            typeof auth !== "undefined"
+                ? auth.currentUser
+                : null;
+
+        // Save download history
+        if (user) {
+
+            const { error: historyError } =
+                await supabaseClient
+                    .from("downloads")
+                    .insert({
+                        user_id: user.uid,
+                        app_id: app.id,
+                        app_name: app.name || "Unknown App",
+                        version: app.version || "Unknown",
+                        icon_url: app.icon_url || null,
+                        download_url: downloadUrl
+                    });
+
+            if (historyError) {
+                console.error(
+                    "Download history error:",
+                    historyError
+                );
+            }
+        }
+
+        // PaliaAPK HUB: open the direct APK file.
+        // Do not use fetch/blob or an HTML download route in Facebook's browser.
+        if (isPaliaHub && downloadUrl) {
+            window.open(downloadUrl, '_blank', 'noopener');
+        } else if (downloadUrl) {
+            window.open(downloadUrl, '_blank', 'noopener');
+        }
+
+        return false;
+
+    } catch (error) {
+
+        console.error("Homepage download error:", error);
+        alert("Unable to start download.");
+
+    }
+};
+
+        // Share Website Feature (Native Android API, Desktop Clipboard, Fallback Dialog)
+        window.triggerShareWebsite = function() {
+            const shareData = {
+                title: 'PaliaAPK HUB',
+                text: 'Download Safe & Verified Android APKs from PaliaAPK HUB.',
+                url: 'https://shanpalia.github.io/WebsitePaliaAPK_V.2/'
+            };
+
+            if (navigator.share) {
+                navigator.share(shareData).catch(() => {});
+            } else if (navigator.clipboard) {
+                navigator.clipboard.writeText(shareData.url).then(() => {
+                    alert('Website link copied to clipboard!');
+                }).catch(() => {
+                    prompt('Copy link:', shareData.url);
+                });
+            } else {
+                prompt('Copy link:', shareData.url);
+            }
+        };
+
+        // Firebase Auth State UI & Avatar Management
+        auth.onAuthStateChanged((user) => {
+            const loginBtn = document.getElementById('loginBtn');
+            const profileBox = document.getElementById('profileBox');
+            const profileAvatar = document.getElementById('profileAvatar');
+            const logoutBtn = document.getElementById('logoutBtn');
+
+            if (user) {
+                loginBtn?.classList.add('hidden');
+                profileBox?.classList.remove('hidden');
+                const name = user.displayName || user.email.split('@')[0];
+                if (profileAvatar) profileAvatar.textContent = name.substring(0, 2).toUpperCase();
+                
+                if (logoutBtn) {
+                    logoutBtn.onclick = () => {
+                        auth.signOut().then(() => {
+                            window.location.href = 'index.html';
+                        });
+                    };
+                }
+
+                // Check if returning from login redirect
+                const redirectUrl = localStorage.getItem('redirect_after_login');
+                if (redirectUrl) {
+                    localStorage.removeItem('redirect_after_login');
+                    window.location.href = redirectUrl;
+                }
+            } else {
+                loginBtn?.classList.remove('hidden');
+                profileBox?.classList.add('hidden');
+                if (loginBtn) {
+                    loginBtn.onclick = () => {
+                        window.location.href = 'user.html';
+                    };
+                }
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', initData);
+    </script>
+
+<div id="paliaMobileAppPrompt">
+  <div class="pm-card flex items-center gap-3">
+    <img id="paliaMobileAppPromptIcon" src="assets/palia-android-icon.png" class="w-12 h-12 rounded-xl object-contain bg-white shrink-0" alt="PaliaAPK HUB">
+    <div class="min-w-0 flex-1">
+      <p class="font-black text-sm text-gray-900 dark:text-white">Get PaliaAPK HUB App</p>
+      <p class="text-[11px] text-gray-500 dark:text-gray-300">Open PaliaAPK HUB faster with the Android app.</p>
+    </div>
+    <button id="paliaMobileAppPromptDownload" class="shrink-0 px-3 py-2 rounded-xl bg-green-600 text-white text-xs font-black">Download</button>
+    <button id="paliaMobileAppPromptClose" class="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-500" aria-label="Close">×</button>
+  </div>
+</div>
+
+<script id="paliaMobileAppPromptJS">
+(function(){
+  function isMobile(){
+    return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth <= 900;
+  }
+
+  async function downloadFromTable(url,name,button){
+    if(!url) return;
+
+    const original = button ? button.innerHTML : '';
+    if(button){
+      button.disabled=true;
+      button.innerHTML='<i class="fa-solid fa-spinner fa-spin mr-1"></i> Downloading…';
+    }
+
+    try{
+      // PaliaAPK HUB uses a direct GitHub Raw APK file. Do not fetch/blob it:
+      // Facebook's in-app browser can block cross-origin Blob downloads.
+      // Opening the raw APK URL lets Android/Facebook handle the file download
+      // without ever opening the Render API page.
+      const isPaliaHubUrl = /raw\.githubusercontent\.com\/shanpalia\/WebsitePaliaAPK_V\.2\/main\/PaliaAPK-HUB\.apk/i.test(url);
+      if(isPaliaHubUrl){
+        window.open(url, '_blank', 'noopener');
+      }else{
+        const a=document.createElement('a');
+        a.href=url;
+        a.download=name || 'PaliaAPK-HUB.apk';
+        a.rel='noopener';
+        a.style.display='none';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      }
+    }catch(error){
+      console.error('PaliaAPK HUB APK download failed:',error);
+      alert('APK download could not start. Please tap Download again.');
+    }finally{
+      if(button){
+        button.disabled=false;
+        button.innerHTML=original;
+      }
+    }
+  }
+
+  async function init(){
+    if(!isMobile()) return;
+
+    const client=window.paliaSupabaseClient;
+    if(!client){
+      console.warn('PaliaAPK HUB mobile prompt: Supabase client not ready');
+      return;
+    }
+
+    const box=document.getElementById('paliaMobileAppPrompt');
+    const btn=document.getElementById('paliaMobileAppPromptDownload');
+    const close=document.getElementById('paliaMobileAppPromptClose');
+    const icon=document.getElementById('paliaMobileAppPromptIcon');
+    if(!box || !btn) return;
+
+    try{
+      // Get the real PaliaAPK HUB app directly from public.apps.
+      // No hard-coded APK URL is used.
+      const {data,error}=await client
+        .from('apps')
+        .select('id,name,apk_url,icon_url,telegram_message_id,version')
+        .ilike('name','%PaliaAPK HUB%')
+        .order('updated_at',{ascending:false})
+        .limit(1);
+
+      if(error){
+        console.error('PaliaAPK HUB app lookup failed:',error);
+        return;
+      }
+
+      const app=Array.isArray(data) && data.length ? data[0] : null;
+      if(!app) return;
+
+      // Prefer the actual apk_url stored in Supabase.
+      // telegram_message_id is only a fallback if the table does not have a direct URL.
+      const url = String(app.name || '').toLowerCase().includes('paliaapk hub')
+        ? 'https://raw.githubusercontent.com/shanpalia/WebsitePaliaAPK_V.2/main/PaliaAPK-HUB.apk'
+        : (app.apk_url || '');
+
+      if(!url){
+        console.warn('PaliaAPK HUB row exists but no APK URL is stored.');
+        return;
+      }
+
+      if(app.icon_url) icon.src=app.icon_url;
+
+      btn.onclick=function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        downloadFromTable(url,(app.name || 'PaliaAPK-HUB')+'.apk',btn);
+      };
+
+      close.onclick=function(){
+        box.style.display='none';
+      };
+
+      box.style.display='block';
+    }catch(err){
+      console.error('PaliaAPK HUB mobile popup error:',err);
+    }
+  }
+
+  // Supabase is initialized before this script, but retry briefly in case CDN/client loads late.
+  window.addEventListener('load',function(){
+    let tries=0;
+    const timer=setInterval(function(){
+      tries++;
+      if(window.paliaSupabaseClient || tries>=20){
+        clearInterval(timer);
+        init();
+      }
+    },250);
+  });
+})();
+</script>
+
+<script>
+document.addEventListener('click', function(e){
+    const btn=e.target.closest && e.target.closest('.download-btn');
+    if(!btn) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const appId=btn.getAttribute('data-app-id');
+    if(appId && typeof window.handleDownloadClick==='function'){
+        window.handleDownloadClick(appId,e);
+    }
+}, true);
+</script>
+
+<!-- PaliaAPK HUB Website Update Bridge: additive only; existing UI/logic untouched. -->
+<style>
+#paliaHubUpdateToast{position:fixed;left:16px;right:16px;bottom:18px;z-index:99999;display:none}
+#paliaHubUpdateToast .phu-card{max-width:520px;margin:auto;background:#fff;border:1px solid #e5e7eb;border-radius:18px;box-shadow:0 18px 50px rgba(0,0,0,.22);padding:14px 16px;font-family:inherit}
+#paliaHubUpdateToast .phu-row{display:flex;align-items:center;gap:12px}
+#paliaHubUpdateToast img{width:48px;height:48px;border-radius:12px;object-fit:cover}
+#paliaHubUpdateToast .phu-title{font-weight:800;font-size:15px;color:#111827}
+#paliaHubUpdateToast .phu-msg{font-size:12px;color:#6b7280;margin-top:3px}
+#paliaHubUpdateToast .phu-actions{display:flex;gap:8px;margin-top:11px}
+#paliaHubUpdateToast button{border:0;border-radius:10px;padding:9px 12px;font-weight:700;cursor:pointer}
+#paliaHubUpdateOpen{background:#10b981;color:#fff;flex:1}
+#paliaHubUpdateClose{background:#f3f4f6;color:#374151}
+</style>
+<div id="paliaHubUpdateToast" aria-live="polite">
+  <div class="phu-card">
+    <div class="phu-row">
+      <img id="paliaHubUpdateIcon" src="assets/icon.png" alt="PaliaAPK HUB">
+      <div>
+        <div class="phu-title">PaliaAPK HUB Update Available</div>
+        <div class="phu-msg" id="paliaHubUpdateMsg">A new version is available.</div>
+      </div>
+    </div>
+    <div class="phu-actions">
+      <button id="paliaHubUpdateOpen" type="button">📱 Open PaliaAPK HUB</button>
+      <button id="paliaHubUpdateClose" type="button">Later</button>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+  'use strict';
+  var shownKey='paliaapk_hub_update_notice_v1';
+  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];});}
+  function openAppOrWebsite(apkUrl, version){
+    var target='paliaapkhub://update?version='+encodeURIComponent(version||'')+'&url='+encodeURIComponent(apkUrl||'');
+    // Never navigate the browser to the Render/Telegram endpoint.
+    // If the native app is not installed, stay on PaliaAPK HUB and open its Downloads page.
+    var fallback='downloads.html';
+    var started=Date.now();
+    try{ window.location.href=target; }catch(e){}
+    setTimeout(function(){
+      if(Date.now()-started<1800){ window.location.href=fallback; }
+    },1400);
+  }
+  async function check(){
+    var client=window.paliaSupabaseClient;
+    if(!client) return;
+    try{
+      var q=await client.from('app_notifications')
+        .select('id,title,message,previous_version,new_version,app_id,created_at')
+        .eq('type','app_update')
+        .order('created_at',{ascending:false}).limit(20);
+      if(q.error || !Array.isArray(q.data)) return;
+      var note=null;
+      for(var i=0;i<q.data.length;i++){
+        var n=q.data[i];
+        if((n.title||'').toLowerCase().indexOf('paliaapk hub')>=0 || (n.message||'').toLowerCase().indexOf('paliaapk hub')>=0){note=n;break;}
+      }
+      if(!note) return;
+      var app=await client.from('apps').select('id,name,version,apk_url,icon_url,telegram_message_id').ilike('name','%PaliaAPK HUB%').order('updated_at',{ascending:false}).limit(1);
+      if(app.error || !app.data || !app.data[0]) return;
+      var a=app.data[0];
+      var apk=String(a.name||'').toLowerCase().indexOf('paliaapk hub')>=0
+        ? 'https://raw.githubusercontent.com/shanpalia/WebsitePaliaAPK_V.2/main/PaliaAPK-HUB.apk'
+        : (a.apk_url || '');
+      var stamp=String(note.id||note.created_at||a.version||'');
+      if(localStorage.getItem(shownKey)===stamp) return;
+      var box=document.getElementById('paliaHubUpdateToast');
+      var msg=document.getElementById('paliaHubUpdateMsg');
+      var ico=document.getElementById('paliaHubUpdateIcon');
+      if(!box) return;
+      if(ico && a.icon_url) ico.src=a.icon_url;
+      if(msg) msg.innerHTML=(note.previous_version?('v'+esc(note.previous_version)+' → '):'')+'<b>v'+esc(note.new_version||a.version||'new')+'</b> is available.';
+      document.getElementById('paliaHubUpdateOpen').onclick=function(){
+        localStorage.setItem(shownKey,stamp);
+        openAppOrWebsite(apk,a.version||note.new_version||'');
+      };
+      document.getElementById('paliaHubUpdateClose').onclick=function(){
+        localStorage.setItem(shownKey,stamp); box.style.display='none';
+      };
+      box.style.display='block';
+    }catch(e){ console.warn('PaliaAPK HUB update bridge:',e); }
+  }
+  window.addEventListener('load',function(){
+    var tries=0,t=setInterval(function(){tries++;if(window.paliaSupabaseClient||tries>=20){clearInterval(t);check();}},250);
+  });
+})();
+</script>
+
 </body>
 </html>
