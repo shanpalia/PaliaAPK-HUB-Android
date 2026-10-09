@@ -436,6 +436,14 @@
                             return;
                         }
                         try {
+                            if (window.paliaNativeAndroid && window.paliaNativeAndroid()) {
+                                if (!window.startPaliaApkDownload) throw new Error('In-app downloader is not loaded');
+                                await window.startPaliaApkDownload(app.apk_url, filename, 0);
+                                if (window.confirm('Download complete. Open the APK installer now?')) {
+                                    await window.openPaliaApkInstaller();
+                                }
+                                return;
+                            }
                             const response = await fetch(app.apk_url, {
                                 method: 'GET',
                                 mode: 'cors',
@@ -532,5 +540,6 @@
         // Run initialization on load
         init();
     </script>
+    <script src="native-downloader.js"></script>
 </body>
 </html>
