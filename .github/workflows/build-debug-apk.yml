@@ -1,4 +1,5 @@
 name: Build Debug APK
+# Rebuild after Firebase google-services.json updates in the website repository.
 
 on:
   push:
