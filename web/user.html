@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="hi" class="h-full">
+<head>
+    <!-- PaliaAPK HUB social sharing preview -->
+    <meta property="og:site_name" content="PaliaAPK HUB">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="PaliaAPK HUB | Premium Android Store & Verified APKs">
+    <meta property="og:description" content="Discover apps, games and verified Android APKs on PaliaAPK HUB.">
+    <meta property="og:image" content="/WebsitePaliaAPK_V.2/assets/paliaapk-hub-share.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="PaliaAPK HUB | Premium Android Store & Verified APKs">
+    <meta name="twitter:description" content="Discover apps, games and verified Android APKs on PaliaAPK HUB.">
+    <meta name="twitter:image" content="/WebsitePaliaAPK_V.2/assets/paliaapk-hub-share.png">
+
+
+<script id="paliaDarkModeController">
+(function () {
+  const KEY = 'paliaapk_theme';
+
+  function applyTheme(theme) {
+    const root = document.documentElement;
+    const dark = theme === 'dark';
+    root.classList.toggle('dark', dark);
+    root.style.colorScheme = dark ? 'dark' : 'light';
+
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', dark ? '#111827' : '#16a34a');
+  }
+
+  function getTheme() {
+    const saved = localStorage.getItem(KEY);
+    if (saved === 'dark' || saved === 'light') return saved;
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+      ? 'dark' : 'light';
+  }
+
+  applyTheme(getTheme());
+
+  document.addEventListener('DOMContentLoaded', function () {
+    applyTheme(getTheme());
+
+    const btn = document.getElementById('darkModeToggle');
+    if (!btn || btn.dataset.darkModeBound === '1') return;
+
+    btn.dataset.darkModeBound = '1';
+    btn.addEventListener('click', function (event) {
+      event.preventDefault();
+      event.stopPropagation();
+
+      const next = document.documentElement.classList.contains('dark')
+        ? 'light' : 'dark';
+
+      localStorage.setItem(KEY, next);
+      applyTheme(next);
+    });
+  });
+})();
+</script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account - PaliaAPK HUB</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        mint: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            250: '#86efac',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Firebase App & Auth Compat CDN -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <style>
+        /* Smooth transition styles */
+        .tab-content {
+            transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+        }
+    </style>
+</head>
+<body class="h-full bg-gray-50 text-gray-800 flex flex-col font-sans antialiased selection:bg-mint-100 selection:text-mint-700">
+
+    <!-- HEADER -->
+    <header class="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <a href="index.html" class="w-10 h-10 rounded-xl bg-mint-50 text-mint-600 flex items-center justify-center hover:bg-mint-100 transition" aria-label="Back to Home">
+                    <i class="fa-solid fa-arrow-left text-lg"></i>
+                </a>
+                <a href="index.html" class="flex items-center gap-2">
+                    <div class="w-9 h-9 rounded-xl bg-white flex items-center justify-center overflow-hidden shadow-md shadow-mint-500/20"><img src="assets/palia-app-icon.svg" alt="PaliaAPK HUB" class="w-full h-full object-contain"></div>
+                    <span class="font-bold text-lg tracking-tight text-gray-900">PaliaAPK<span class="text-mint-600">HUB</span></span>
+                </a>
+            </div>
+            <div class="text-xs font-semibold text-gray-500 bg-gray-100 px-3 py-1.5 rounded-full hidden sm:block">
+                Premium Android App Store
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT CONTAINER -->
+    <main class="flex-grow max-w-md w-full mx-auto px-4 py-8 flex flex-col justify-center items-center">
+        
+        <!-- BRANDING BANNER -->
+        <div class="text-center mb-6 space-y-1">
+            <h1 class="text-2xl font-black tracking-tight text-gray-900">Welcome to PaliaAPK</h1>
+            <p class="text-xs font-medium text-gray-500 uppercase tracking-widest text-mint-600">Premium Android App Store</p>
+        </div>
+
+        <!-- AUTH CARD CONTAINER -->
+        <div class="w-full bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-xl shadow-gray-200/50 relative overflow-hidden">
+
+            <!-- TOAST NOTIFICATION CONTAINER -->
+            <div id="toast" class="hidden mb-4 p-3 rounded-2xl text-xs font-medium flex items-center gap-2 transition-all duration-300">
+                <i id="toastIcon" class="fa-solid text-sm"></i>
+                <span id="toastMsg"></span>
+            </div>
+
+            <!-- TABS HEADER -->
+            <div class="flex rounded-2xl bg-gray-100 p-1 mb-6 relative">
+                <button id="loginTabBtn" onclick="switchTab('login')" class="flex-1 py-2.5 rounded-xl text-xs font-bold transition-all text-gray-700 bg-white shadow-sm">
+                    LOGIN
+                </button>
+                <button id="signupTabBtn" onclick="switchTab('signup')" class="flex-1 py-2.5 rounded-xl text-xs font-bold transition-all text-gray-500 hover:text-gray-900">
+                    SIGN UP
+                </button>
+            </div>
+
+            <!-- GOOGLE LOGIN BUTTON (SHARED) -->
+            <button id="googleLoginBtn" type="button" class="w-full bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 font-semibold py-3 px-4 rounded-2xl transition flex items-center justify-center gap-3 shadow-sm text-xs mb-6 group">
+                <i class="fa-brands fa-google text-red-500 text-sm group-hover:scale-110 transition-transform"></i> Continue with Google
+            </button>
+
+            <div class="flex items-center my-5">
+                <div class="flex-grow border-t border-gray-100"></div>
+                <span class="px-3 text-[10px] text-gray-400 uppercase font-bold tracking-wider">Or with email</span>
+                <div class="flex-grow border-t border-gray-100"></div>
+            </div>
+
+            <!-- LOGIN FORM -->
+           <form id="loginForm"
+      class="tab-content space-y-4"
+      autocomplete="off">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Email Address</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-gray-400 text-xs">
+                            <i class="fa-solid fa-envelope"></i>
+                        </span>
+                      <input
+    type="email"
+    id="loginEmail"
+    name="login_email"
+    required
+    autocomplete="off"
+    autocorrect="off"
+    autocapitalize="none"
+    spellcheck="false"
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Password</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-gray-400 text-xs">
+                            <i class="fa-solid fa-lock"></i>
+                        </span>
+                       <input
+    type="password"
+    id="loginPassword"
+    name="login_password"
+    required
+    autocomplete="new-password"
+                        <button type="button" onclick="togglePassword('loginPassword', 'loginEyeIcon')" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600 text-xs focus:outline-none">
+                            <i id="loginEyeIcon" class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between text-xs pt-1">
+                    <label class="flex items-center gap-2 cursor-pointer select-none">
+                        <input type="checkbox" id="rememberMe" class="w-4 h-4 rounded border-gray-300 text-mint-600 focus:ring-mint-500">
+                        <span class="text-gray-600 font-medium">Remember Me</span>
+                    </label>
+                    <button type="button" onclick="handleForgotPassword()" class="text-mint-600 hover:text-mint-700 font-semibold transition">Forgot Password?</button>
+                </div>
+
+                <button type="submit" id="loginSubmitBtn" class="w-full bg-mint-600 hover:bg-mint-700 text-white font-bold py-3.5 rounded-2xl transition shadow-lg shadow-mint-600/20 text-xs flex items-center justify-center gap-2 mt-2">
+                    <span>Login</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </form>
+
+            <!-- SIGN UP FORM -->
+            <form id="signupForm" class="tab-content space-y-4 hidden">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Full Name</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-gray-400 text-xs">
+                            <i class="fa-solid fa-user"></i>
+                        </span>
+                        <input type="text" id="signupName" required class="w-full bg-gray-50/80 border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-xs text-gray-800 placeholder-gray-400 focus:outline-none focus:bg-white focus:border-mint-500 focus:ring-2 focus:ring-mint-500/20 transition" placeholder="Shan Palia">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Email Address</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-gray-400 text-xs">
+                            <i class="fa-solid fa-envelope"></i>
+                        </span>
+                        <input type="email" id="signupEmail" required class="w-full bg-gray-50/80 border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-xs text-gray-800 placeholder-gray-400 focus:outline-none focus:bg-white focus:border-mint-500 focus:ring-2 focus:ring-mint-500/20 transition" placeholder="name@example.com">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Password</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-gray-400 text-xs">
+                            <i class="fa-solid fa-lock"></i>
+                        </span>
+                        <input type="password" id="signupPassword" required class="w-full bg-gray-50/80 border border-gray-200 rounded-xl pl-10 pr-10 py-3 text-xs text-gray-800 placeholder-gray-400 focus:outline-none focus:bg-white focus:border-mint-500 focus:ring-2 focus:ring-mint-500/20 transition" placeholder="••••••••">
+                        <button type="button" onclick="togglePassword('signupPassword', 'signupEyeIcon')" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600 text-xs focus:outline-none">
+                            <i id="signupEyeIcon" class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Confirm Password</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-gray-400 text-xs">
+                            <i class="fa-solid fa-lock"></i>
+                        </span>
+                        <input type="password" id="signupConfirmPassword" required class="w-full bg-gray-50/80 border border-gray-200 rounded-xl pl-10 pr-10 py-3 text-xs text-gray-800 placeholder-gray-400 focus:outline-none focus:bg-white focus:border-mint-500 focus:ring-2 focus:ring-mint-500/20 transition" placeholder="••••••••">
+                        <button type="button" onclick="togglePassword('signupConfirmPassword', 'signupConfirmEyeIcon')" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600 text-xs focus:outline-none">
+                            <i id="signupConfirmEyeIcon" class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" id="signupSubmitBtn" class="w-full bg-mint-600 hover:bg-mint-700 text-white font-bold py-3.5 rounded-2xl transition shadow-lg shadow-mint-600/20 text-xs flex items-center justify-center gap-2 mt-2">
+                    <span>Create Account</span>
+                    <i class="fa-solid fa-user-plus"></i>
+                </button>
+            </form>
+
+        </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-white border-t border-gray-100 py-6 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-gray-500 space-y-1">
+            <p class="font-bold text-gray-800">PaliaAPK HUB</p>
+            <p>Developer by ShanPalia &copy; 2026. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- FIREBASE INITIALIZATION & APPLICATION LOGIC -->
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCn7GUkOaFO4l0x1zM5mwW4hFkW2ISxR10",
+            authDomain: "shanpalia-apk-hub.firebaseapp.com",
+            projectId: "shanpalia-apk-hub",
+            storageBucket: "shanpalia-apk-hub.firebasestorage.app",
+            messagingSenderId: "270953807883",
+            appId: "1:270953807883:web:c900f4409938f16477870e",
+            measurementId: "G-7BMQEGPY8C"
+        };
+
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const auth = firebase.auth();
+// ===============================
+// SUPABASE USER SYNC
+// ===============================
+
+const SUPABASE_URL = "https://ralinnuegsbuvlhwpzln.supabase.co";
+
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhbGlubnVlZ3NidXZsaHdwemxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyOTU2NDIsImV4cCI6MjA5NTg3MTY0Mn0.hIec6UxRx5gzSMTi5oJ3_xXw3d1QKCmKsPF-stBwIFE";
+
+const supabaseClient = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY
+);
+
+async function syncUserToSupabase(user) {
+
+    if (!user) return;
+
+    const { error } = await supabaseClient
+        .from("users")
+        .upsert({
+            id: user.uid,
+            email: user.email || null,
+            name: user.displayName || null,
+            last_login_at: new Date().toISOString()
+        }, {
+            onConflict: "id"
+        });
+
+    if (error) {
+        console.error("User sync error:", error);
+    } else {
+        console.log("Firebase user synced to Supabase.");
+    }
+}
+        // Parse URL Redirect parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        let redirectTarget = urlParams.get('redirect') || 'index.html';
+        
+        // Handle nested redirect query structures if any (e.g. download.html?id=XYZ)
+        if (window.location.search.includes('redirect=')) {
+            const fullQueryStr = window.location.search.substring(1);
+            const redirectIndex = fullQueryStr.indexOf('redirect=');
+            if (redirectIndex !== -1) {
+                redirectTarget = decodeURIComponent(fullQueryStr.substring(redirectIndex + 9));
+            }
+        }
+
+        // Persistent / Remember Login Configuration & Auto-Redirect
+        const rememberPreference = localStorage.getItem('palia_remember_me') === 'true';
+        if (rememberPreference) {
+            auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+        } else {
+            auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
+        }
+
+        // Auto-redirect if already logged in
+        auth.onAuthStateChanged(async (user) => {
+
+    if (user) {
+
+        await syncUserToSupabase(user);
+
+        window.location.href = redirectTarget;
+    }
+
+});
+
+        // Toast Notification Helper
+        function showToast(message, type = 'error') {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toastMsg');
+            const toastIcon = document.getElementById('toastIcon');
+
+            toastMsg.textContent = message;
+            toast.classList.remove('hidden', 'bg-red-50', 'text-red-700', 'border-red-200', 'bg-mint-50', 'text-mint-700', 'border-mint-200');
+
+            if (type === 'success') {
+                toast.classList.add('bg-mint-50', 'text-mint-700', 'border', 'border-mint-200');
+                toastIcon.className = 'fa-solid fa-circle-check text-mint-600 text-sm';
+            } else {
+                toast.classList.add('bg-red-50', 'text-red-700', 'border', 'border-red-200');
+                toastIcon.className = 'fa-solid fa-triangle-exclamation text-red-600 text-sm';
+            }
+        }
+
+        // Tab Switching Logic
+        function switchTab(tab) {
+            const loginForm = document.getElementById('loginForm');
+            const signupForm = document.getElementById('signupForm');
+            const loginTabBtn = document.getElementById('loginTabBtn');
+            const signupTabBtn = document.getElementById('signupTabBtn');
+
+            document.getElementById('toast').classList.add('hidden');
+
+            if (tab === 'login') {
+                loginForm.classList.remove('hidden');
+                signupForm.classList.add('hidden');
+                loginTabBtn.className = 'flex-1 py-2.5 rounded-xl text-xs font-bold transition-all text-gray-700 bg-white shadow-sm';
+                signupTabBtn.className = 'flex-1 py-2.5 rounded-xl text-xs font-bold transition-all text-gray-500 hover:text-gray-900';
+            } else {
+                signupForm.classList.remove('hidden');
+                loginForm.classList.add('hidden');
+                signupTabBtn.className = 'flex-1 py-2.5 rounded-xl text-xs font-bold transition-all text-gray-700 bg-white shadow-sm';
+                loginTabBtn.className = 'flex-1 py-2.5 rounded-xl text-xs font-bold transition-all text-gray-500 hover:text-gray-900';
+            }
+        }
+
+        // Password Visibility Toggle
+        function togglePassword(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.className = 'fa-solid fa-eye-slash';
+            } else {
+                input.type = 'password';
+                icon.className = 'fa-solid fa-eye';
+            }
+        }
+
+        // Email Login Handler
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+            const rememberMe = document.getElementById('rememberMe').checked;
+            const btn = document.getElementById('loginSubmitBtn');
+
+            localStorage.setItem('palia_remember_me', rememberMe ? 'true' : 'false');
+            if (rememberMe) {
+                await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+            } else {
+                await auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Logging in...';
+
+            try {
+                await auth.signInWithEmailAndPassword(email, password);
+                showToast('Login successful! Redirecting...', 'success');
+                setTimeout(() => {
+                    window.location.href = redirectTarget;
+                }, 800);
+            } catch (error) {
+                showToast(error.message);
+                btn.disabled = false;
+                btn.innerHTML = '<span>Login</span><i class="fa-solid fa-arrow-right"></i>';
+            }
+        });
+
+        // Email Signup Handler
+        document.getElementById('signupForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('signupName').value.trim();
+            const email = document.getElementById('signupEmail').value.trim();
+            const password = document.getElementById('signupPassword').value.trim();
+            const confirmPassword = document.getElementById('signupConfirmPassword').value.trim();
+            const btn = document.getElementById('signupSubmitBtn');
+
+            if (password !== confirmPassword) {
+                showToast('Passwords do not match.');
+                return;
+            }
+
+            if (password.length < 6) {
+                showToast('Password must be at least 6 characters long.');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Creating account...';
+
+            try {
+                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                if (name) {
+                    await userCredential.user.updateProfile({ displayName: name });
+                }
+                showToast('Account created successfully! Redirecting...', 'success');
+                setTimeout(() => {
+                    window.location.href = redirectTarget;
+                }, 800);
+            } catch (error) {
+                showToast(error.message);
+                btn.disabled = false;
+                btn.innerHTML = '<span>Create Account</span><i class="fa-solid fa-user-plus"></i>';
+            }
+        });
+
+        // Google Login Handler
+        document.getElementById('googleLoginBtn').addEventListener('click', async () => {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            try {
+                await auth.signInWithPopup(provider);
+                showToast('Google login successful! Redirecting...', 'success');
+                setTimeout(() => {
+                    window.location.href = redirectTarget;
+                }, 800);
+            } catch (error) {
+                showToast(error.message);
+            }
+        });
+
+        // Forgot Password Handler
+        async function handleForgotPassword() {
+            const email = document.getElementById('loginEmail').value.trim();
+            if (!email) {
+                showToast('Please enter your email address in the login form first.');
+                document.getElementById('loginEmail').focus();
+                return;
+            }
+
+            try {
+                await auth.sendPasswordResetEmail(email);
+                showToast('Password reset link sent to your email.', 'success');
+            } catch (error) {
+                showToast(error.message);
+            }
+        }
+    </script>
+    window.addEventListener("pageshow", function () {
+
+    const email = document.getElementById("loginEmail");
+    const password = document.getElementById("loginPassword");
+
+    if (email) email.value = "";
+    if (password) password.value = "";
+
+});
+</body>
+</html>
