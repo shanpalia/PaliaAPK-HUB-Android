@@ -3,6 +3,8 @@ const path = require("path");
 
 const root = path.join(process.cwd(), "android");
 const pkg = "com.shanpalia.paliaapkhub";
+const appGradle = path.join(root, "app/build.gradle");
+const appGradleKts = path.join(root, "app/build.gradle.kts");
 const javaDir = path.join(root, "app/src/main/java/com/shanpalia/paliaapkhub");
 const res = path.join(root, "app/src/main/res");
 
@@ -164,9 +166,6 @@ public class PaliaDownloaderPlugin extends Plugin {
 `;
 
 fs.writeFileSync(path.join(javaDir, "PaliaDownloaderPlugin.java"), newPlugin);
-
-const appGradle = path.join(root, "app/build.gradle");
-const appGradleKts = path.join(root, "app/build.gradle.kts");
 
 const mainJava = path.join(javaDir, "MainActivity.java");
 const mainKotlin = path.join(javaDir, "MainActivity.kt");

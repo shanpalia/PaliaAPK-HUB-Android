@@ -170,10 +170,11 @@
     id="loginEmail"
     name="login_email"
     required
-    autocomplete="off"
+    class="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-mint-500 text-sm"
+    autocomplete="email"
     autocorrect="off"
     autocapitalize="none"
-    spellcheck="false"
+    spellcheck="false">
                     </div>
                 </div>
 
@@ -188,7 +189,8 @@
     id="loginPassword"
     name="login_password"
     required
-    autocomplete="new-password"
+    class="w-full pl-10 pr-12 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-mint-500 text-sm"
+    autocomplete="current-password">
                         <button type="button" onclick="togglePassword('loginPassword', 'loginEyeIcon')" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600 text-xs focus:outline-none">
                             <i id="loginEyeIcon" class="fa-solid fa-eye"></i>
                         </button>
@@ -292,6 +294,7 @@
             firebase.initializeApp(firebaseConfig);
         }
         const auth = firebase.auth();
+        auth.useDeviceLanguage();
 // ===============================
 // SUPABASE USER SYNC
 // ===============================
@@ -431,7 +434,9 @@ async function syncUserToSupabase(user) {
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Logging in...';
 
             try {
-                await auth.signInWithEmailAndPassword(email, password);
+                const credential = await auth.signInWithEmailAndPassword(email, password);
+                await credential.user.reload();
+                await syncUserToSupabase(credential.user);
                 showToast('Login successful! Redirecting...', 'success');
                 setTimeout(() => {
                     window.location.href = redirectTarget;
@@ -469,7 +474,9 @@ async function syncUserToSupabase(user) {
                 const userCredential = await auth.createUserWithEmailAndPassword(email, password);
                 if (name) {
                     await userCredential.user.updateProfile({ displayName: name });
+                    await userCredential.user.reload();
                 }
+                await syncUserToSupabase(userCredential.user);
                 showToast('Account created successfully! Redirecting...', 'success');
                 setTimeout(() => {
                     window.location.href = redirectTarget;
@@ -485,10 +492,16 @@ async function syncUserToSupabase(user) {
         document.getElementById('googleLoginBtn').addEventListener('click', async () => {
             const provider = new firebase.auth.GoogleAuthProvider();
             try {
-                if (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform() && window.PaliaNativeGoogle) {
-                    const result = await window.PaliaNativeGoogle.signIn();
+                const nativePlatform = !!(window.Capacitor && typeof window.Capacitor.isNativePlatform === 'function' && window.Capacitor.isNativePlatform());
+                const nativePlugin = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.PaliaGoogleAuth;
+                if (nativePlatform && nativePlugin && typeof nativePlugin.signIn === 'function') {
+                    const result = await nativePlugin.signIn();
+                    if (!result || !result.idToken) throw new Error('Google account token was not returned. Check the Android OAuth client configuration.');
                     const credential = firebase.auth.GoogleAuthProvider.credential(result.idToken);
-                    await auth.signInWithCredential(credential);
+                    const signedIn = await auth.signInWithCredential(credential);
+                    await syncUserToSupabase(signedIn.user);
+                } else if (nativePlatform) {
+                    throw new Error('Google sign-in is not registered in this APK. Rebuild the latest Android version.');
                 } else {
                     await auth.signInWithPopup(provider);
                 }
@@ -497,7 +510,7 @@ async function syncUserToSupabase(user) {
                     window.location.href = redirectTarget;
                 }, 800);
             } catch (error) {
-                showToast(error.message);
+                showToast(error.message || 'Google sign-in failed. Check Firebase Authentication settings.');
             }
         });
 

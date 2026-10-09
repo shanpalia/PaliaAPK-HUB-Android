@@ -1612,10 +1612,11 @@ document.addEventListener('click', function(e){
    // This storefront renders app tiles into #appsGrid; filter those tiles directly too.
    const grid=document.getElementById('appsGrid');
    if(grid){
-     const cards=Array.from(grid.children).filter(el=>el.matches('article,.app-card,[data-app-card]'));
+     const cards=Array.from(grid.children).filter(el=>!el.matches('#searchResultStatus') && (el.matches('article,.app-card,[data-app-card],.card,.app-item') || el.querySelector('img') || el.querySelector('[data-app-id]')));
      let shown=0;
      cards.forEach(card=>{
-       const match=!q||card.innerText.toLocaleLowerCase().includes(q.toLocaleLowerCase());
+       const searchable=(card.innerText||'')+' '+Array.from(card.querySelectorAll('img,[title],[aria-label]')).map(el=>[el.alt,el.title,el.getAttribute('aria-label')].filter(Boolean).join(' ')).join(' ');
+       const match=!q||searchable.toLocaleLowerCase().includes(q.toLocaleLowerCase());
        card.hidden=!match;
        card.style.display=match?'':'none';
        if(match)shown++;
