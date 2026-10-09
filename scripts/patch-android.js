@@ -338,7 +338,7 @@ fs.writeFileSync(googleJava, [
 '',
 '@CapacitorPlugin(name = "PaliaGoogleAuth")',
 'public class PaliaGoogleAuthPlugin extends Plugin {',
-'    private static final String WEB_CLIENT_ID = "H270953807883-btnln51tlh1e1b2dtjfo6bsoasjhoc3s.apps.googleusercontent.com";',
+'    private static final String WEB_CLIENT_ID = "270953807883-btnln51tlh1e1b2dtjfo6bsoasjhoc3s.apps.googleusercontent.com";',
 '',
 '    @PluginMethod',
 '    public void signIn(PluginCall call) {',
