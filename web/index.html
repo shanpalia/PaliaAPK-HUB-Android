@@ -1669,5 +1669,39 @@ document.addEventListener('click', function(e){
 })();
 </script>
 
+
+<!-- Native-store style bottom navigation. This is part of the app UI, not Android system navigation. -->
+<nav class="store-bottom-nav" aria-label="PaliaAPK HUB navigation">
+  <a class="store-nav-item active" href="index.html" aria-label="Home"><i class="fa-solid fa-house"></i><span>Home</span></a>
+  <a class="store-nav-item" href="index.html#appsGrid" aria-label="Apps"><i class="fa-solid fa-mobile-screen-button"></i><span>Apps</span></a>
+  <a class="store-nav-item" href="index.html#categoriesSection" aria-label="Games and categories"><i class="fa-solid fa-gamepad"></i><span>Games</span></a>
+  <a class="store-nav-item" href="profile.html" aria-label="Profile"><i class="fa-regular fa-user"></i><span>You</span></a>
+</nav>
+<style>
+/* Stop the website from repeatedly advertising its own APK/update inside the installed app. */
+#paliaMobileAppPrompt,#paliaHubUpdateToast{display:none!important}
+.store-bottom-nav{position:fixed;left:0;right:0;bottom:0;z-index:99990;display:flex;justify-content:space-around;align-items:center;min-height:64px;padding:7px 8px calc(7px + env(safe-area-inset-bottom));background:rgba(255,255,255,.98);border-top:1px solid #e5e7eb;box-shadow:0 -5px 20px rgba(15,23,42,.07);font-family:Inter,system-ui,sans-serif}
+.dark .store-bottom-nav{background:rgba(17,24,39,.98);border-color:#374151}
+.store-nav-item{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;text-decoration:none;color:#64748b;font-size:19px;line-height:1;padding:5px 2px;border-radius:13px}
+.store-nav-item span{font-size:10px;font-weight:800;letter-spacing:.1px}
+.store-nav-item.active,.store-nav-item:focus-visible{color:#16a34a}
+.store-nav-item.active i{background:#dcfce7;padding:7px 16px;border-radius:18px}
+.dark .store-nav-item.active i{background:#14532d;color:#bbf7d0}
+body{padding-bottom:calc(82px + env(safe-area-inset-bottom))!important}
+@media(min-width:900px){.store-bottom-nav{max-width:520px;left:50%;right:auto;transform:translateX(-50%);border:1px solid #e5e7eb;border-bottom:0;border-radius:18px 18px 0 0}}
+</style>
+<script>
+(function(){
+ const links=[...document.querySelectorAll('.store-nav-item')];
+ function setActive(){
+   const hash=location.hash;
+   links.forEach((a,i)=>a.classList.toggle('active',
+     (i===0 && !hash) || (i===1 && hash==='#appsGrid') || (i===2 && hash==='#categoriesSection') || (i===3 && /profile|dashboard/.test(location.pathname))));
+ }
+ links.forEach(a=>a.addEventListener('click',()=>{links.forEach(x=>x.classList.remove('active'));a.classList.add('active')}));
+ window.addEventListener('hashchange',setActive);setActive();
+})();
+</script>
+
 </body>
 </html>
