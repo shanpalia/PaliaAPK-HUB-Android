@@ -38,6 +38,37 @@ jobs:
           curl --fail --location --retry 3 https://raw.githubusercontent.com/shanpalia/WebsitePaliaAPK_V.2/main/google-services.json --output android/app/google-services.json
           node scripts/patch-android.js
 
+      - name: Validate Firebase Android and Google OAuth configuration
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const file = 'android/app/google-services.json';
+          const pkg = 'com.shanpalia.paliaapkhub';
+          const cfg = JSON.parse(fs.readFileSync(file, 'utf8'));
+          const client = (cfg.client || []).find(c =>
+            (c.client_info?.android_client_info?.package_name || '') === pkg
+          );
+          if (!client) {
+            console.error('ERROR: google-services.json has no Android client for ' + pkg);
+            process.exit(1);
+          }
+          const oauth = client.oauth_client || [];
+          const webClient = oauth.find(c => Number(c.client_type) === 3 && c.client_id);
+          const androidClients = oauth.filter(c =>
+            Number(c.client_type) === 1 &&
+            c.android_info?.package_name === pkg &&
+            c.android_info?.certificate_hash
+          );
+          if (!webClient) {
+            console.error('ERROR: No Web OAuth client (client_type 3) found for ' + pkg);
+            process.exit(1);
+          }
+          console.log('Firebase project:', cfg.project_info?.project_id || '(missing)');
+          console.log('Android package:', pkg);
+          console.log('Android OAuth SHA-1 fingerprints in JSON:', androidClients.length);
+          console.log('Web OAuth client ID is present.');
+          NODE
+
       - name: Validate app JavaScript syntax
         run: node --check web/app.js
 
