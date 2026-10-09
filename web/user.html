@@ -493,9 +493,8 @@ async function syncUserToSupabase(user) {
             const provider = new firebase.auth.GoogleAuthProvider();
             try {
                 const nativePlatform = !!(window.Capacitor && typeof window.Capacitor.isNativePlatform === 'function' && window.Capacitor.isNativePlatform());
-                const nativePlugin = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.PaliaGoogleAuth;
-                if (nativePlatform && nativePlugin && typeof nativePlugin.signIn === 'function') {
-                    const result = await nativePlugin.signIn();
+                if (nativePlatform && window.PaliaNativeGoogle && typeof window.PaliaNativeGoogle.signIn === 'function') {
+                    const result = await window.PaliaNativeGoogle.signIn();
                     if (!result || !result.idToken) throw new Error('Google account token was not returned. Check the Android OAuth client configuration.');
                     const credential = firebase.auth.GoogleAuthProvider.credential(result.idToken);
                     const signedIn = await auth.signInWithCredential(credential);
