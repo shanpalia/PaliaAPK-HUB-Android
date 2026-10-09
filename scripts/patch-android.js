@@ -220,3 +220,14 @@ if (fs.existsSync(appGradle) || fs.existsSync(appGradleKts)) {
   }
   fs.writeFileSync(gradlePath, gradle);
 }
+
+// Final guard: ensure the custom Google Auth plugin is present in the exact Java source
+// directory used by MainActivity before Gradle starts compiling the Android app.
+const googleAuthFile = path.join(javaDir, "PaliaGoogleAuthPlugin.java");
+fs.writeFileSync(googleAuthFile, googlePluginSource, "utf8");
+const googleAuthWritten = fs.readFileSync(googleAuthFile, "utf8");
+if (!googleAuthWritten.includes("package " + pkg + ";") ||
+    !googleAuthWritten.includes("public class PaliaGoogleAuthPlugin extends Plugin")) {
+  throw new Error("PaliaGoogleAuthPlugin.java was not generated correctly at " + googleAuthFile);
+}
+console.log("Verified custom Google Auth plugin: " + googleAuthFile);
