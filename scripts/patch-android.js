@@ -166,7 +166,7 @@ public class PaliaDownloaderPlugin extends Plugin {
 `;
 
 fs.writeFileSync(path.join(javaDir, "PaliaDownloaderPlugin.java"), newPlugin);
-const googlePluginSource = "package com.shanpalia.paliaapkhub;\n\nimport android.app.Activity;\nimport android.content.Intent;\nimport com.getcapacitor.JSObject;\nimport com.getcapacitor.Plugin;\nimport com.getcapacitor.PluginCall;\nimport com.getcapacitor.PluginMethod;\nimport com.getcapacitor.annotation.CapacitorPlugin;\nimport com.google.android.gms.auth.api.signin.GoogleSignIn;\nimport com.google.android.gms.auth.api.signin.GoogleSignInAccount;\nimport com.google.android.gms.auth.api.signin.GoogleSignInClient;\nimport com.google.android.gms.auth.api.signin.GoogleSignInOptions;\nimport com.google.android.gms.common.api.ApiException;\n\n@CapacitorPlugin(name = \"PaliaGoogleAuth\")\npublic class PaliaGoogleAuthPlugin extends Plugin {\n    private static final int RC_SIGN_IN = 7204;\n    private GoogleSignInClient client;\n\n    @PluginMethod\n    public void signIn(PluginCall call) {\n        String webClientId = getContext().getString(\n            getContext().getResources().getIdentifier(\"default_web_client_id\", \"string\", getContext().getPackageName())\n        );\n        if (webClientId == null || webClientId.isEmpty()) {\n            call.reject(\"Firebase Google OAuth Web client ID is missing. Add google-services.json from Firebase Console.\");\n            return;\n        }\n        GoogleSignInOptions options = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)\n            .requestEmail().requestIdToken(webClientId).build();\n        client = GoogleSignIn.getClient(getActivity(), options);\n        startActivityForResult(call, client.getSignInIntent(), \"googleSignInResult\");\n    }\n\n    @com.getcapacitor.annotation.ActivityCallback\n    private void googleSignInResult(PluginCall call, androidx.activity.result.ActivityResult result) {\n        if (result.getResultCode() != Activity.RESULT_OK || result.getData() == null) {\n            call.reject(\"Google sign-in cancelled or account picker did not return a result.\");\n            return;\n        }\n        try {\n            GoogleSignInAccount account = GoogleSignIn.getSignedInAccountFromIntent(result.getData()).getResult(ApiException.class);\n            if (account == null || account.getIdToken() == null) {\n                call.reject(\"Google ID token missing. Verify Firebase Android and Web OAuth client IDs.\");\n                return;\n            }\n            JSObject data = new JSObject();\n            data.put(\"idToken\", account.getIdToken());\n            data.put(\"email\", account.getEmail());\n            data.put(\"displayName\", account.getDisplayName());\n            call.resolve(data);\n        } catch (ApiException e) {\n            call.reject(\"Google sign-in failed: \" + e.getStatusCode(), e);\n        }\n    }\n}\n";
+const googlePluginSource = "package com.shanpalia.paliaapkhub;\n\nimport android.app.Activity;\nimport android.content.Intent;\nimport com.getcapacitor.JSObject;\nimport com.getcapacitor.Plugin;\nimport com.getcapacitor.PluginCall;\nimport com.getcapacitor.PluginMethod;\nimport com.getcapacitor.annotation.CapacitorPlugin;\nimport com.google.android.gms.auth.api.signin.GoogleSignIn;\nimport com.google.android.gms.auth.api.signin.GoogleSignInAccount;\nimport com.google.android.gms.auth.api.signin.GoogleSignInClient;\nimport com.google.android.gms.auth.api.signin.GoogleSignInOptions;\nimport com.google.android.gms.common.api.ApiException;\n\n@CapacitorPlugin(name = \"PaliaGoogleAuth\")\npublic class PaliaGoogleAuthPlugin extends Plugin {\n    private static final int RC_SIGN_IN = 7204;\n    private GoogleSignInClient client;\n\n    @PluginMethod\n    public void signIn(PluginCall call) {\n        int webClientIdResource = getContext().getResources().getIdentifier(\"default_web_client_id\", \"string\", getContext().getPackageName());\n        if (webClientIdResource == 0) {\n            call.reject(\"Google Sign-In is not configured in this APK. Firebase google-services.json was not applied during the build.\");\n            return;\n        }\n        String webClientId = getContext().getString(webClientIdResource);\n        if (webClientId == null || webClientId.isEmpty()) {\n            call.reject(\"Firebase Google OAuth Web client ID is missing. Add google-services.json from Firebase Console.\");\n            return;\n        }\n        GoogleSignInOptions options = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)\n            .requestEmail().requestIdToken(webClientId).build();\n        client = GoogleSignIn.getClient(getActivity(), options);\n        startActivityForResult(call, client.getSignInIntent(), \"googleSignInResult\");\n    }\n\n    @com.getcapacitor.annotation.ActivityCallback\n    private void googleSignInResult(PluginCall call, androidx.activity.result.ActivityResult result) {\n        if (result.getResultCode() != Activity.RESULT_OK || result.getData() == null) {\n            call.reject(\"Google sign-in cancelled or account picker did not return a result.\");\n            return;\n        }\n        try {\n            GoogleSignInAccount account = GoogleSignIn.getSignedInAccountFromIntent(result.getData()).getResult(ApiException.class);\n            if (account == null || account.getIdToken() == null) {\n                call.reject(\"Google ID token missing. Verify Firebase Android and Web OAuth client IDs.\");\n                return;\n            }\n            JSObject data = new JSObject();\n            data.put(\"idToken\", account.getIdToken());\n            data.put(\"email\", account.getEmail());\n            data.put(\"displayName\", account.getDisplayName());\n            call.resolve(data);\n        } catch (ApiException e) {\n            call.reject(\"Google sign-in failed: \" + e.getStatusCode(), e);\n        }\n    }\n}\n";
 fs.writeFileSync(path.join(javaDir, "PaliaGoogleAuthPlugin.java"), googlePluginSource);
 
 
@@ -219,6 +219,53 @@ if (fs.existsSync(appGradle) || fs.existsSync(appGradleKts)) {
     gradle = gradle.replace(/dependencies\s*\{/m, "dependencies {\n" + lines);
   }
   fs.writeFileSync(gradlePath, gradle);
+}
+
+
+// Apply Firebase's Google Services Gradle plugin only when the project config is present.
+// This creates the default_web_client_id resource consumed by PaliaGoogleAuthPlugin.
+const googleServicesJson = path.join(root, "app", "google-services.json");
+if (fs.existsSync(googleServicesJson)) {
+  const rootGroovy = path.join(root, "build.gradle");
+  const rootKts = path.join(root, "build.gradle.kts");
+  const appGroovy = path.join(root, "app", "build.gradle");
+  const appKts = path.join(root, "app", "build.gradle.kts");
+
+  if (fs.existsSync(rootGroovy)) {
+    let rootText = fs.readFileSync(rootGroovy, "utf8");
+    if (!rootText.includes("com.google.gms:google-services")) {
+      if (/dependencies\s*\{/.test(rootText)) {
+        rootText = rootText.replace(/dependencies\s*\{/, match => match + "\n        classpath 'com.google.gms:google-services:4.4.2'");
+      } else {
+        rootText = "buildscript { repositories { google(); mavenCentral() } dependencies { classpath 'com.google.gms:google-services:4.4.2' } }\n" + rootText;
+      }
+      fs.writeFileSync(rootGroovy, rootText);
+    }
+    if (fs.existsSync(appGroovy)) {
+      let appText = fs.readFileSync(appGroovy, "utf8");
+      if (!appText.includes("com.google.gms.google-services")) {
+        appText += "\napply plugin: 'com.google.gms.google-services'\n";
+        fs.writeFileSync(appGroovy, appText);
+      }
+    }
+  } else if (fs.existsSync(rootKts)) {
+    let rootText = fs.readFileSync(rootKts, "utf8");
+    if (!rootText.includes("com.google.gms:google-services")) {
+      if (/dependencies\s*\{/.test(rootText)) {
+        rootText = rootText.replace(/dependencies\s*\{/, match => match + '\n        classpath("com.google.gms:google-services:4.4.2")');
+      } else {
+        rootText = 'buildscript { repositories { google(); mavenCentral() }; dependencies { classpath("com.google.gms:google-services:4.4.2") } }\n' + rootText;
+      }
+      fs.writeFileSync(rootKts, rootText);
+    }
+    if (fs.existsSync(appKts)) {
+      let appText = fs.readFileSync(appKts, "utf8");
+      if (!appText.includes("com.google.gms.google-services")) {
+        appText += '\napply(plugin = "com.google.gms.google-services")\n';
+        fs.writeFileSync(appKts, appText);
+      }
+    }
+  }
 }
 
 // Final guard: ensure the custom Google Auth plugin is present in the exact Java source
