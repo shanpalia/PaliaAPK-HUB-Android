@@ -211,6 +211,58 @@ td{
  display:none;
  z-index:999;
 }
+
+/* PaliaAPK HUB admin polish */
+:root{--hub-green:#16a34a;--hub-deep:#15803d;--hub-ink:#17211b;--hub-muted:#64748b;--hub-line:#e7eee9;--hub-bg:#f6faf7}
+body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--hub-bg);color:var(--hub-ink)}
+.header{height:auto;min-height:88px;padding:16px 24px;border-bottom:1px solid var(--hub-line);position:sticky;top:0;z-index:50}
+.header h2{font-size:clamp(21px,3vw,28px)!important;letter-spacing:-.6px}
+.header .left p{font-size:13px;margin-top:4px}
+#menuBtn{box-shadow:0 7px 16px rgba(22,163,74,.2);transition:transform .18s,background .18s}
+#menuBtn:hover{background:var(--hub-deep);transform:translateY(-1px)}
+.profile{width:46px;height:46px;border:3px solid #dcfce7;box-shadow:0 0 0 1px #bbf7d0;font-size:14px}
+.main{max-width:1440px;margin:0 auto;padding:clamp(16px,3vw,32px)}
+.cards{gap:16px}
+.card{position:relative;overflow:hidden;border:1px solid var(--hub-line);border-radius:20px;padding:23px;box-shadow:0 5px 18px rgba(15,23,42,.035);transition:transform .2s,box-shadow .2s}
+.card:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--hub-green)}
+.card:hover{transform:translateY(-3px);box-shadow:0 12px 26px rgba(15,23,42,.08)}
+.card h3{font-size:13px;font-weight:700;color:var(--hub-muted);letter-spacing:.15px}
+.card h2{font-size:clamp(28px,4vw,38px);font-weight:850;letter-spacing:-1px;color:var(--hub-ink);margin-top:12px}
+.table-container{margin-top:24px;border:1px solid var(--hub-line);border-radius:20px;padding:clamp(14px,2.5vw,24px);box-shadow:0 5px 18px rgba(15,23,42,.035)}
+.table-container h3{letter-spacing:-.3px}
+table{min-width:620px}
+th{background:#f8fbf9;color:#64748b;font-size:12px;text-transform:uppercase;letter-spacing:.55px}
+td{padding:15px 16px}
+tbody tr:hover{background:#f8fcf9}
+.btn-edit,.btn-delete{padding:8px 12px;border-radius:9px;transition:filter .15s,transform .15s}
+.btn-edit:hover,.btn-delete:hover{filter:brightness(.94);transform:translateY(-1px)}
+.menu a{margin:5px 12px;padding:14px 15px;border-radius:12px;transition:background .18s,color .18s}
+.menu a:hover{background:#ecfdf5;color:var(--hub-deep)}
+.logo{padding:28px 22px 24px}
+.logo h1{font-size:clamp(24px,5vw,30px);letter-spacing:-.8px}
+#overlay{backdrop-filter:blur(2px)}
+@media(max-width:640px){
+ .header{padding:13px 15px;min-height:76px}
+ #menuBtn{width:43px;height:43px;flex-shrink:0}
+ .header .left{gap:12px}
+ .header .left p{max-width:190px;font-size:12px}
+ .profile{width:40px;height:40px;flex-shrink:0}
+ .main{padding:16px 12px 24px}
+ .cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+ .card{padding:17px 14px;border-radius:16px}
+ .card h3{font-size:12px;line-height:1.4}
+ .card h2{font-size:29px;margin-top:8px}
+ .table-container{margin-top:17px;padding:14px 12px;border-radius:16px}
+ .table-container>div:first-child{gap:10px}
+ .table-container>div:first-child h3{font-size:17px!important}
+ .table-container>div:first-child a{white-space:nowrap;padding:9px 11px!important}
+ .sidebar{width:min(86vw,320px);left:calc(-1 * min(86vw,320px))}
+ .sidebar.active{left:0}
+ .logo{padding:27px 18px 22px}
+ .logo h1{font-size:26px}
+ .close-btn{top:15px;right:14px;width:40px;height:40px}
+}
+
 </style>
 </head>
 <body>
