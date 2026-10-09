@@ -37,6 +37,9 @@ jobs:
           curl --fail --location --retry 3 https://raw.githubusercontent.com/shanpalia/WebsitePaliaAPK_V.2/main/google-services.json --output android/app/google-services.json
           node scripts/patch-android.js
 
+      - name: Validate app JavaScript syntax
+        run: node --check web/app.js
+
       - name: Build debug APK
         working-directory: android
         run: ./gradlew assembleDebug --no-daemon
