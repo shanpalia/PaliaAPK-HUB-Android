@@ -69,15 +69,25 @@ jobs:
           console.log('Web OAuth client ID is present.');
           NODE
 
-      - name: Confirm latest Firebase config contains current debug SHA-1
+      - name: Confirm latest Firebase config contains persistent signing SHA-1
         run: |
           node <<'NODE'
           const fs = require('fs');
           const cfg = JSON.parse(fs.readFileSync('android/app/google-services.json', 'utf8'));
           const pkg = 'com.shanpalia.paliaapkhub';
+          const expectedSha1 = 'B4F5C2A22140C2A6E732C2137DEC0749EC4B3289';
           const client = (cfg.client || []).find(c => c.client_info?.android_client_info?.package_name === pkg);
+          const configured = (client?.oauth_client || [])
+            .filter(c => Number(c.client_type) === 1 && c.android_info?.package_name === pkg)
+            .map(c => String(c.android_info?.certificate_hash || '').replace(/:/g, '').toUpperCase());
           console.log('Firebase JSON loaded for', pkg);
-          console.log('Configured Android SHA-1 fingerprints:', (client?.oauth_client || []).filter(c => Number(c.client_type) === 1).map(c => c.android_info?.certificate_hash).join(', '));
+          console.log('Configured Android OAuth SHA-1 count:', configured.length);
+          if (!configured.includes(expectedSha1)) {
+            console.error('WARNING: Persistent keystore SHA-1 is not in google-services.json yet.');
+            console.error('Add SHA-1 B4:F5:C2:A2:21:40:C2:A6:E7:32:C2:13:7D:EC:07:49:EC:4B:32:89 in Firebase Console, download updated google-services.json, and update WebsitePaliaAPK_V.2.');
+          } else {
+            console.log('Persistent signing SHA-1 is present in Firebase config.');
+          }
           NODE
 
       - name: Validate app JavaScript syntax
@@ -87,8 +97,47 @@ jobs:
         working-directory: android
         run: ./gradlew assembleDebug --no-daemon
 
-      - name: Print APK signing certificate SHA-1 and SHA-256 for Firebase OAuth
-        run: keytool -printcert -jarfile android/app/build/outputs/apk/debug/app-debug.apk | grep -E 'Owner:|Issuer:|SHA1:|SHA256:'
+      - name: Sign APK with persistent keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          test -n "$KEYSTORE_BASE64" || { echo "ERROR: GitHub secret KEYSTORE_BASE64 is missing"; exit 1; }
+          test -n "$KEYSTORE_PASSWORD" || { echo "ERROR: GitHub secret KEYSTORE_PASSWORD is missing"; exit 1; }
+          test -n "$KEY_ALIAS" || { echo "ERROR: GitHub secret KEY_ALIAS is missing"; exit 1; }
+          test -n "$KEY_PASSWORD" || { echo "ERROR: GitHub secret KEY_PASSWORD is missing"; exit 1; }
+
+          KEYSTORE_FILE="$RUNNER_TEMP/paliaapk-release.jks"
+          APK="android/app/build/outputs/apk/debug/app-debug.apk"
+          SIGNED_APK="$RUNNER_TEMP/app-debug-signed.apk"
+
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$KEYSTORE_FILE"
+          test -s "$KEYSTORE_FILE" || { echo "ERROR: decoded keystore is empty"; exit 1; }
+
+          APKSIGNER="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -n 1)"
+          test -n "$APKSIGNER" && test -x "$APKSIGNER" || { echo "ERROR: Android apksigner not found"; exit 1; }
+
+          "$APKSIGNER" sign \
+            --ks "$KEYSTORE_FILE" \
+            --ks-key-alias "$KEY_ALIAS" \
+            --ks-pass env:KEYSTORE_PASSWORD \
+            --key-pass env:KEY_PASSWORD \
+            --out "$SIGNED_APK" \
+            "$APK"
+
+          "$APKSIGNER" verify --verbose "$SIGNED_APK"
+          mv "$SIGNED_APK" "$APK"
+          rm -f "$KEYSTORE_FILE"
+
+      - name: Verify final APK signing certificate
+        run: |
+          set -euo pipefail
+          APKSIGNER="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -n 1)"
+          "$APKSIGNER" verify --print-certs android/app/build/outputs/apk/debug/app-debug.apk
+          keytool -printcert -jarfile android/app/build/outputs/apk/debug/app-debug.apk | grep -E 'Owner:|Issuer:|SHA1:|SHA256:'
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
