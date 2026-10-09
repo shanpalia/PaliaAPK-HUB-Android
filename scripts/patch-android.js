@@ -295,12 +295,12 @@ fs.writeFileSync(
 
 fs.writeFileSync(
   path.join(res, "mipmap-anydpi-v26", "ic_launcher.xml"),
-  `<?xml version="1.0" encoding="utf-8"?><adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android"><background android:drawable="@color/ic_launcher_bg"/><foreground android:drawable="@drawable/ic_palia_logo"/></adaptive-icon>`
+  `<?xml version="1.0" encoding="utf-8"?><adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android"><background android:drawable="@android:color/white"/><foreground android:drawable="@drawable/palia_exact_icon"/></adaptive-icon>`
 );
 
 fs.writeFileSync(
   path.join(res, "mipmap-anydpi-v26", "ic_launcher_round.xml"),
-  `<?xml version="1.0" encoding="utf-8"?><adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android"><background android:drawable="@color/ic_launcher_bg"/><foreground android:drawable="@drawable/ic_palia_logo"/></adaptive-icon>`
+  `<?xml version="1.0" encoding="utf-8"?><adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android"><background android:drawable="@android:color/white"/><foreground android:drawable="@drawable/palia_exact_icon"/></adaptive-icon>`
 );
 
 fs.writeFileSync(

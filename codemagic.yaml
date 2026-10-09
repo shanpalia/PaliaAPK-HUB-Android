@@ -8,6 +8,8 @@ workflows:
         - paliaapk-release
       node: 22.11.0
     scripts:
+      - name: Restore exact icon from the supplied PaliaAPK HUB website assets
+        script: curl --fail --location --retry 3 https://raw.githubusercontent.com/shanpalia/WebsitePaliaAPK_V.2/main/assets/icon.png --output web/assets/icon.png
       - name: Install dependencies
         script: npm install --no-audit --no-fund
       - name: Prepare Android project

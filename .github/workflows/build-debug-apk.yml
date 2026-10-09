@@ -23,6 +23,9 @@ jobs:
           distribution: temurin
           java-version: '17'
 
+      - name: Restore exact icon from the supplied PaliaAPK HUB website assets
+        run: curl --fail --location --retry 3 https://raw.githubusercontent.com/shanpalia/WebsitePaliaAPK_V.2/main/assets/icon.png --output web/assets/icon.png
+
       - name: Install dependencies
         run: npm install --no-audit --no-fund
 
