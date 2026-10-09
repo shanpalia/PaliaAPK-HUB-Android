@@ -1627,6 +1627,7 @@ document.addEventListener('click', function(e){
 </style>
 <script>
 (function(){
+ function init(){
  const b=document.getElementById('bottomSearchBtn'),o=document.getElementById('mobileSearchOverlay'),i=document.getElementById('mobileSearchInput'),f=document.getElementById('mobileSearchForm'),closeBtn=document.getElementById('closeMobileSearch');
  if(!o||!i||!f)return;
  const main=()=>document.getElementById('search') || document.getElementById('searchInput');
@@ -1680,6 +1681,10 @@ document.addEventListener('click', function(e){
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&o.classList.contains('open'))close()});
  const params=new URLSearchParams(location.search);
  if(params.has('search')) window.openPaliaSearch(params.get('search')||'');
+ }
+ // The bottom navigation is below this script in the HTML. Wait until the DOM is parsed
+ // before looking up the button, otherwise it is null and never receives a click handler.
+ if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init,{once:true}); else init();
 })();
 </script>
 <nav class="store-bottom-nav" aria-label="PaliaAPK HUB navigation">
