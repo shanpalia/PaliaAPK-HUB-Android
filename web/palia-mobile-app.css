@@ -1,0 +1,23 @@
+
+/* PaliaAPK HUB Android app - APKPure-inspired mobile layer */
+.capacitor-app { padding-bottom: 76px; }
+.capacitor-app .site-footer, .capacitor-app footer { display:none !important; }
+.capacitor-app .app-card { border-radius:16px !important; }
+
+#mobileAppNav {
+  display:none;
+  position:fixed; left:0; right:0; bottom:0; z-index:99999;
+  height:64px; background:#fff; border-top:1px solid #e5e7eb;
+  box-shadow:0 -4px 18px rgba(0,0,0,.08);
+  padding:6px 8px calc(6px + env(safe-area-inset-bottom));
+  gap:4px;
+}
+.capacitor-app #mobileAppNav { display:flex; }
+#mobileAppNav a {
+  flex:1; color:#6b7280; text-decoration:none; font-size:11px;
+  font-weight:700; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; gap:4px; border-radius:12px;
+}
+#mobileAppNav a i { font-size:18px; }
+#mobileAppNav a.active { color:#16a34a; background:#f0fdf4; }
+@media (min-width:769px) { #mobileAppNav { display:none !important; } }
