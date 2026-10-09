@@ -488,6 +488,16 @@ async function syncUserToSupabase(user) {
             }
         });
 
+        function nativeGooglePlugin() {
+            const cap = window.Capacitor;
+            if (!cap) return null;
+            try {
+                if (cap.Plugins && cap.Plugins.PaliaGoogleAuth) return cap.Plugins.PaliaGoogleAuth;
+                if (typeof cap.registerPlugin === "function") return cap.registerPlugin("PaliaGoogleAuth");
+            } catch (error) { console.warn("Native Google plugin lookup failed", error); }
+            return null;
+        }
+
         // Google Login Handler
         document.getElementById('googleLoginBtn').addEventListener('click', async () => {
             const provider = new firebase.auth.GoogleAuthProvider();
@@ -498,8 +508,9 @@ async function syncUserToSupabase(user) {
                     (typeof cap.getPlatform === 'function' && cap.getPlatform() !== 'web') ||
                     (!cap.isNativePlatform && !cap.getPlatform && cap.Plugins)
                 ));
-                if (nativePlatform && window.PaliaNativeGoogle && typeof window.PaliaNativeGoogle.signIn === 'function') {
-                    const result = await window.PaliaNativeGoogle.signIn();
+                const googlePlugin = nativeGooglePlugin();
+                if (nativePlatform && googlePlugin && typeof googlePlugin.signIn === 'function') {
+                    const result = await googlePlugin.signIn();
                     if (!result || !result.idToken) throw new Error('Google account token was not returned. Check the Android OAuth client configuration.');
                     const credential = firebase.auth.GoogleAuthProvider.credential(result.idToken);
                     const signedIn = await auth.signInWithCredential(credential);
