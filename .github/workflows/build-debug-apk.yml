@@ -69,6 +69,17 @@ jobs:
           console.log('Web OAuth client ID is present.');
           NODE
 
+      - name: Confirm latest Firebase config contains current debug SHA-1
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const cfg = JSON.parse(fs.readFileSync('android/app/google-services.json', 'utf8'));
+          const pkg = 'com.shanpalia.paliaapkhub';
+          const client = (cfg.client || []).find(c => c.client_info?.android_client_info?.package_name === pkg);
+          console.log('Firebase JSON loaded for', pkg);
+          console.log('Configured Android SHA-1 fingerprints:', (client?.oauth_client || []).filter(c => Number(c.client_type) === 1).map(c => c.android_info?.certificate_hash).join(', '));
+          NODE
+
       - name: Validate app JavaScript syntax
         run: node --check web/app.js
 
