@@ -94,6 +94,7 @@
             transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
         }
     </style>
+<script src="native-google-auth.js"></script>
 </head>
 <body class="h-full bg-gray-50 text-gray-800 flex flex-col font-sans antialiased selection:bg-mint-100 selection:text-mint-700">
 
@@ -484,7 +485,13 @@ async function syncUserToSupabase(user) {
         document.getElementById('googleLoginBtn').addEventListener('click', async () => {
             const provider = new firebase.auth.GoogleAuthProvider();
             try {
-                await auth.signInWithPopup(provider);
+                if (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform() && window.PaliaNativeGoogle) {
+                    const result = await window.PaliaNativeGoogle.signIn();
+                    const credential = firebase.auth.GoogleAuthProvider.credential(result.idToken);
+                    await auth.signInWithCredential(credential);
+                } else {
+                    await auth.signInWithPopup(provider);
+                }
                 showToast('Google login successful! Redirecting...', 'success');
                 setTimeout(() => {
                     window.location.href = redirectTarget;
@@ -511,14 +518,13 @@ async function syncUserToSupabase(user) {
             }
         }
     </script>
+    <script>
     window.addEventListener("pageshow", function () {
-
-    const email = document.getElementById("loginEmail");
-    const password = document.getElementById("loginPassword");
-
-    if (email) email.value = "";
-    if (password) password.value = "";
-
-});
+      const email = document.getElementById("loginEmail");
+      const password = document.getElementById("loginPassword");
+      if (email) email.value = "";
+      if (password) password.value = "";
+    });
+    </script>
 </body>
 </html>
