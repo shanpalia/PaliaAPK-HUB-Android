@@ -1122,11 +1122,13 @@ if (appsSection) {
     let displayName = app.name || "Unknown App";
 
     if (query && app.name) {
-        const regex = new RegExp(`(${query})`, 'gi');
-        displayName = app.name.replace(
-            regex,
-            `<span class="bg-mint-200 dark:bg-mint-900/60 text-mint-800 dark:text-mint-200 px-0.5 rounded">$1</span>`
-        );
+        const escapeHtml = value => String(value ?? "").replace(/[&<>"']/g, char => ({
+            "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+        }[char]));
+        const escapedName = escapeHtml(app.name);
+        const safeQuery = String(query).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        const regex = new RegExp("(" + safeQuery + ")", "gi");
+        displayName = escapedName.replace(regex, '<span class="bg-mint-200 dark:bg-mint-900/60 text-mint-800 dark:text-mint-200 px-0.5 rounded">$1</span>');
     }
 
     return `
