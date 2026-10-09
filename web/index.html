@@ -1598,25 +1598,29 @@ document.addEventListener('click', function(e){
 <script>
 (function(){
  const b=document.getElementById('bottomSearchBtn'),o=document.getElementById('mobileSearchOverlay'),i=document.getElementById('mobileSearchInput'),f=document.getElementById('mobileSearchForm'),closeBtn=document.getElementById('closeMobileSearch');
- if(!b||!o||!i||!f)return;
+ if(!o||!i||!f)return;
  const main=()=>document.getElementById('searchInput');
  function applyQuery(){
+   const q=i.value.trim();
+   window.currentSearchQuery=q;
    const target=main();
    if(target){
-     target.value=i.value;
+     target.value=q;
      target.dispatchEvent(new Event('input',{bubbles:true}));
      target.dispatchEvent(new Event('change',{bubbles:true}));
    }
-   // Compatibility with the app renderer's shared live-search state.
-   window.currentSearchQuery=i.value;
    if(typeof window.filterAndRenderApps==='function')window.filterAndRenderApps();
+   const autocomplete=document.getElementById('searchAutocomplete');
+   if(autocomplete && !q) autocomplete.classList.add('hidden');
  }
  function close(){o.classList.remove('open');o.setAttribute('aria-hidden','true');}
- b.addEventListener('click',()=>{
+ window.openPaliaSearch=function(initialQuery){
    o.classList.add('open');o.setAttribute('aria-hidden','false');
-   i.value=main()?.value||'';
-   setTimeout(()=>{i.focus();i.select();},40);
- });
+   i.value=typeof initialQuery==='string'?initialQuery:(main()?.value||'');
+   setTimeout(()=>{i.focus();i.setSelectionRange(i.value.length,i.value.length);},80);
+   if(i.value)applyQuery();
+ };
+ if(b)b.addEventListener('click',()=>window.openPaliaSearch());
  if(closeBtn)closeBtn.addEventListener('click',close);
  o.addEventListener('click',e=>{if(e.target===o)close()});
  i.addEventListener('input',applyQuery);
@@ -1626,6 +1630,8 @@ document.addEventListener('click', function(e){
    if(grid)grid.scrollIntoView({behavior:'smooth',block:'start'});
  });
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&o.classList.contains('open'))close()});
+ const params=new URLSearchParams(location.search);
+ if(params.has('search')) window.openPaliaSearch(params.get('search')||'');
 })();
 </script>
 <nav class="store-bottom-nav" aria-label="PaliaAPK HUB navigation">
