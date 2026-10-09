@@ -1609,7 +1609,21 @@ document.addEventListener('click', function(e){
      target.dispatchEvent(new Event('input',{bubbles:true}));
      target.dispatchEvent(new Event('change',{bubbles:true}));
    }
-   if(typeof window.filterAndRenderApps==='function')window.filterAndRenderApps();
+   // This storefront renders app tiles into #appsGrid; filter those tiles directly too.
+   const grid=document.getElementById('appsGrid');
+   if(grid){
+     const cards=Array.from(grid.children).filter(el=>el.matches('article,.app-card,[data-app-card]'));
+     let shown=0;
+     cards.forEach(card=>{
+       const match=!q||card.innerText.toLocaleLowerCase().includes(q.toLocaleLowerCase());
+       card.hidden=!match;
+       card.style.display=match?'':'none';
+       if(match)shown++;
+     });
+     let status=document.getElementById('searchResultStatus');
+     if(!status){status=document.createElement('p');status.id='searchResultStatus';status.className='text-sm text-gray-500';grid.parentElement?.insertBefore(status,grid);}
+     status.textContent=q?(shown+' matching apps'):'';
+   }
    const autocomplete=document.getElementById('searchAutocomplete');
    if(autocomplete && !q) autocomplete.classList.add('hidden');
  }
