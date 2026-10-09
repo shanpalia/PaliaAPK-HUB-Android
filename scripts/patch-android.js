@@ -166,6 +166,9 @@ public class PaliaDownloaderPlugin extends Plugin {
 `;
 
 fs.writeFileSync(path.join(javaDir, "PaliaDownloaderPlugin.java"), newPlugin);
+const googlePluginSource = "package com.shanpalia.paliaapkhub;\n\nimport android.app.Activity;\nimport android.content.Intent;\nimport com.getcapacitor.JSObject;\nimport com.getcapacitor.Plugin;\nimport com.getcapacitor.PluginCall;\nimport com.getcapacitor.PluginMethod;\nimport com.getcapacitor.annotation.CapacitorPlugin;\nimport com.google.android.gms.auth.api.signin.GoogleSignIn;\nimport com.google.android.gms.auth.api.signin.GoogleSignInAccount;\nimport com.google.android.gms.auth.api.signin.GoogleSignInClient;\nimport com.google.android.gms.auth.api.signin.GoogleSignInOptions;\nimport com.google.android.gms.common.api.ApiException;\n\n@CapacitorPlugin(name = \"PaliaGoogleAuth\")\npublic class PaliaGoogleAuthPlugin extends Plugin {\n    private static final int RC_SIGN_IN = 7204;\n    private PluginCall pendingCall;\n    private GoogleSignInClient client;\n\n    @PluginMethod\n    public void signIn(PluginCall call) {\n        String webClientId = getContext().getString(\n            getContext().getResources().getIdentifier(\"default_web_client_id\", \"string\", getContext().getPackageName())\n        );\n        if (webClientId == null || webClientId.isEmpty()) {\n            call.reject(\"Firebase Google OAuth Web client ID is missing. Add google-services.json from Firebase Console.\");\n            return;\n        }\n        GoogleSignInOptions options = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)\n            .requestEmail().requestIdToken(webClientId).build();\n        client = GoogleSignIn.getClient(getActivity(), options);\n        pendingCall = call;\n        startActivityForResult(call, client.getSignInIntent(), \"googleSignInResult\");\n    }\n\n    @com.getcapacitor.annotation.ActivityCallback\n    private void googleSignInResult(com.getcapacitor.ActivityResult result) {\n        PluginCall call = pendingCall;\n        pendingCall = null;\n        if (call == null) return;\n        if (result.getResultCode() != Activity.RESULT_OK || result.getData() == null) {\n            call.reject(\"Google sign-in cancelled or account picker did not return a result.\");\n            return;\n        }\n        try {\n            GoogleSignInAccount account = GoogleSignIn.getSignedInAccountFromIntent(result.getData()).getResult(ApiException.class);\n            if (account == null || account.getIdToken() == null) {\n                call.reject(\"Google ID token missing. Verify Firebase Android and Web OAuth client IDs.\");\n                return;\n            }\n            JSObject data = new JSObject();\n            data.put(\"idToken\", account.getIdToken());\n            data.put(\"email\", account.getEmail());\n            data.put(\"displayName\", account.getDisplayName());\n            call.resolve(data);\n        } catch (ApiException e) {\n            call.reject(\"Google sign-in failed: \" + e.getStatusCode(), e);\n        }\n    }\n}\n";
+fs.writeFileSync(path.join(javaDir, "PaliaGoogleAuthPlugin.java"), googlePluginSource);
+
 
 const mainJava = path.join(javaDir, "MainActivity.java");
 const mainKotlin = path.join(javaDir, "MainActivity.kt");
@@ -203,7 +206,8 @@ if (fs.existsSync(mainJava)) {
 const googleDeps = [
   "androidx.credentials:credentials:1.3.0",
   "androidx.credentials:credentials-play-services-auth:1.3.0",
-  "com.google.android.libraries.identity.googleid:googleid:1.1.1"
+  "com.google.android.libraries.identity.googleid:googleid:1.1.1",
+  "com.google.android.gms:play-services-auth:21.2.0"
 ];
 if (fs.existsSync(appGradle) || fs.existsSync(appGradleKts)) {
   const gradlePath = fs.existsSync(appGradle) ? appGradle : appGradleKts;

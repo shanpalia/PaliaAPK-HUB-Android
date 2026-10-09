@@ -1599,7 +1599,7 @@ document.addEventListener('click', function(e){
 (function(){
  const b=document.getElementById('bottomSearchBtn'),o=document.getElementById('mobileSearchOverlay'),i=document.getElementById('mobileSearchInput'),f=document.getElementById('mobileSearchForm'),closeBtn=document.getElementById('closeMobileSearch');
  if(!o||!i||!f)return;
- const main=()=>document.getElementById('searchInput');
+ const main=()=>document.getElementById('search') || document.getElementById('searchInput');
  function applyQuery(){
    const q=i.value.trim();
    window.currentSearchQuery=q;
@@ -1608,6 +1608,7 @@ document.addEventListener('click', function(e){
      target.value=q;
      target.dispatchEvent(new Event('input',{bubbles:true}));
      target.dispatchEvent(new Event('change',{bubbles:true}));
+     target.dispatchEvent(new KeyboardEvent('keyup',{key:'',bubbles:true}));
    }
    // This storefront renders app tiles into #appsGrid; filter those tiles directly too.
    const grid=document.getElementById('appsGrid');
