@@ -492,7 +492,12 @@ async function syncUserToSupabase(user) {
         document.getElementById('googleLoginBtn').addEventListener('click', async () => {
             const provider = new firebase.auth.GoogleAuthProvider();
             try {
-                const nativePlatform = !!(window.Capacitor && typeof window.Capacitor.isNativePlatform === 'function' && window.Capacitor.isNativePlatform());
+                const cap = window.Capacitor;
+                const nativePlatform = !!(cap && (
+                    (typeof cap.isNativePlatform === 'function' && cap.isNativePlatform()) ||
+                    (typeof cap.getPlatform === 'function' && cap.getPlatform() !== 'web') ||
+                    (!cap.isNativePlatform && !cap.getPlatform && cap.Plugins)
+                ));
                 if (nativePlatform && window.PaliaNativeGoogle && typeof window.PaliaNativeGoogle.signIn === 'function') {
                     const result = await window.PaliaNativeGoogle.signIn();
                     if (!result || !result.idToken) throw new Error('Google account token was not returned. Check the Android OAuth client configuration.');
