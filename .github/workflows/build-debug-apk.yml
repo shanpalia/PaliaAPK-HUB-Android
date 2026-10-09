@@ -32,6 +32,11 @@ jobs:
       - name: Generate and patch Android project
         run: npm run android:prepare
 
+      - name: Restore Firebase Android configuration and enable Google Sign-In
+        run: |
+          curl --fail --location --retry 3 https://raw.githubusercontent.com/shanpalia/WebsitePaliaAPK_V.2/main/google-services.json --output android/app/google-services.json
+          node scripts/patch-android.js
+
       - name: Build debug APK
         working-directory: android
         run: ./gradlew assembleDebug --no-daemon
