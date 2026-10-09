@@ -346,7 +346,7 @@ fs.writeFileSync(googleJava, [
 '            GetGoogleIdOption option = new GetGoogleIdOption.Builder()',
 '                    .setServerClientId(WEB_CLIENT_ID)',
 '                    .setFilterByAuthorizedAccounts(false)',
-'                    .setAutoSelectEnabled(true)',
+'                    .setAutoSelectEnabled(false)',
 '                    .build();',
 '            GetCredentialRequest request = new GetCredentialRequest.Builder()',
 '                    .addCredentialOption(option)',

@@ -526,5 +526,30 @@ async function syncUserToSupabase(user) {
       if (password) password.value = "";
     });
     </script>
+<script id="palia-android-back-fix">
+(function(){
+ function install(){
+  const cap=window.Capacitor;
+  const plugins=cap&&cap.Plugins;
+  const app=plugins&&plugins.App;
+  if(!app||typeof app.addListener!=="function")return;
+  app.addListener("backButton",function(){
+   const search=document.getElementById("mobileSearchOverlay");
+   if(search&&search.classList.contains("open")){search.classList.remove("open");search.setAttribute("aria-hidden","true");return;}
+   const auth=document.getElementById("authModal");
+   if(auth&&!auth.classList.contains("hidden")){auth.classList.add("hidden");return;}
+   const path=(location.pathname||"").toLowerCase();
+   if(path.endsWith("/user.html")||path.endsWith("user.html")){location.replace("index.html");return;}
+   if(location.hash){history.replaceState(null,"",location.pathname+location.search);window.scrollTo({top:0,behavior:"smooth"});return;}
+   if(location.pathname.endsWith("index.html")||location.pathname==="/"||location.pathname===""){
+     if(typeof app.minimizeApp==="function")app.minimizeApp();
+     return;
+   }
+   location.replace("index.html");
+  });
+ }
+ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",install,{once:true});else install();
+})();
+</script>
 </body>
 </html>
