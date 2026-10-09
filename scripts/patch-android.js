@@ -3,10 +3,32 @@ const path = require("path");
 
 const root = path.join(process.cwd(), "android");
 const pkg = "com.shanpalia.paliaapkhub";
+const appVersionName = "1.0.1";
+const appVersionCode = 2;
 const appGradle = path.join(root, "app/build.gradle");
 const appGradleKts = path.join(root, "app/build.gradle.kts");
 const javaDir = path.join(root, "app/src/main/java/com/shanpalia/paliaapkhub");
 const res = path.join(root, "app/src/main/res");
+
+
+// Set the user-visible Android app version on every generated build.
+for (const gradlePath of [appGradle, appGradleKts]) {
+  if (!fs.existsSync(gradlePath)) continue;
+  let gradle = fs.readFileSync(gradlePath, "utf8");
+  if (/versionCode\s+\d+/.test(gradle)) {
+    gradle = gradle.replace(/versionCode\s+\d+/, "versionCode " + appVersionCode);
+  } else if (/versionCode\s*=\s*\d+/.test(gradle)) {
+    gradle = gradle.replace(/versionCode\s*=\s*\d+/, "versionCode = " + appVersionCode);
+  }
+  if (/versionName\s+"[^"]*"/.test(gradle)) {
+    gradle = gradle.replace(/versionName\s+"[^"]*"/, 'versionName "' + appVersionName + '"');
+  } else if (/versionName\s*=\s*"[^"]*"/.test(gradle)) {
+    gradle = gradle.replace(/versionName\s*=\s*"[^"]*"/, 'versionName = "' + appVersionName + '"');
+  }
+  fs.writeFileSync(gradlePath, gradle);
+  console.log("Android app version set to " + appVersionName + " (code " + appVersionCode + ")");
+  break;
+}
 
 fs.mkdirSync(javaDir, { recursive: true });
 const exactIconSource = path.join(process.cwd(), "www", "assets", "icon.png");
