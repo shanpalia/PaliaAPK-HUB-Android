@@ -165,6 +165,9 @@ public class PaliaDownloaderPlugin extends Plugin {
 
 fs.writeFileSync(path.join(javaDir, "PaliaDownloaderPlugin.java"), newPlugin);
 
+const appGradle = path.join(root, "app/build.gradle");
+const appGradleKts = path.join(root, "app/build.gradle.kts");
+
 const mainJava = path.join(javaDir, "MainActivity.java");
 const mainKotlin = path.join(javaDir, "MainActivity.kt");
 
@@ -197,12 +200,13 @@ if (fs.existsSync(mainJava)) {
   }
   fs.writeFileSync(mainKotlin, source);
 }
-if (fs.existsSync(appGradle)) {
-  let gradle = fs.readFileSync(appGradle, "utf8");
+if (fs.existsSync(appGradle) || fs.existsSync(appGradleKts)) {
+  const gradlePath = fs.existsSync(appGradle) ? appGradle : appGradleKts;
+  let gradle = fs.readFileSync(gradlePath, "utf8");
   if (!gradle.includes("androidx.core:core:")) {
     gradle = gradle.replace(/dependencies\s*\{/m, `dependencies {\n    implementation "androidx.core:core:1.13.1"`);
   }
-  fs.writeFileSync(appGradle, gradle);
+  fs.writeFileSync(gradlePath, gradle);
 }
 
 const manifest = path.join(root, "app/src/main/AndroidManifest.xml");
