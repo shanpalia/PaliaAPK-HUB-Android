@@ -170,43 +170,33 @@ const mainKotlin = path.join(javaDir, "MainActivity.kt");
 
 if (fs.existsSync(mainJava)) {
   let source = fs.readFileSync(mainJava, "utf8");
-  if (!source.includes("import com.shanpalia.paliaapkhub.PaliaDownloaderPlugin;")) {
-    source = source.replace("import com.getcapacitor.BridgeActivity;", "import com.getcapacitor.BridgeActivity;\\nimport com.shanpalia.paliaapkhub.PaliaDownloaderPlugin;");
+  if (!source.includes("import " + pkg + ".PaliaDownloaderPlugin;")) {
+    source = source.replace("import com.getcapacitor.BridgeActivity;", "import com.getcapacitor.BridgeActivity;\nimport " + pkg + ".PaliaDownloaderPlugin;");
   }
-  if (!source.includes("import com.shanpalia.paliaapkhub.PaliaGoogleAuthPlugin;")) {
-    source = source.replace("import com.getcapacitor.BridgeActivity;", "import com.getcapacitor.BridgeActivity;\\nimport com.shanpalia.paliaapkhub.PaliaGoogleAuthPlugin;");
+  if (!source.includes("import " + pkg + ".PaliaGoogleAuthPlugin;")) {
+    source = source.replace("import com.getcapacitor.BridgeActivity;", "import com.getcapacitor.BridgeActivity;\nimport " + pkg + ".PaliaGoogleAuthPlugin;");
   }
   if (!source.includes("registerPlugin(PaliaDownloaderPlugin.class)")) {
-    source = source.replace("public class MainActivity extends BridgeActivity {", "public class MainActivity extends BridgeActivity {\\n    @Override\\n    public void onCreate(android.os.Bundle savedInstanceState) {\\n        super.onCreate(savedInstanceState);\\n        registerPlugin(PaliaDownloaderPlugin.class);\\n        registerPlugin(PaliaGoogleAuthPlugin.class);\\n    }");
+    source = source.replace("public class MainActivity extends BridgeActivity {", "public class MainActivity extends BridgeActivity {\n    @Override\n    public void onCreate(android.os.Bundle savedInstanceState) {\n        super.onCreate(savedInstanceState);\n        registerPlugin(PaliaDownloaderPlugin.class);\n        registerPlugin(PaliaGoogleAuthPlugin.class);\n    }");
   } else if (!source.includes("registerPlugin(PaliaGoogleAuthPlugin.class)")) {
-    source = source.replace("registerPlugin(PaliaDownloaderPlugin.class);", "registerPlugin(PaliaDownloaderPlugin.class);\\n        registerPlugin(PaliaGoogleAuthPlugin.class);");
+    source = source.replace("registerPlugin(PaliaDownloaderPlugin.class);", "registerPlugin(PaliaDownloaderPlugin.class);\n        registerPlugin(PaliaGoogleAuthPlugin.class);");
   }
   fs.writeFileSync(mainJava, source);
 } else if (fs.existsSync(mainKotlin)) {
   let source = fs.readFileSync(mainKotlin, "utf8");
-  if (!source.includes("import com.shanpalia.paliaapkhub.PaliaDownloaderPlugin")) {
-    source = source.replace("import com.getcapacitor.BridgeActivity", "import com.getcapacitor.BridgeActivity\\nimport com.shanpalia.paliaapkhub.PaliaDownloaderPlugin");
+  if (!source.includes("import " + pkg + ".PaliaDownloaderPlugin")) {
+    source = source.replace(/^package ([^\n]+\n)/m, "package $1\nimport " + pkg + ".PaliaDownloaderPlugin\n");
   }
-  if (!source.includes("import com.shanpalia.paliaapkhub.PaliaGoogleAuthPlugin")) {
-    source = source.replace("import com.getcapacitor.BridgeActivity", "import com.getcapacitor.BridgeActivity\\nimport com.shanpalia.paliaapkhub.PaliaGoogleAuthPlugin");
+  if (!source.includes("import " + pkg + ".PaliaGoogleAuthPlugin")) {
+    source = source.replace(/^package ([^\n]+\n)/m, "package $1\nimport " + pkg + ".PaliaGoogleAuthPlugin\n");
   }
   if (!source.includes("bridge.registerPlugin(PaliaDownloaderPlugin::class.java)")) {
-    source = source.replace("class MainActivity : BridgeActivity()", "class MainActivity : BridgeActivity() {\\n    override fun onCreate(savedInstanceState: android.os.Bundle?) {\\n        super.onCreate(savedInstanceState)\\n        bridge.registerPlugin(PaliaDownloaderPlugin::class.java)\\n        bridge.registerPlugin(PaliaGoogleAuthPlugin::class.java)\\n    }");
+    source = source.replace("class MainActivity : BridgeActivity() {", "class MainActivity : BridgeActivity() {\n    override fun onCreate(savedInstanceState: android.os.Bundle?) {\n        bridge.registerPlugin(PaliaDownloaderPlugin::class.java)\n        bridge.registerPlugin(PaliaGoogleAuthPlugin::class.java)\n        super.onCreate(savedInstanceState)\n    }");
   } else if (!source.includes("bridge.registerPlugin(PaliaGoogleAuthPlugin::class.java)")) {
-    source = source.replace("bridge.registerPlugin(PaliaDownloaderPlugin::class.java)", "bridge.registerPlugin(PaliaDownloaderPlugin::class.java)\\n        bridge.registerPlugin(PaliaGoogleAuthPlugin::class.java)");
+    source = source.replace("bridge.registerPlugin(PaliaDownloaderPlugin::class.java)", "bridge.registerPlugin(PaliaDownloaderPlugin::class.java)\n        bridge.registerPlugin(PaliaGoogleAuthPlugin::class.java)");
   }
   fs.writeFileSync(mainKotlin, source);
 }
-
-const props = path.join(root, "gradle.properties");
-if (fs.existsSync(props)) {
-  let source = fs.readFileSync(props, "utf8");
-  if (!source.includes("android.useAndroidX=true")) source += "\nandroid.useAndroidX=true\n";
-  if (!source.includes("android.enableJetifier=true")) source += "android.enableJetifier=true\n";
-  fs.writeFileSync(props, source);
-}
-
-const appGradle = path.join(root, "app/build.gradle");
 if (fs.existsSync(appGradle)) {
   let gradle = fs.readFileSync(appGradle, "utf8");
   if (!gradle.includes("androidx.core:core:")) {
