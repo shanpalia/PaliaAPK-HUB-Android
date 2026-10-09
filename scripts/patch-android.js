@@ -179,9 +179,7 @@ public class PaliaDownloaderPlugin extends Plugin {
                 call.resolve(completed);
 
             } catch (Exception e) {
-                if (downloadedFile != null && downloadedFile.exists()) {
-                    downloadedFile.delete();
-                }
+                // Keep any previous valid APK if this download fails.
                 File partial = new File(base, filename + ".part");
                 if (partial.exists()) partial.delete();
                 call.reject("Download failed: " + e.getMessage());
