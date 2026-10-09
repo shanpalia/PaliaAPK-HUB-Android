@@ -25,7 +25,12 @@ function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&l
 function size(v){if(!v)return"Unknown Size";const n=Number(v);if(!Number.isNaN(n))return n>1048576?(n/1048576).toFixed(1)+" MB":Math.round(n/1024)+" KB";return String(v);}
 function formatBytes(v){const n=Number(v||0);if(!Number.isFinite(n)||n<=0)return"0 MB";if(n>=1073741824)return(n/1073741824).toFixed(2)+" GB";if(n>=1048576)return(n/1048576).toFixed(1)+" MB";return Math.round(n/1024)+" KB";}
 function nativeGooglePlugin(){const cap=window.Capacitor;if(!cap)return null;try{if(cap.Plugins?.PaliaGoogleAuth)return cap.Plugins.PaliaGoogleAuth;if(typeof cap.registerPlugin==="function")return cap.registerPlugin("PaliaGoogleAuth");}catch(e){console.warn("Native Google plugin lookup failed",e);}return null;}
-function showAuth(){ $("authModal").classList.remove("hidden"); setAuthMode("login"); }
+function showAuth(){
+ // Use the exact website account page inside the existing Capacitor WebView (no external browser).
+ if(pendingDownloadApp){try{sessionStorage.setItem("palia_pending_download",JSON.stringify(pendingDownloadApp));}catch(e){console.warn("Could not preserve pending download",e);}}
+ const redirect=pendingDownloadApp?"index.html?resumeDownload=1":"index.html";
+ window.location.href="user.html?redirect="+encodeURIComponent(redirect);
+}
 function hideAuth(){ $("authModal").classList.add("hidden"); $("authError").textContent=""; }
 let authMode="login"; function setAuthMode(mode){ authMode=mode; const signup=mode==="signup"; $("authName")?.classList.toggle("hidden",!signup); $("authHeading").textContent=signup?"Create your account":"Sign in to continue"; $("authSub").textContent=signup?"Create a free account to download APKs.":"Login is required before downloading an APK."; $("login").classList.toggle("hidden",signup); $("signup").classList.toggle("hidden",!signup); $("forgotPassword")?.classList.toggle("hidden",signup); $("rememberMe")?.closest("label")?.classList.toggle("hidden",signup); }
 async function applyPersistence(){ const keep=!!$("rememberMe")?.checked; localStorage.setItem("palia_remember_me",keep?"true":"false"); await auth.setPersistence(keep?firebase.auth.Auth.Persistence.LOCAL:firebase.auth.Auth.Persistence.SESSION); }
@@ -122,7 +127,12 @@ document.querySelectorAll(".category").forEach(b=>b.addEventListener("click",()=
  b.classList.add("active");activeCategory=b.dataset.category;loadApps(); checkForStoreUpdate();
 }));
 auth.onAuthStateChanged(user=>{
- if(user){$("authBtn").classList.add("hidden");$("profileBox").classList.remove("hidden");const n=user.displayName||user.email||"U";$("profileBtn").textContent=n.slice(0,2).toUpperCase();}
+ if(user){$("authBtn").classList.add("hidden");$("profileBox").classList.remove("hidden");const n=user.displayName||user.email||"U";$("profileBtn").textContent=n.slice(0,2).toUpperCase();
+  // Resume a download only when login was opened for a protected download/update.
+  if(new URLSearchParams(location.search).get("resumeDownload")==="1"){
+   try{const raw=sessionStorage.getItem("palia_pending_download");if(raw){const pending=JSON.parse(raw);sessionStorage.removeItem("palia_pending_download");if(pending&&typeof pending==="object")setTimeout(()=>startDownload(pending),350);}}catch(e){console.warn("Could not resume pending download",e);}
+  }
+ }
  else{$("authBtn").classList.remove("hidden");$("profileBox").classList.add("hidden");}
 });
 loadApps();
