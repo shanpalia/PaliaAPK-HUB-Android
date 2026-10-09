@@ -101,21 +101,40 @@ public class PaliaDownloaderPlugin extends Plugin {
 
                 int code = connection.getResponseCode();
                 if (code < 200 || code >= 300) {
-                    throw new IOException("HTTP " + code);
+                    throw new IOException("Server returned HTTP " + code);
+                }
+
+                String contentType = connection.getContentType();
+                if (contentType != null &&
+                    (contentType.toLowerCase().contains("text/html") ||
+                     contentType.toLowerCase().contains("application/json"))) {
+                    throw new IOException("This link returned a webpage, not an APK file. Set the app's APK URL to a direct .apk download link.");
                 }
 
                 long total = connection.getContentLengthLong();
+                File partialFile = new File(base, filename + ".part");
+                if (partialFile.exists()) partialFile.delete();
 
                 try (InputStream in = new BufferedInputStream(connection.getInputStream());
-                     OutputStream out = new BufferedOutputStream(new FileOutputStream(downloadedFile))) {
+                     OutputStream out = new BufferedOutputStream(new FileOutputStream(partialFile))) {
 
                     byte[] buffer = new byte[64 * 1024];
+                    byte[] header = new byte[4];
+                    int headerCount = 0;
                     long done = 0;
                     long lastTime = android.os.SystemClock.elapsedRealtime();
                     long lastBytes = 0;
                     int n;
 
                     while ((n = in.read(buffer)) != -1) {
+                        if (headerCount < header.length) {
+                            int copy = Math.min(n, header.length - headerCount);
+                            System.arraycopy(buffer, 0, header, headerCount, copy);
+                            headerCount += copy;
+                            if (headerCount >= 2 && !(header[0] == 0x50 && header[1] == 0x4B)) {
+                                throw new IOException("Downloaded content is not an APK/ZIP file. Use a direct APK file URL, not a Telegram post link.");
+                            }
+                        }
                         out.write(buffer, 0, n);
                         done += n;
 
@@ -136,6 +155,19 @@ public class PaliaDownloaderPlugin extends Plugin {
                     }
                 }
 
+                if (headerCount < 2 || partialFile.length() < 4) {
+                    partialFile.delete();
+                    throw new IOException("The server returned an empty or invalid APK file.");
+                }
+                if (downloadedFile.exists() && !downloadedFile.delete()) {
+                    partialFile.delete();
+                    throw new IOException("Could not replace the previous downloaded APK.");
+                }
+                if (!partialFile.renameTo(downloadedFile)) {
+                    partialFile.delete();
+                    throw new IOException("Could not save the downloaded APK.");
+                }
+
                 JSObject completed = new JSObject();
                 completed.put("downloadedBytes", downloadedFile.length());
                 completed.put("totalBytes", downloadedFile.length());
@@ -150,6 +182,8 @@ public class PaliaDownloaderPlugin extends Plugin {
                 if (downloadedFile != null && downloadedFile.exists()) {
                     downloadedFile.delete();
                 }
+                File partial = new File(base, filename + ".part");
+                if (partial.exists()) partial.delete();
                 call.reject("Download failed: " + e.getMessage());
             } finally {
                 downloading = false;
