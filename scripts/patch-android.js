@@ -3,8 +3,8 @@ const path = require("path");
 
 const root = path.join(process.cwd(), "android");
 const pkg = "com.shanpalia.paliaapkhub";
-const appVersionName = "1.0.1";
-const appVersionCode = 2;
+const appVersionName = "1.0.2";
+const appVersionCode = 3;
 const appGradle = path.join(root, "app/build.gradle");
 const appGradleKts = path.join(root, "app/build.gradle.kts");
 const javaDir = path.join(root, "app/src/main/java/com/shanpalia/paliaapkhub");
