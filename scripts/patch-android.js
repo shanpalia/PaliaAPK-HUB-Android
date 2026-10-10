@@ -2,6 +2,13 @@ const fs = require("fs");
 const path = require("path");
 
 const root = path.join(process.cwd(), "android");
+// Copy Firebase configuration into the generated native Android project.
+const firebaseConfigSource = path.join(process.cwd(), "firebase", "google-services.json");
+const firebaseConfigTarget = path.join(root, "app", "google-services.json");
+if (fs.existsSync(firebaseConfigSource) && fs.existsSync(path.join(root, "app"))) {
+  fs.copyFileSync(firebaseConfigSource, firebaseConfigTarget);
+  console.log("Firebase Android configuration copied");
+}
 const pkg = "com.shanpalia.paliaapkhub";
 const appVersionName = "1.0.2";
 const appVersionCode = 3;
