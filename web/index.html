@@ -282,6 +282,11 @@
                     </div>
                 </div>
 
+                <!-- Invite friends: share the public PaliaAPK HUB website -->
+                <button id="paliaInviteFriendsBtn" type="button" onclick="triggerShareWebsite()" class="hidden sm:flex px-3 h-10 rounded-xl bg-mint-50 dark:bg-mint-900/30 text-mint-700 dark:text-mint-300 border border-mint-100 dark:border-mint-800 hover:bg-mint-100 dark:hover:bg-mint-900/50 items-center gap-2 text-xs font-black transition" aria-label="Invite friends to PaliaAPK HUB">
+                    <i class="fa-solid fa-user-plus"></i><span>Invite Friends</span>
+                </button>
+
                 <!-- Dark Mode Toggle -->
                 <button id="darkModeToggle" class="w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-mint-50 text-gray-600 dark:text-gray-300 transition flex items-center justify-center border border-gray-200 dark:border-gray-700">
                     <i class="fa-solid fa-moon dark:hidden"></i>
@@ -342,6 +347,27 @@
                 <div class="swiper-pagination"></div>
                 <div class="swiper-button-next text-mint-600"></div>
                 <div class="swiper-button-prev text-mint-600"></div>
+            </div>
+        </section>
+
+        <!-- PaliaAPK HUB promotion: installed users can invite friends; visitors can download the Android app -->
+        <section id="paliaInviteFriendsCard" class="mb-8 rounded-3xl border border-green-100 dark:border-green-900/60 bg-gradient-to-r from-green-50 to-white dark:from-green-950/40 dark:to-gray-900 p-5 sm:p-6 shadow-sm">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+                <div class="w-14 h-14 rounded-2xl bg-white dark:bg-gray-800 border border-green-100 dark:border-green-900 flex items-center justify-center shrink-0 shadow-sm">
+                    <img src="assets/icon.png" alt="PaliaAPK HUB icon" class="w-11 h-11 object-contain rounded-xl">
+                </div>
+                <div class="flex-1 min-w-0">
+                    <h2 class="text-lg font-black text-gray-900 dark:text-white">Enjoying PaliaAPK HUB?</h2>
+                    <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">Share the app store with friends so they can discover Android apps and games too.</p>
+                </div>
+                <div class="flex flex-wrap gap-2 shrink-0">
+                    <button type="button" onclick="triggerShareWebsite()" class="px-4 py-3 rounded-xl bg-green-600 hover:bg-green-700 text-white font-bold text-sm flex items-center justify-center gap-2 transition">
+                        <i class="fa-solid fa-share-nodes"></i> Invite Friends
+                    </button>
+                    <button type="button" onclick="document.getElementById('paliaMobileAppPrompt')?.scrollIntoView({behavior:'smooth',block:'end'}); const p=document.getElementById('paliaMobileAppPrompt'); if(p) p.style.display='block';" class="px-4 py-3 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-100 font-bold text-sm flex items-center justify-center gap-2 transition">
+                        <i class="fa-brands fa-android text-green-600"></i> Get Android App
+                    </button>
+                </div>
             </div>
         </section>
 
