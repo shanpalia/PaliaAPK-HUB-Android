@@ -77,6 +77,7 @@ async function registerPushNotifications() {
       console.info("PaliaAPK notifications are not permitted by the user.");
       return;
     }
+    await PushNotifications.createChannel({ id: "paliaapk_updates", name: "PaliaAPK HUB Updates", description: "New apps and APK updates", importance: 4, sound: "default", vibration: true });
     await PushNotifications.addListener("registration", async ({ value }) => {
       if (!value) return;
       try {
