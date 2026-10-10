@@ -115,12 +115,12 @@ public class PaliaDownloaderPlugin extends Plugin {
                 File partialFile = new File(base, filename + ".part");
                 if (partialFile.exists()) partialFile.delete();
 
+                int headerCount = 0;
                 try (InputStream in = new BufferedInputStream(connection.getInputStream());
                      OutputStream out = new BufferedOutputStream(new FileOutputStream(partialFile))) {
 
                     byte[] buffer = new byte[64 * 1024];
                     byte[] header = new byte[4];
-                    int headerCount = 0;
                     long done = 0;
                     long lastTime = android.os.SystemClock.elapsedRealtime();
                     long lastBytes = 0;
