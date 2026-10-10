@@ -438,15 +438,25 @@ const paliaSupabase = window.supabase.createClient(PALIA_SUPABASE_URL, PALIA_SUP
             }
 
             async function loadUpdates(){
-                if(!list || !paliaSupabase) return;
+                if(!list) return;
                 list.innerHTML = '<div class="py-10 text-center text-sm text-gray-500"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Checking for updates...</div>';
 
+                if(!window.supabase || !paliaSupabase){
+                    list.innerHTML = '<div class="py-10 text-center text-sm text-red-500">Update service could not start. Check your connection and try again.</div><div class="text-center pb-5"><button type="button" id="retryProfileUpdates" class="px-4 py-2 rounded-xl bg-green-600 text-white text-sm font-bold">Try again</button></div>';
+                    document.getElementById('retryProfileUpdates')?.addEventListener('click', loadUpdates);
+                    return;
+                }
+
                 try{
-                    const {data, error} = await paliaSupabase
+                    const query = paliaSupabase
                         .from('apps')
                         .select('id,name,version,previous_version,update_available,release_notes,icon_url,apk_url,telegram_message_id,updated_at')
                         .eq('update_available', true)
                         .order('updated_at', {ascending:false});
+                    const {data, error} = await Promise.race([
+                        query,
+                        new Promise((_, reject) => setTimeout(() => reject(new Error('Update check timed out. Please check your internet connection and try again.')), 12000))
+                    ]);
 
                     if(error) throw error;
 
@@ -524,7 +534,8 @@ const paliaSupabase = window.supabase.createClient(PALIA_SUPABASE_URL, PALIA_SUP
                     console.error('Profile updates error:', err);
                     count.textContent='0';
                     count.classList.add('hidden');
-                    list.innerHTML = '<div class="py-10 text-center text-sm text-red-500">Unable to load updates. Please try again.</div>';
+                    list.innerHTML = '<div class="py-10 text-center text-sm text-red-500">Unable to load updates. Check your internet connection and try again.</div><div class="text-center pb-5"><button type="button" id="retryProfileUpdates" class="px-4 py-2 rounded-xl bg-green-600 text-white text-sm font-bold">Try again</button></div>';
+                    document.getElementById('retryProfileUpdates')?.addEventListener('click', loadUpdates);
                 }
             }
 
