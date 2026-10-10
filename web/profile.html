@@ -454,12 +454,12 @@ window.paliaSupabase = (window.supabase && typeof window.supabase.createClient =
                 try{
                     const query = window.paliaSupabase
                         .from('apps')
-                        .select('id,name,version,previous_version,update_available,release_notes,icon_url,apk_url,telegram_message_id,updated_at')
+                        .select('id,name,version,update_available,icon_url,apk_url,updated_at')
                         .eq('update_available', true)
                         .order('updated_at', {ascending:false});
                     const {data, error} = await Promise.race([
                         query,
-                        new Promise((_, reject) => setTimeout(() => reject(new Error('Update check timed out. Please check your internet connection and try again.')), 12000))
+                        new Promise((_, reject) => setTimeout(() => reject(new Error('Update check timed out after 6 seconds. Please retry.')), 6000))
                     ]);
 
                     if(error) throw error;
@@ -490,8 +490,8 @@ window.paliaSupabase = (window.supabase && typeof window.supabase.createClient =
                           </div>
                           <div class="min-w-0">
                             <p class="font-black text-sm text-gray-900 truncate">${esc(app.name)}</p>
-                            <p class="text-xs text-gray-500 mt-0.5">Version <b class="text-green-600">${esc(app.version || '—')}</b>${app.previous_version ? ` · Previous ${esc(app.previous_version)}` : ''}</p>
-                            ${app.release_notes ? `<p class="text-[11px] text-gray-500 mt-1 truncate">${esc(app.release_notes)}</p>` : ''}
+                            <p class="text-xs text-gray-500 mt-0.5">Version <b class="text-green-600">${esc(app.version || '—')}</b></p>
+                            
                           </div>
                         </button>
                         <button type="button" data-update-download="${esc(app.id)}"
