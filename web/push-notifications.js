@@ -8,7 +8,7 @@ const SITE_URL = "https://shanpalia.github.io/WebsitePaliaAPK_V.2/";
 const LAST_UPDATE_KEY = "paliaapk_last_catalog_update_v1";
 
 function safeAppUrl(app) {
-  return SITE_URL + "app-details.html?id=" + encodeURIComponent(String(app.id || ""));
+  return SITE_URL + "app.html?id=" + encodeURIComponent(String(app.id || ""));
 }
 function showUpdateAlert(app) {
   if (document.getElementById("paliaUpdateAlert")) return;
