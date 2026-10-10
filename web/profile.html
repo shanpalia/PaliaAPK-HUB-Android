@@ -365,7 +365,11 @@
 <script>
 const PALIA_SUPABASE_URL = 'https://ralinnuegsbuvlhwpzln.supabase.co';
 const PALIA_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhbGlubnVlZ3NidXZsaHdwemxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyOTU2NDIsImV4cCI6MjA5NTg3MTY0Mn0.hIec6UxRx5gzSMTi5oJ3_xXw3d1QKCmKsPF-stBwIFE';
-const paliaSupabase = window.supabase.createClient(PALIA_SUPABASE_URL, PALIA_SUPABASE_ANON_KEY);
+window.paliaSupabase = (window.supabase && typeof window.supabase.createClient === 'function')
+    ? window.supabase.createClient(PALIA_SUPABASE_URL, PALIA_SUPABASE_ANON_KEY, {
+        global: { fetch: (...args) => fetch(...args) }
+      })
+    : null;
 </script>
 
 <!-- AVAILABLE UPDATES MODAL -->
@@ -441,14 +445,14 @@ const paliaSupabase = window.supabase.createClient(PALIA_SUPABASE_URL, PALIA_SUP
                 if(!list) return;
                 list.innerHTML = '<div class="py-10 text-center text-sm text-gray-500"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Checking for updates...</div>';
 
-                if(!window.supabase || !paliaSupabase){
+                if(!window.supabase || !window.paliaSupabase){
                     list.innerHTML = '<div class="py-10 text-center text-sm text-red-500">Update service could not start. Check your connection and try again.</div><div class="text-center pb-5"><button type="button" id="retryProfileUpdates" class="px-4 py-2 rounded-xl bg-green-600 text-white text-sm font-bold">Try again</button></div>';
                     document.getElementById('retryProfileUpdates')?.addEventListener('click', loadUpdates);
                     return;
                 }
 
                 try{
-                    const query = paliaSupabase
+                    const query = window.paliaSupabase
                         .from('apps')
                         .select('id,name,version,previous_version,update_available,release_notes,icon_url,apk_url,telegram_message_id,updated_at')
                         .eq('update_available', true)
@@ -543,9 +547,9 @@ const paliaSupabase = window.supabase.createClient(PALIA_SUPABASE_URL, PALIA_SUP
             const topCount = document.getElementById('profileUpdatesCountTop');
 
             async function refreshTopCount(){
-                if(!topCount || !paliaSupabase) return;
+                if(!topCount || !window.paliaSupabase) return;
                 try{
-                    const {data,error}=await paliaSupabase.from('apps').select('id').eq('update_available',true);
+                    const {data,error}=await window.paliaSupabase.from('apps').select('id').eq('update_available',true);
                     if(error) throw error;
                     const n=Array.isArray(data)?data.length:0;
                     topCount.textContent=String(n);
