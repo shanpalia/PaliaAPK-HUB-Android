@@ -76,7 +76,7 @@ async function startDownload(a){
  if(!a)return;
  const user=auth.currentUser;
  if(!user){pendingDownloadApp=a;showAuth();return;}
- const url=a.apk_url||a.download_url||(a.telegram_message_id?("https://paliaapk-telegram-api.onrender.com/download-apk/"+a.telegram_message_id):"");
+ const url=a.telegram_message_id?("https://paliaapk-telegram-api.onrender.com/download-apk/"+encodeURIComponent(String(a.telegram_message_id))):(a.apk_url||a.download_url||"");
  if(!url){alert("APK download is currently unavailable.");return;}
  const plugin=window.Capacitor?.registerPlugin?.("PaliaDownloader");
  if(!plugin||typeof plugin.download!=="function"){alert("Native downloader is unavailable in this APK build.");return;}
@@ -153,7 +153,7 @@ async function checkForStoreUpdate(){
     $("appUpdateText").textContent=data.description||"A new version is ready to install.";
     banner.classList.remove("hidden");
     $("appUpdateBtn").onclick=async()=>{
-      const url=data.telegram_message_id?`https://paliaapk-telegram-api.onrender.com/download-apk/${data.telegram_message_id}`:String(data.apk_url||data.download_url||"");
+      const url=data.telegram_message_id?`https://paliaapk-telegram-api.onrender.com/download-apk/${encodeURIComponent(String(data.telegram_message_id))}`:String(data.apk_url||data.download_url||"");
       if(!url){$("appUpdateText").textContent="Update APK link is not available yet.";return;}
       if(!auth.currentUser){pendingDownloadApp={name:"PaliaAPK HUB",version:latest,apk_url:url,id:"paliaapk-hub-android-update"};showAuth();return;}
       await startDownload({name:"PaliaAPK HUB Update",version:latest,apk_url:url,id:"paliaapk-hub-android-update"});
