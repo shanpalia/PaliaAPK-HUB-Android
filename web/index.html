@@ -1259,6 +1259,32 @@ window.handleDownloadClick = async function(appId, event) {
             return;
         }
 
+        // Enforce login BEFORE selecting/opening any download URL.
+        // The homepage previously opened the APK directly, bypassing the login gate.
+        let currentUser = (typeof auth !== "undefined" && auth) ? auth.currentUser : null;
+        if (!currentUser && typeof auth !== "undefined" && auth && typeof auth.onAuthStateChanged === "function") {
+            currentUser = await new Promise(resolve => {
+                let settled = false;
+                const finish = user => {
+                    if (settled) return;
+                    settled = true;
+                    try { if (unsubscribe) unsubscribe(); } catch (_) {}
+                    resolve(user || null);
+                };
+                let unsubscribe = null;
+                const timer = setTimeout(() => finish(auth.currentUser || null), 1800);
+                unsubscribe = auth.onAuthStateChanged(user => {
+                    clearTimeout(timer);
+                    finish(user || null);
+                });
+            });
+        }
+        if (!currentUser) {
+            const returnTo = "app.html?id=" + encodeURIComponent(String(app.id));
+            window.location.href = "user.html?redirect=" + encodeURIComponent(returnTo);
+            return;
+        }
+
         let downloadUrl = "";
 
         // PaliaAPK HUB itself is bundled with this GitHub Pages website.
