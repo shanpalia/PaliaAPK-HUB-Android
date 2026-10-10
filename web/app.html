@@ -400,20 +400,17 @@ if (downloadBtn) {
         e.preventDefault();
         e.stopPropagation();
 
+        // Prefer the Telegram MTProto download endpoint when a message ID is saved.
+        // It streams the real APK bytes directly and does not open Telegram.
         let downloadUrl = "";
-        if (String(app.name || '').toLowerCase().includes('paliaapk hub')) {
-            downloadUrl = 'https://raw.githubusercontent.com/shanpalia/WebsitePaliaAPK_V.2/main/PaliaAPK-HUB.apk';
-        } else if (app.apk_url) {
+        if (app.telegram_message_id) {
+            downloadUrl = "https://paliaapk-telegram-api.onrender.com/download-apk/" + encodeURIComponent(String(app.telegram_message_id));
+        } else if (app.apk_url && !/^(tg:|https?:\/\/(www\.)?(t\.me|telegram\.me)\/)/i.test(String(app.apk_url).trim())) {
             downloadUrl = String(app.apk_url).trim();
+        } else if (String(app.name || '').toLowerCase().includes('paliaapk hub')) {
+            downloadUrl = 'https://raw.githubusercontent.com/shanpalia/WebsitePaliaAPK_V.2/main/PaliaAPK-HUB.apk';
         } else {
-            alert("APK download is currently unavailable.");
-            return;
-        }
-
-        // A Telegram channel/post URL is a webpage, not the APK file itself.
-        // Never launch Telegram; require the admin to store a direct APK URL.
-        if (/^(tg:|https?:\/\/(www\.)?(t\.me|telegram\.me)\/)/i.test(downloadUrl)) {
-            alert("This app has a Telegram post link, not a direct APK file. Please ask the PaliaAPK HUB admin to update its APK URL to a direct .apk download link. Telegram will not be opened.");
+            alert("APK download is currently unavailable. Add a Telegram message ID or a direct APK URL.");
             return;
         }
 
@@ -448,7 +445,44 @@ if (downloadBtn) {
                     .replace(/[^a-z0-9._-]+/gi, "_").replace(/^\.+/, "").slice(0, 70) || "PaliaAPK-HUB-App";
                 const filename = safeName.toLowerCase().endsWith(".apk") ? safeName : safeName + ".apk";
 
+                // Show actual byte progress and measured throughput inside the app detail screen.
+                let progressPanel = document.getElementById("paliaDownloadProgress");
+                if (!progressPanel) {
+                    progressPanel = document.createElement("div");
+                    progressPanel.id = "paliaDownloadProgress";
+                    progressPanel.style.cssText = "margin-top:14px;padding:14px;border:1px solid #d1fae5;border-radius:14px;background:#f0fdf4;color:#166534;text-align:left";
+                    progressPanel.innerHTML = '<div style="display:flex;justify-content:space-between;gap:12px;font-size:13px;font-weight:700"><span id="paliaDownloadStatus">Preparing download…</span><span id="paliaDownloadPercent">0%</span></div><div style="height:8px;background:#d1fae5;border-radius:99px;overflow:hidden;margin:10px 0"><div id="paliaDownloadBar" style="height:100%;width:0%;background:#16a34a;transition:width .2s"></div></div><div style="display:flex;justify-content:space-between;gap:10px;font-size:12px"><span id="paliaDownloadBytes">0 MB</span><span id="paliaDownloadSpeed">Measuring speed…</span></div>';
+                    downloadBtn.insertAdjacentElement("afterend", progressPanel);
+                }
+                progressPanel.classList.remove("hidden");
+                let lastProgress = { bytes: 0, time: 0 };
+                let progressHandle = null;
+                if (typeof downloader.addListener === "function") {
+                    progressHandle = await downloader.addListener("downloadProgress", p => {
+                        const done = Number(p.downloadedBytes || 0);
+                        const total = Number(p.totalBytes || 0);
+                        const now = Number(p.timestampMs || Date.now());
+                        const pct = total > 0 ? Math.min(100, done / total * 100) : 0;
+                        let speed = Number(p.speedBytesPerSecond || 0);
+                        if (!speed && lastProgress.time && now > lastProgress.time && done >= lastProgress.bytes) {
+                            speed = (done - lastProgress.bytes) * 1000 / (now - lastProgress.time);
+                        }
+                        lastProgress = { bytes: done, time: now };
+                        const fmt = n => n >= 1073741824 ? (n / 1073741824).toFixed(2) + " GB" : n >= 1048576 ? (n / 1048576).toFixed(1) + " MB" : (n / 1024).toFixed(0) + " KB";
+                        const bar = document.getElementById("paliaDownloadBar");
+                        const percent = document.getElementById("paliaDownloadPercent");
+                        const bytes = document.getElementById("paliaDownloadBytes");
+                        const speedEl = document.getElementById("paliaDownloadSpeed");
+                        const status = document.getElementById("paliaDownloadStatus");
+                        if (bar) bar.style.width = (p.status === "completed" ? 100 : pct) + "%";
+                        if (percent) percent.textContent = (p.status === "completed" ? 100 : Math.floor(pct)) + "%";
+                        if (bytes) bytes.textContent = fmt(done) + (total > 0 ? " / " + fmt(total) : "");
+                        if (speedEl) speedEl.textContent = speed >= 1048576 ? (speed / 1048576).toFixed(2) + " MB/s" : speed >= 1024 ? (speed / 1024).toFixed(0) + " KB/s" : "Measuring speed…";
+                        if (status) status.textContent = p.status === "completed" ? "Download complete" : "Downloading APK…";
+                    });
+                }
                 const result = await downloader.download({ url: downloadUrl, filename });
+                if (progressHandle && typeof progressHandle.remove === "function") await progressHandle.remove();
                 downloadBtn.innerHTML = '<i class="fa-solid fa-check"></i> Download complete';
                 const installNow = confirm("Download complete!\n\n" + filename + " is saved in PaliaAPK HUB app storage. Install it now?");
                 if (installNow) {
