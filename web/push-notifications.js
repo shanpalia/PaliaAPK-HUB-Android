@@ -44,7 +44,7 @@ function showUpdateAlert(app) {
 
 async function checkCatalogUpdate() {
   try {
-    const response = await fetch(SUPABASE_URL + "/rest/v1/apps?select=id,name,title,version,description,updated_at,created_at&order=updated_at.desc.nullslast&limit=1", {
+    const response = await fetch(SUPABASE_URL + "/rest/v1/apps?update_available=eq.true&select=id,name,title,version,description,updated_at,created_at&order=updated_at.desc.nullslast&limit=1", {
       headers: { apikey: SUPABASE_ANON_KEY, Authorization: "Bearer " + SUPABASE_ANON_KEY }
     });
     if (!response.ok) return;
