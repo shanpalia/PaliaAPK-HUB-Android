@@ -400,6 +400,25 @@ if (downloadBtn) {
         e.preventDefault();
         e.stopPropagation();
 
+        // Require Firebase login before starting any APK download.
+        // Wait briefly for Firebase to restore a saved session before deciding the user is logged out.
+        let currentUser = auth.currentUser;
+        if (!currentUser) {
+            currentUser = await new Promise(resolve => {
+                let settled = false;
+                const timer = setTimeout(() => { if (!settled) { settled = true; resolve(auth.currentUser || null); } }, 1800);
+                const unsubscribe = auth.onAuthStateChanged(user => {
+                    if (!settled) { settled = true; clearTimeout(timer); unsubscribe(); resolve(user || null); }
+                });
+            });
+        }
+        if (!currentUser) {
+            const returnTo = "app.html?id=" + encodeURIComponent(String(app.id)) + "&resumeDownload=1";
+            try { sessionStorage.setItem("palia_pending_download_app_id", String(app.id)); } catch (_) {}
+            window.location.href = "user.html?redirect=" + encodeURIComponent(returnTo);
+            return;
+        }
+
         // Prefer the Telegram MTProto download endpoint when a message ID is saved.
         // It streams the real APK bytes directly and does not open Telegram.
         let downloadUrl = "";
@@ -495,7 +514,15 @@ if (downloadBtn) {
                     alert("APK downloaded inside PaliaAPK HUB. You can install it later from the app's download storage.");
                 }
             } else {
-                // Website fallback: direct file URLs only. Native APK downloads stay in-app.
+                // Never send an Android app user to Telegram or an external download page.
+                // If this build lacks the native downloader, fail visibly instead of opening a Telegram post.
+                const isNative = !!(capacitor && typeof capacitor.isNativePlatform === "function" && capacitor.isNativePlatform());
+                if (isNative) {
+                    throw new Error("In-app downloader is missing from this APK build. Rebuild and install the latest PaliaAPK HUB APK.");
+                }
+                if (/^(tg:|https?:\/\/(www\.)?(t\.me|telegram\.me)\/)/i.test(downloadUrl)) {
+                    throw new Error("This is a Telegram post link, not a direct APK file URL. Add a Telegram message ID so the API can stream the APK file.");
+                }
                 window.location.href = downloadUrl;
             }
         } catch (err) {
@@ -508,6 +535,15 @@ if (downloadBtn) {
         }
     };
 }
+                // Resume the protected download after the user returns from Firebase login.
+                if (new URLSearchParams(window.location.search).get("resumeDownload") === "1") {
+                    const pendingId = sessionStorage.getItem("palia_pending_download_app_id");
+                    if (!pendingId || String(pendingId) === String(app.id)) {
+                        sessionStorage.removeItem("palia_pending_download_app_id");
+                        setTimeout(() => downloadBtn && downloadBtn.click(), 500);
+                    }
+                }
+
                 // Description
                 document.getElementById('appDescription').textContent = app.description || 'No description available.';
 
