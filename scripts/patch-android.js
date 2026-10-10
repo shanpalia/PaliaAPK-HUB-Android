@@ -5,6 +5,15 @@ const root = path.join(process.cwd(), "android");
 // Copy Firebase configuration into the generated native Android project.
 const firebaseConfigSource = path.join(process.cwd(), "firebase", "google-services.json");
 const firebaseConfigTarget = path.join(root, "app", "google-services.json");
+const androidManifest = path.join(root, "app", "src", "main", "AndroidManifest.xml");
+if (fs.existsSync(androidManifest)) {
+  let manifestText = fs.readFileSync(androidManifest, "utf8");
+  if (!manifestText.includes("android.permission.POST_NOTIFICATIONS")) {
+    manifestText = manifestText.replace("<manifest", '<manifest');
+    manifestText = manifestText.replace(/(<manifest[^>]*>)/, '$1\n    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />');
+    fs.writeFileSync(androidManifest, manifestText);
+  }
+}
 if (fs.existsSync(firebaseConfigSource) && fs.existsSync(path.join(root, "app"))) {
   fs.copyFileSync(firebaseConfigSource, firebaseConfigTarget);
   console.log("Firebase Android configuration copied");
