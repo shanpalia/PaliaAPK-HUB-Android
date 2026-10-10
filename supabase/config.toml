@@ -1,0 +1,2 @@
+[functions.notify-published-app]
+verify_jwt = false
