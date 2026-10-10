@@ -452,17 +452,25 @@ window.paliaSupabase = (window.supabase && typeof window.supabase.createClient =
                 }
 
                 try{
-                    const query = window.paliaSupabase
-                        .from('apps')
-                        .select('id,name,version,update_available,icon_url,apk_url,updated_at')
-                        .eq('update_available', true)
-                        .order('updated_at', {ascending:false});
-                    const {data, error} = await Promise.race([
-                        query,
-                        new Promise((_, reject) => setTimeout(() => reject(new Error('Update check timed out after 6 seconds. Please retry.')), 6000))
-                    ]);
-
-                    if(error) throw error;
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 5000);
+                    let response;
+                    try {
+                        response = await fetch(PALIA_SUPABASE_URL + '/rest/v1/apps?select=id,name,version,update_available,icon_url,apk_url,updated_at&update_available=eq.true&order=updated_at.desc', {
+                            method: 'GET',
+                            cache: 'no-store',
+                            signal: controller.signal,
+                            headers: {
+                                'apikey': PALIA_SUPABASE_ANON_KEY,
+                                'Authorization': 'Bearer ' + PALIA_SUPABASE_ANON_KEY,
+                                'Accept': 'application/json'
+                            }
+                        });
+                    } finally {
+                        clearTimeout(timeoutId);
+                    }
+                    if (!response.ok) throw new Error('Update service returned HTTP ' + response.status);
+                    const data = await response.json();
 
                     const apps = Array.isArray(data) ? data : [];
                     count.textContent = String(apps.length);
@@ -538,7 +546,7 @@ window.paliaSupabase = (window.supabase && typeof window.supabase.createClient =
                     console.error('Profile updates error:', err);
                     count.textContent='0';
                     count.classList.add('hidden');
-                    list.innerHTML = '<div class="py-10 text-center text-sm text-red-500">Unable to load updates. Check your internet connection and try again.</div><div class="text-center pb-5"><button type="button" id="retryProfileUpdates" class="px-4 py-2 rounded-xl bg-green-600 text-white text-sm font-bold">Try again</button></div>';
+                    list.innerHTML = '<div class="py-10 text-center text-sm text-red-500">Update check failed or timed out. Please check your connection and tap Try again.</div><div class="text-center pb-5"><button type="button" id="retryProfileUpdates" class="px-4 py-2 rounded-xl bg-green-600 text-white text-sm font-bold">Try again</button></div>';
                     document.getElementById('retryProfileUpdates')?.addEventListener('click', loadUpdates);
                 }
             }
@@ -549,8 +557,24 @@ window.paliaSupabase = (window.supabase && typeof window.supabase.createClient =
             async function refreshTopCount(){
                 if(!topCount || !window.paliaSupabase) return;
                 try{
-                    const {data,error}=await window.paliaSupabase.from('apps').select('id').eq('update_available',true);
-                    if(error) throw error;
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 5000);
+                    let response;
+                    try {
+                        response = await fetch(PALIA_SUPABASE_URL + '/rest/v1/apps?select=id&update_available=eq.true', {
+                            cache: 'no-store',
+                            signal: controller.signal,
+                            headers: {
+                                'apikey': PALIA_SUPABASE_ANON_KEY,
+                                'Authorization': 'Bearer ' + PALIA_SUPABASE_ANON_KEY,
+                                'Accept': 'application/json'
+                            }
+                        });
+                    } finally {
+                        clearTimeout(timeoutId);
+                    }
+                    if (!response.ok) throw new Error('Update count returned HTTP ' + response.status);
+                    const data = await response.json();
                     const n=Array.isArray(data)?data.length:0;
                     topCount.textContent=String(n);
                     topCount.classList.toggle('hidden', n===0);
