@@ -1,0 +1,100 @@
+{
+  "project_info": {
+    "project_number": "270953807883",
+    "project_id": "shanpalia-apk-hub",
+    "storage_bucket": "shanpalia-apk-hub.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:270953807883:android:d78b1fa409e8a5f277870e",
+        "android_client_info": {
+          "package_name": "com.aistudio.plkworkingapp.xrtuv"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "270953807883-btnln51tlh1e1b2dtjfo6bsoasjhoc3s.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBBF8ww2eehUyHINEHhQGQOLzED44Kvy0k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "270953807883-au5floclvvlhc5n735k77rj7iluhrb9i.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:270953807883:android:4062c9ca358b143a77870e",
+        "android_client_info": {
+          "package_name": "com.shanpalia.paliaapkhub"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "270953807883-8uakbsmiqmeb99nu92irn4gle56o07ca.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.shanpalia.paliaapkhub",
+            "certificate_hash": "472cbd8547acc658617593e935c3f0e76b24b055"
+          }
+        },
+        {
+          "client_id": "270953807883-nd4t5laulsksij901ipp1hjtarhe1d7d.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.shanpalia.paliaapkhub",
+            "certificate_hash": "e9364df1fd917ab0f1757599fc167b1e01216f47"
+          }
+        },
+        {
+          "client_id": "270953807883-og12evll477g6goqp1eu754i3hplp8fh.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.shanpalia.paliaapkhub",
+            "certificate_hash": "4a8fa0835608111fda69874effc6c21844a3c301"
+          }
+        },
+        {
+          "client_id": "270953807883-pumq43308ddbpfcafmvs92cn2d2akq8q.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.shanpalia.paliaapkhub",
+            "certificate_hash": "b4f5c2a22140c2a6e732c2137dec0749ec4b3289"
+          }
+        },
+        {
+          "client_id": "270953807883-btnln51tlh1e1b2dtjfo6bsoasjhoc3s.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBBF8ww2eehUyHINEHhQGOOLzED44Kvy0k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "270953807883-au5floclvvlhc5n735k77rj7iluhrb9i.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
