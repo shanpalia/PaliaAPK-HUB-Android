@@ -76,7 +76,8 @@ async function startDownload(a){
  if(!a)return;
  const user=auth.currentUser;
  if(!user){pendingDownloadApp=a;showAuth();return;}
- const url=a.telegram_message_id?("https://paliaapk-telegram-api.onrender.com/download-apk/"+encodeURIComponent(String(a.telegram_message_id))):(a.apk_url||a.download_url||"");
+ const directUrl=String(a.apk_url||a.download_url||"").trim();
+  const url=directUrl&&!/^(tg:|https?:\/\/(www\.)?(t\.me|telegram\.me)\/)/i.test(directUrl)?directUrl:(a.telegram_message_id?("https://paliaapk-telegram-api.onrender.com/download-apk/"+encodeURIComponent(String(a.telegram_message_id))):"");
  if(!url){alert("APK download is currently unavailable.");return;}
  const plugin=window.Capacitor?.registerPlugin?.("PaliaDownloader");
  if(!plugin||typeof plugin.download!=="function"){alert("Native downloader is unavailable in this APK build.");return;}
