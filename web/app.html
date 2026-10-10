@@ -419,13 +419,15 @@ if (downloadBtn) {
             return;
         }
 
-        // Prefer the Telegram MTProto download endpoint when a message ID is saved.
-        // It streams the real APK bytes directly and does not open Telegram.
+        // Prefer a real direct APK URL. Use the Telegram API only when no direct APK URL exists.
+        // The app must never navigate the user to a Telegram page.
         let downloadUrl = "";
-        if (app.telegram_message_id) {
-            downloadUrl = "https://paliaapk-telegram-api.onrender.com/download-apk/" + encodeURIComponent(String(app.telegram_message_id));
-        } else if (app.apk_url && !/^(tg:|https?:\/\/(www\.)?(t\.me|telegram\.me)\/)/i.test(String(app.apk_url).trim())) {
+        if (app.apk_url && !/^(tg:|https?:\/\/(www\.)?(t\.me|telegram\.me)\/)/i.test(String(app.apk_url).trim())) {
             downloadUrl = String(app.apk_url).trim();
+        } else if (app.download_url && !/^(tg:|https?:\/\/(www\.)?(t\.me|telegram\.me)\/)/i.test(String(app.download_url).trim())) {
+            downloadUrl = String(app.download_url).trim();
+        } else if (app.telegram_message_id) {
+            downloadUrl = "https://paliaapk-telegram-api.onrender.com/download-apk/" + encodeURIComponent(String(app.telegram_message_id));
         } else if (String(app.name || '').toLowerCase().includes('paliaapk hub')) {
             downloadUrl = 'https://raw.githubusercontent.com/shanpalia/WebsitePaliaAPK_V.2/main/PaliaAPK-HUB.apk';
         } else {
