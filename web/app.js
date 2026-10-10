@@ -137,25 +137,40 @@ auth.onAuthStateChanged(user=>{
  else{$("authBtn").classList.remove("hidden");$("profileBox").classList.add("hidden");}
 });
 loadApps();
+// Check the live website version at startup, every five minutes, and when returning to the app.
+const runStoreUpdateCheck=()=>checkForStoreUpdate();
+setTimeout(runStoreUpdateCheck,1800);
+setInterval(runStoreUpdateCheck,5*60*1000);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)runStoreUpdateCheck();});
 $("logoutBtn")?.addEventListener("click",()=>auth.signOut());
 $("googleLogin")?.addEventListener("click",async()=>{const b=$("googleLogin");b.disabled=true;b.textContent="Opening Google…";try{const cap=window.Capacitor;const native=!!(cap&&((typeof cap.isNativePlatform==="function"&&cap.isNativePlatform())||(typeof cap.getPlatform==="function"&&cap.getPlatform()!=="web")));let r;if(native){const googlePlugin=nativeGooglePlugin();if(!googlePlugin||typeof googlePlugin.signIn!=="function")throw new Error("Native Google Sign-In plugin is missing. Rebuild and install the latest APK.");const n=await googlePlugin.signIn();r=await auth.signInWithCredential(firebase.auth.GoogleAuthProvider.credential(n.idToken));}else{const p=new firebase.auth.GoogleAuthProvider();p.setCustomParameters({prompt:"select_account"});r=await auth.signInWithPopup(p);}hideAuth();if(pendingDownloadApp){const a=pendingDownloadApp;pendingDownloadApp=null;await startDownload(a);}}catch(e){console.error(e);$("authError").textContent=authError(e);}finally{b.disabled=false;b.textContent="Continue with Google";}});
 
 async function checkForStoreUpdate(){
   try{
-    const current=String(window.PaliaAppVersion||"1.0.0");
+    const current=String(window.PaliaAppVersion||"1.0.2");
     const {data,error}=await db.from("apps").select("id,name,package_name,version,apk_url,download_url,telegram_message_id,description").or("package_name.eq.com.shanpalia.paliaapkhub,name.eq.PaliaAPK HUB").order("created_at",{ascending:false}).limit(1).maybeSingle();
     if(error||!data)return;
     const latest=String(data.version||current);
     const parts=v=>v.replace(/[^0-9.]/g,"").split(".").map(n=>parseInt(n||"0",10));
     const newer=(a,b)=>{const x=parts(a),y=parts(b);for(let i=0;i<Math.max(x.length,y.length);i++){if((x[i]||0)!==(y[i]||0))return (y[i]||0)>(x[i]||0);}return false;};
     if(!newer(current,latest))return;
-    const banner=$("appUpdateBanner"); if(!banner)return;
+    let banner=$("appUpdateBanner");
+    if(!banner){
+      banner=document.createElement("section");
+      banner.id="appUpdateBanner";
+      banner.style.cssText="margin:12px 16px;padding:16px;border:1px solid #a7f3d0;border-radius:18px;background:#ecfdf5;color:#065f46;box-shadow:0 8px 24px rgba(5,150,105,.10)";
+      banner.innerHTML='<div style="display:flex;align-items:flex-start;gap:12px"><div style="font-size:24px">⬆️</div><div style="flex:1;min-width:0"><div id="appUpdateTitle" style="font-weight:800;font-size:15px">PaliaAPK HUB update available</div><div id="appUpdateText" style="font-size:13px;margin-top:4px">A new version is ready.</div><div style="display:flex;gap:8px;margin-top:12px"><button id="appUpdateBtn" type="button" style="background:#059669;color:white;border:0;border-radius:10px;padding:9px 13px;font-weight:700">Download update</button><button id="appUpdateLater" type="button" style="background:white;color:#065f46;border:1px solid #a7f3d0;border-radius:10px;padding:9px 13px">Later</button></div></div></div>';
+      const host=document.querySelector("main")||document.body;
+      host.insertBefore(banner,host.firstChild);
+      $("appUpdateLater").onclick=()=>{banner.style.display="none";};
+    }
     $("appUpdateTitle").textContent="PaliaAPK HUB update available — v"+latest;
-    $("appUpdateText").textContent=data.description||"A new version is ready to install.";
-    banner.classList.remove("hidden");
+    $("appUpdateText").textContent=data.description||("Version "+latest+" is available on PaliaAPK HUB.");
+    banner.style.display="block";
     $("appUpdateBtn").onclick=async()=>{
-      const url=data.telegram_message_id?`https://paliaapk-telegram-api.onrender.com/download-apk/${encodeURIComponent(String(data.telegram_message_id))}`:String(data.apk_url||data.download_url||"");
-      if(!url){$("appUpdateText").textContent="Update APK link is not available yet.";return;}
+      const directUrl=String(data.apk_url||data.download_url||"").trim();
+      const url=directUrl&&!/^(tg:|https?:\/\/(www\.)?(t\.me|telegram\.me)\/)/i.test(directUrl)?directUrl:(data.telegram_message_id?("https://paliaapk-telegram-api.onrender.com/download-apk/"+encodeURIComponent(String(data.telegram_message_id))):"");
+      if(!url){$("appUpdateText").textContent="Update APK link is not available yet. Please add a direct APK URL on the website.";return;}
       if(!auth.currentUser){pendingDownloadApp={name:"PaliaAPK HUB",version:latest,apk_url:url,id:"paliaapk-hub-android-update"};showAuth();return;}
       await startDownload({name:"PaliaAPK HUB Update",version:latest,apk_url:url,id:"paliaapk-hub-android-update"});
     };
