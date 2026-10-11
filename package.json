@@ -1,6 +1,6 @@
 {
   "name": "paliaapk-hub-android",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "private": true,
   "scripts": {
     "build": "mkdir -p www && cp -R web/. www/ && esbuild web/push-notifications.js --bundle --platform=browser --format=iife --outfile=www/push-notifications.bundle.js",
