@@ -457,7 +457,7 @@ window.paliaSupabase = (window.supabase && typeof window.supabase.createClient =
                     let response;
                     let data;
                     try {
-                        response = await fetch(PALIA_SUPABASE_URL + '/rest/v1/apps?select=id,name,version,update_available,icon_url,apk_url,updated_at&update_available=eq.true&order=updated_at.desc', {
+                        response = await fetch(PALIA_SUPABASE_URL + '/rest/v1/apps?select=id,name,version,update_available,icon_url,apk_url,download_url,telegram_message_id,updated_at&update_available=eq.true&order=updated_at.desc', {
                             method: 'GET',
                             cache: 'no-store',
                             signal: controller.signal,
@@ -522,26 +522,37 @@ window.paliaSupabase = (window.supabase && typeof window.supabase.createClient =
                             const id=el.getAttribute('data-update-download');
                             const app=apps.find(x=>String(x.id)===String(id));
                             if(!app) return;
-                            const url=String(app.name || '').toLowerCase().includes('paliaapk hub') ? new URL('/WebsitePaliaAPK_V.2/PaliaAPK-HUB.apk', window.location.origin).href : (app.apk_url || '');
-                            if(!url){ alert('Update APK is not available for this app.'); return; }
-                            el.disabled=true; el.innerHTML='<i class="fa-solid fa-spinner fa-spin mr-1"></i> Updating…';
+                            let url=String(app.apk_url||app.download_url||'').trim();
+                            if(!url&&app.telegram_message_id)url='https://paliaapk-telegram-api.onrender.com/download-apk/'+encodeURIComponent(String(app.telegram_message_id));
+                            if(!url){ alert('Update APK direct link is not available for this app. Please add the APK URL in the store listing.'); return; }
+                            el.disabled=true; el.innerHTML='<i class="fa-solid fa-spinner fa-spin mr-1"></i> Preparing…';
+                            let progressListener=null;
                             try{
-                                const r=await fetch(url,{mode:'cors'});
-                                if(!r.ok) throw new Error('HTTP '+r.status);
-                                const blob=await r.blob();
-                                const blobUrl=URL.createObjectURL(blob);
-                                const a=document.createElement('a');
-                                a.href=blobUrl;
-                                a.download=(app.name||'PaliaAPK-HUB').replace(/[^a-z0-9._-]+/gi,'_')+'.apk';
-                                document.body.appendChild(a); a.click(); a.remove();
-                                setTimeout(()=>URL.revokeObjectURL(blobUrl),60000);
+                                const cap=window.Capacitor;
+                                const native=!!(cap&&((typeof cap.isNativePlatform==='function'&&cap.isNativePlatform())||(typeof cap.getPlatform==='function'&&cap.getPlatform()==='android')));
+                                if(native){
+                                    const plugin=cap.Plugins?.PaliaDownloader||(typeof cap.registerPlugin==='function'?cap.registerPlugin('PaliaDownloader'):null);
+                                    if(!plugin||typeof plugin.download!=='function'||typeof plugin.openDownloadedApk!=='function')throw new Error('In-app downloader is not available in this APK build. Update PaliaAPK HUB first.');
+                                    progressListener=await plugin.addListener('downloadProgress',p=>{
+                                        if(p.status==='completed')el.innerHTML='<i class="fa-solid fa-check mr-1"></i> Opening installer…';
+                                        else if(Number(p.totalBytes)>0)el.innerHTML='<i class="fa-solid fa-spinner fa-spin mr-1"></i> '+Math.min(99,Math.round(Number(p.downloadedBytes||0)/Number(p.totalBytes)*100))+'%';
+                                        else el.innerHTML='<i class="fa-solid fa-spinner fa-spin mr-1"></i> Downloading…';
+                                    });
+                                    await plugin.download({url,filename:(String(app.name||'PaliaAPK-HUB').replace(/[^a-z0-9._-]+/gi,'_'))+'-update.apk'});
+                                    await plugin.openDownloadedApk();
+                                    el.innerHTML='<i class="fa-solid fa-check mr-1"></i> Installer opened';
+                                }else{
+                                    // Direct navigation avoids buffering a large APK in memory as a Blob.
+                                    window.location.href=url;
+                                }
                             }catch(e){
-                                console.error('Update APK download failed without redirect:',e);
-                                alert('Update download could not start. Please try again. PaliaAPK HUB was not redirected.');
+                                console.error('Update APK download failed:',e);
+                                alert('Update download could not start: '+(e&&e.message?e.message:'Please check your connection and APK link.'));
                             }finally{
-                                el.disabled=false; el.innerHTML='<i class="fa-solid fa-download mr-1"></i> Update';
+                                if(progressListener&&typeof progressListener.remove==='function'){try{await progressListener.remove();}catch(e){}}
+                                el.disabled=false;
+                                if(el.isConnected)el.innerHTML='<i class="fa-solid fa-download mr-1"></i> Update';
                             }
-                        });
                     });
                 }catch(err){
                     console.error('Profile updates error:', err);
