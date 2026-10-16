@@ -26,8 +26,8 @@ const appVersionCode = 4;
 const bundledIndex = path.join(process.cwd(), "www", "index.html");
 if (fs.existsSync(bundledIndex)) {
   let html = fs.readFileSync(bundledIndex, "utf8");
-  html = html.replace(/<script id="palia-app-version">[\\s\\S]*?<\\/script>\\s*/g, "");
-  const versionScript = '<script id="palia-app-version">window.PaliaAppVersion = "' + appVersionName + '";</script>\\n';
+  html = html.replace(/<script id="palia-app-version">[\s\S]*?<\/script>\s*/g, "");
+  const versionScript = '<script id="palia-app-version">window.PaliaAppVersion = "' + appVersionName + '";</script>\n';
   if (html.includes("</head>")) {
     html = html.replace("</head>", versionScript + "</head>");
   } else {
