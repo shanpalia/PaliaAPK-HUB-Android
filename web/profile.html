@@ -537,7 +537,7 @@ window.paliaSupabase = (window.supabase && typeof window.supabase.createClient =
                             let url=String(app.apk_url||app.download_url||'').trim();
                             
                             if(!url){alert('Update APK direct link is not available. Add a direct APK URL to this store listing.');return;}
-                            const status=list.querySelector('[data-update-status="'+id+'"]'), wrap=list.querySelector('[data-update-progress-wrap="'+id+'"]'), label=list.querySelector('[data-update-progress-label="'+id+'"]'), pctEl=list.querySelector('[data-update-progress-percent="'+id+'"]'), bar=list.querySelector('[data-update-progress-bar="'+id+'"]');
+                            const status=list.querySelector('[data-update-status="'+id+'"]'), wrap=list.querySelector('[data-update-progress-wrap="'+id+'"]'), label=list.querySelector('[data-update-progress-label="'+id+'"]'), pctEl=list.querySelector('[data-update-progress-percent="'+id+'"]'), speedEl=list.querySelector('[data-update-speed="'+id+'"]'), bar=list.querySelector('[data-update-progress-bar="'+id+'"]');
                             const buttons=[...list.querySelectorAll('[data-update-download]')]; activeUpdateDownload=true;
                             buttons.forEach(b=>{b.disabled=true;b.classList.add('opacity-60');}); el.textContent='Starting…'; wrap?.classList.remove('hidden');
                             if(status)status.textContent='Preparing download…';
@@ -553,6 +553,7 @@ window.paliaSupabase = (window.supabase && typeof window.supabase.createClient =
                                         const fmt=v=>{if(!v)return '0 B';const u=['B','KB','MB','GB'],i=Math.min(3,Math.floor(Math.log(v)/Math.log(1024)));return (v/Math.pow(1024,i)).toFixed(i?1:0)+' '+u[i];};
                                         if(pctEl)pctEl.textContent=total?n+'%':fmt(done);
                                         if(bar&&total)bar.style.width=n+'%';
+                                         if(speedEl)speedEl.textContent=fmt(Number(p.speedBytesPerSecond||0))+'/s';
                                         if(label)label.textContent=total?fmt(done)+' of '+fmt(total):fmt(done)+' downloaded';
                                         if(status)status.textContent='Downloading update…';
                                         el.textContent=total?n+'%':'Downloading…';
