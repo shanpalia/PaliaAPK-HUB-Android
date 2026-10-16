@@ -21,6 +21,21 @@ if (fs.existsSync(firebaseConfigSource) && fs.existsSync(path.join(root, "app"))
 const pkg = "com.shanpalia.paliaapkhub";
 const appVersionName = "1.0.3";
 const appVersionCode = 4;
+
+// Expose the same version used by the signed Android build to the in-app updater.
+const bundledIndex = path.join(process.cwd(), "www", "index.html");
+if (fs.existsSync(bundledIndex)) {
+  let html = fs.readFileSync(bundledIndex, "utf8");
+  html = html.replace(/<script id="palia-app-version">[\\s\\S]*?<\\/script>\\s*/g, "");
+  const versionScript = '<script id="palia-app-version">window.PaliaAppVersion = "' + appVersionName + '";</script>\\n';
+  if (html.includes("</head>")) {
+    html = html.replace("</head>", versionScript + "</head>");
+  } else {
+    html = versionScript + html;
+  }
+  fs.writeFileSync(bundledIndex, html);
+  console.log("Bundled updater version set to " + appVersionName);
+}
 const appGradle = path.join(root, "app/build.gradle");
 const appGradleKts = path.join(root, "app/build.gradle.kts");
 const javaDir = path.join(root, "app/src/main/java/com/shanpalia/paliaapkhub");
