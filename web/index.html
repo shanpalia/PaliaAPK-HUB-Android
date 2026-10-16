@@ -1582,18 +1582,21 @@ document.addEventListener('click', function(e){
 }, true);
 </script>
 
-<!-- PaliaAPK HUB Website Update Bridge: additive only; existing UI/logic untouched. -->
+<!-- PaliaAPK HUB Update Bridge: automatically checks the published store version and installs updates in-app. -->
 <style>
 #paliaHubUpdateToast{position:fixed;left:16px;right:16px;bottom:18px;z-index:99999;display:none}
 #paliaHubUpdateToast .phu-card{max-width:520px;margin:auto;background:#fff;border:1px solid #e5e7eb;border-radius:18px;box-shadow:0 18px 50px rgba(0,0,0,.22);padding:14px 16px;font-family:inherit}
 #paliaHubUpdateToast .phu-row{display:flex;align-items:center;gap:12px}
 #paliaHubUpdateToast img{width:48px;height:48px;border-radius:12px;object-fit:cover}
 #paliaHubUpdateToast .phu-title{font-weight:800;font-size:15px;color:#111827}
-#paliaHubUpdateToast .phu-msg{font-size:12px;color:#6b7280;margin-top:3px}
+#paliaHubUpdateToast .phu-msg{font-size:12px;color:#6b7280;margin-top:3px;overflow-wrap:anywhere}
 #paliaHubUpdateToast .phu-actions{display:flex;gap:8px;margin-top:11px}
 #paliaHubUpdateToast button{border:0;border-radius:10px;padding:9px 12px;font-weight:700;cursor:pointer}
 #paliaHubUpdateOpen{background:#10b981;color:#fff;flex:1}
 #paliaHubUpdateClose{background:#f3f4f6;color:#374151}
+#paliaHubUpdateProgress{height:6px;background:#e5e7eb;border-radius:999px;overflow:hidden;margin-top:12px;display:none}
+#paliaHubUpdateProgressBar{height:100%;width:0;background:#10b981;transition:width .2s}
+#paliaHubUpdateProgressText{font-size:11px;color:#6b7280;margin-top:5px;display:none}
 </style>
 <div id="paliaHubUpdateToast" aria-live="polite">
   <div class="phu-card">
@@ -1601,11 +1604,13 @@ document.addEventListener('click', function(e){
       <img id="paliaHubUpdateIcon" src="assets/icon.png" alt="PaliaAPK HUB">
       <div>
         <div class="phu-title">PaliaAPK HUB Update Available</div>
-        <div class="phu-msg" id="paliaHubUpdateMsg">A new version is available.</div>
+        <div class="phu-msg" id="paliaHubUpdateMsg">Checking for updates…</div>
       </div>
     </div>
+    <div id="paliaHubUpdateProgress"><div id="paliaHubUpdateProgressBar"></div></div>
+    <div id="paliaHubUpdateProgressText"></div>
     <div class="phu-actions">
-      <button id="paliaHubUpdateOpen" type="button">📱 Open PaliaAPK HUB</button>
+      <button id="paliaHubUpdateOpen" type="button">⬇ Download &amp; Install Update</button>
       <button id="paliaHubUpdateClose" type="button">Later</button>
     </div>
   </div>
@@ -1613,64 +1618,76 @@ document.addEventListener('click', function(e){
 <script>
 (function(){
   'use strict';
-  var shownKey='paliaapk_hub_update_notice_v1';
-  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];});}
-  function openAppOrWebsite(apkUrl, version){
-    var target='paliaapkhub://update?version='+encodeURIComponent(version||'')+'&url='+encodeURIComponent(apkUrl||'');
-    // Never navigate the browser to the Render/Telegram endpoint.
-    // If the native app is not installed, stay on PaliaAPK HUB and open its Downloads page.
-    var fallback='downloads.html';
-    var started=Date.now();
-    try{ window.location.href=target; }catch(e){}
-    setTimeout(function(){
-      if(Date.now()-started<1800){ window.location.href=fallback; }
-    },1400);
+  var downloadListener=null, installStarted=false;
+  function nativeAndroid(){
+    var cap=window.Capacitor;
+    try{return !!(cap && ((typeof cap.isNativePlatform==='function' && cap.isNativePlatform()) || (typeof cap.getPlatform==='function' && cap.getPlatform()==='android')) && /android/i.test(navigator.userAgent||''));}
+    catch(e){return false;}
+  }
+  function plugin(){
+    var cap=window.Capacitor;if(!cap)return null;
+    try{if(cap.Plugins&&cap.Plugins.PaliaDownloader)return cap.Plugins.PaliaDownloader;if(typeof cap.registerPlugin==='function')return cap.registerPlugin('PaliaDownloader');}
+    catch(e){console.warn('PaliaAPK updater plugin unavailable:',e);}return null;
+  }
+  function compareVersions(current,latest){
+    var a=String(current||'0').replace(/[^0-9.]/g,'').split('.').map(function(v){return parseInt(v||'0',10)||0;});
+    var b=String(latest||'0').replace(/[^0-9.]/g,'').split('.').map(function(v){return parseInt(v||'0',10)||0;});
+    for(var i=0;i<Math.max(a.length,b.length);i++){var x=a[i]||0,y=b[i]||0;if(y!==x)return y>x;}return false;
+  }
+  function setProgress(done,total,speed){
+    var wrap=document.getElementById('paliaHubUpdateProgress'),bar=document.getElementById('paliaHubUpdateProgressBar'),label=document.getElementById('paliaHubUpdateProgressText');
+    if(!wrap||!bar||!label)return;wrap.style.display='block';label.style.display='block';
+    var pct=total>0?Math.min(100,Math.round(done/total*100)):0;bar.style.width=pct+'%';
+    function bytes(n){if(n>=1073741824)return(n/1073741824).toFixed(2)+' GB';if(n>=1048576)return(n/1048576).toFixed(1)+' MB';if(n>=1024)return Math.round(n/1024)+' KB';return n+' B';}
+    label.textContent=(total>0?(pct+'% · '+bytes(done)+' / '+bytes(total)):('Downloaded '+bytes(done)))+(speed>1024?' · '+(speed>=1048576?(speed/1048576).toFixed(1)+' MB/s':Math.round(speed/1024)+' KB/s'):'');
+  }
+  async function downloadAndInstall(apkUrl){
+    var msg=document.getElementById('paliaHubUpdateMsg'),btn=document.getElementById('paliaHubUpdateOpen'),close=document.getElementById('paliaHubUpdateClose'),p=plugin();
+    if(!p||typeof p.download!=='function'||typeof p.openDownloadedApk!=='function'){if(msg)msg.textContent='In-app updater is unavailable in this APK build. Please install the latest signed PaliaAPK HUB build first.';return;}
+    if(!apkUrl){if(msg)msg.textContent='The latest APK link is missing. Add a direct APK URL to the PaliaAPK HUB listing on your website.';return;}
+    btn.disabled=true;close.disabled=true;btn.textContent='Downloading update…';installStarted=false;
+    try{
+      if(downloadListener&&typeof downloadListener.remove==='function'){try{await downloadListener.remove();}catch(e){}}
+      downloadListener=await p.addListener('downloadProgress',function(ev){
+        setProgress(Number(ev.downloadedBytes||0),Number(ev.totalBytes||0),Number(ev.speedBytesPerSecond||0));
+        if(ev.status==='completed'&&!installStarted){installStarted=true;var t=document.getElementById('paliaHubUpdateProgressText');if(t)t.textContent='Download complete · opening Android installer…';setTimeout(function(){p.openDownloadedApk().catch(function(err){if(msg)msg.textContent='APK downloaded, but Android Installer could not open: '+(err&&err.message?err.message:'Please try again.');btn.disabled=false;close.disabled=false;btn.textContent='Install Update';});},300);}
+      });
+      await p.download({url:String(apkUrl),filename:'PaliaAPK-HUB-update.apk'});
+      if(!installStarted){installStarted=true;var t=document.getElementById('paliaHubUpdateProgressText');if(t)t.textContent='Download complete · opening Android installer…';await p.openDownloadedApk();}
+    }catch(e){console.error('PaliaAPK HUB update failed:',e);if(msg)msg.textContent='Update download failed: '+(e&&e.message?e.message:'Check your internet connection and try again.');btn.disabled=false;close.disabled=false;btn.textContent='Retry Update';}
   }
   async function check(){
-    var client=window.paliaSupabaseClient;
-    if(!client) return;
+    var client=window.paliaSupabaseClient;if(!client)return;
     try{
-      var q=await client.from('app_notifications')
-        .select('id,title,message,previous_version,new_version,app_id,created_at')
-        .eq('type','app_update')
-        .order('created_at',{ascending:false}).limit(20);
-      if(q.error || !Array.isArray(q.data)) return;
-      var note=null;
-      for(var i=0;i<q.data.length;i++){
-        var n=q.data[i];
-        if((n.title||'').toLowerCase().indexOf('paliaapk hub')>=0 || (n.message||'').toLowerCase().indexOf('paliaapk hub')>=0){note=n;break;}
+      var fields='id,name,version,apk_url,download_url,icon_url,telegram_message_id,description';
+      var result=await client.from('apps').select(fields).eq('package_name','com.shanpalia.paliaapkhub').order('updated_at',{ascending:false}).limit(1);
+      if(result.error||!result.data||!result.data.length){
+        result=await client.from('apps').select(fields).eq('name','PaliaAPK HUB').order('updated_at',{ascending:false}).limit(1);
       }
-      if(!note) return;
-      var app=await client.from('apps').select('id,name,version,apk_url,icon_url,telegram_message_id').ilike('name','%PaliaAPK HUB%').order('updated_at',{ascending:false}).limit(1);
-      if(app.error || !app.data || !app.data[0]) return;
-      var a=app.data[0];
-      var apk=String(a.name||'').toLowerCase().indexOf('paliaapk hub')>=0
-        ? 'https://raw.githubusercontent.com/shanpalia/WebsitePaliaAPK_V.2/main/PaliaAPK-HUB.apk'
-        : (a.apk_url || '');
-      var stamp=String(note.id||note.created_at||a.version||'');
-      if(localStorage.getItem(shownKey)===stamp) return;
-      var box=document.getElementById('paliaHubUpdateToast');
-      var msg=document.getElementById('paliaHubUpdateMsg');
-      var ico=document.getElementById('paliaHubUpdateIcon');
-      if(!box) return;
-      if(ico && a.icon_url) ico.src=a.icon_url;
-      if(msg) msg.innerHTML=(note.previous_version?('v'+esc(note.previous_version)+' → '):'')+'<b>v'+esc(note.new_version||a.version||'new')+'</b> is available.';
-      document.getElementById('paliaHubUpdateOpen').onclick=function(){
-        localStorage.setItem(shownKey,stamp);
-        openAppOrWebsite(apk,a.version||note.new_version||'');
+      if(result.error||!result.data||!result.data.length)return;
+      var a=result.data[0],latest=String(a.version||'').trim(),current=String(window.PaliaAppVersion||'1.0.3');
+      if(!latest||!compareVersions(current,latest))return;
+      var apk=String(a.apk_url||a.download_url||'').trim();
+      if(!apk&&a.telegram_message_id)apk='https://paliaapk-telegram-api.onrender.com/download-apk/'+encodeURIComponent(String(a.telegram_message_id));
+      if(!apk)apk='https://raw.githubusercontent.com/shanpalia/WebsitePaliaAPK_V.2/main/PaliaAPK-HUB.apk';
+      var box=document.getElementById('paliaHubUpdateToast'),msg=document.getElementById('paliaHubUpdateMsg'),ico=document.getElementById('paliaHubUpdateIcon'),openBtn=document.getElementById('paliaHubUpdateOpen'),closeBtn=document.getElementById('paliaHubUpdateClose');
+      if(!box||!openBtn||!closeBtn)return;
+      if(ico&&a.icon_url)ico.src=a.icon_url;
+      if(msg)msg.textContent='Installed version v'+current+' · New version v'+latest+' is available.';
+      openBtn.textContent=nativeAndroid()?'⬇ Download & Install Update':'📱 Get Update';
+      openBtn.onclick=function(){
+        if(nativeAndroid()){downloadAndInstall(apk);}
+        else{window.location.href='https://paliaapkhub.com/app.html?id='+encodeURIComponent(a.id);}
       };
-      document.getElementById('paliaHubUpdateClose').onclick=function(){
-        localStorage.setItem(shownKey,stamp); box.style.display='none';
-      };
+      closeBtn.onclick=function(){box.style.display='none';};
       box.style.display='block';
-    }catch(e){ console.warn('PaliaAPK HUB update bridge:',e); }
+    }catch(e){console.warn('PaliaAPK HUB update check failed:',e);}
   }
   window.addEventListener('load',function(){
     var tries=0,t=setInterval(function(){tries++;if(window.paliaSupabaseClient||tries>=20){clearInterval(t);check();}},250);
   });
 })();
 </script>
-
 
 <!-- Native-store style bottom navigation. This is part of the app UI, not Android system navigation. -->
 <div id="mobileSearchOverlay" class="mobile-search-overlay" aria-hidden="true"><form id="mobileSearchForm" class="mobile-search-card"><div class="mobile-search-field"><i class="fa-solid fa-magnifying-glass"></i><input id="mobileSearchInput" type="search" placeholder="Search apps, games, tools..." autocomplete="off" enterkeyhint="search"><button type="button" id="closeMobileSearch" aria-label="Close search">×</button></div><div id="mobileSearchSuggestions" class="mobile-search-suggestions hidden" role="listbox" aria-label="Live search results"></div><p id="mobileSearchHint">Search apps by name, category or developer</p></form></div>
