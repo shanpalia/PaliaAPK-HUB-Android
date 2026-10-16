@@ -500,23 +500,24 @@ window.paliaSupabase = (window.supabase && typeof window.supabase.createClient =
                         return;
                     }
 
-                    list.innerHTML = apps.map(app => `
-                      <div class="w-full flex items-center gap-3 p-3 mb-2 rounded-2xl border border-gray-100 hover:border-green-200 hover:bg-green-50 transition">
-                        <button type="button" data-update-app="${esc(app.id)}" class="flex items-center gap-3 min-w-0 flex-1 text-left">
+                    list.innerHTML = `
+                      <div class="flex items-center justify-between mb-3"><p class="text-sm font-bold text-gray-700">${apps.length} updates available</p><span class="text-xs text-gray-500">PaliaAPK HUB</span></div>
+                    ` + apps.map(app => `
+                      <div class="w-full p-3 mb-3 rounded-2xl border border-gray-200 bg-white shadow-sm" data-update-card="${esc(app.id)}">
+                        <div class="flex items-center gap-3">
                           <div class="w-12 h-12 rounded-xl bg-gray-100 overflow-hidden flex items-center justify-center shrink-0">
-                            ${app.icon_url ? `<img src="${esc(app.icon_url)}" class="w-full h-full object-cover" alt="">` :
-                            `<i class="fa-solid fa-android text-green-500 text-xl"></i>`}
+                            ${app.icon_url ? `<img src="${esc(app.icon_url)}" class="w-full h-full object-cover" alt="">` : `<i class="fa-brands fa-android text-green-600 text-2xl"></i>`}
                           </div>
-                          <div class="min-w-0">
-                            <p class="font-black text-sm text-gray-900 truncate">${esc(app.name)}</p>
-                            <p class="text-xs text-gray-500 mt-0.5">Version <b class="text-green-600">${esc(app.version || '—')}</b></p>
-                            
+                          <div class="min-w-0 flex-1"><p class="font-bold text-sm text-gray-900 truncate">${esc(app.name)}</p>
+                            <p class="text-xs text-gray-500 mt-1">Update available · Version ${esc(app.version || '—')}</p>
+                            <p class="text-xs text-gray-500 mt-1" data-update-status="${esc(app.id)}">Ready to download</p>
                           </div>
-                        </button>
-                        <button type="button" data-update-download="${esc(app.id)}"
-                                class="shrink-0 px-3 py-2 rounded-xl bg-green-600 text-white text-xs font-black hover:bg-green-700">
-                          <i class="fa-solid fa-download mr-1"></i> Update
-                        </button>
+                          <button type="button" data-update-download="${esc(app.id)}" class="shrink-0 px-4 py-2.5 rounded-full bg-green-600 text-white text-xs font-bold">Update</button>
+                        </div>
+                        <div class="hidden mt-3" data-update-progress-wrap="${esc(app.id)}">
+                          <div class="flex justify-between gap-3 text-xs text-gray-500 mb-1"><span data-update-progress-label="${esc(app.id)}">Preparing download…</span><span data-update-progress-percent="${esc(app.id)}">0%</span></div>
+                          <div class="h-1.5 rounded-full bg-gray-100 overflow-hidden"><div data-update-progress-bar="${esc(app.id)}" class="h-full rounded-full bg-green-600 transition-all" style="width:0%"></div></div>
+                        </div>
                       </div>`).join('');
 
                     list.querySelectorAll('[data-update-app]').forEach(el => {
@@ -526,42 +527,50 @@ window.paliaSupabase = (window.supabase && typeof window.supabase.createClient =
                         });
                     });
 
+                    let activeUpdateDownload = false;
                     list.querySelectorAll('[data-update-download]').forEach(el => {
-                        el.addEventListener('click', async (event) => {
+                        el.addEventListener('click', async event => {
                             event.stopPropagation();
+                            if(activeUpdateDownload)return;
                             const id=el.getAttribute('data-update-download');
-                            const app=apps.find(x=>String(x.id)===String(id));
-                            if(!app) return;
+                            const app=apps.find(x=>String(x.id)===String(id)); if(!app)return;
                             let url=String(app.apk_url||app.download_url||'').trim();
                             if(!url&&app.telegram_message_id)url='https://paliaapk-telegram-api.onrender.com/download-apk/'+encodeURIComponent(String(app.telegram_message_id));
-                            if(!url){ alert('Update APK direct link is not available for this app. Please add the APK URL in the store listing.'); return; }
-                            el.disabled=true; el.innerHTML='<i class="fa-solid fa-spinner fa-spin mr-1"></i> Preparing…';
+                            if(!url){alert('Update APK direct link is not available. Add a direct APK URL to this store listing.');return;}
+                            const status=list.querySelector('[data-update-status="'+id+'"]'), wrap=list.querySelector('[data-update-progress-wrap="'+id+'"]'), label=list.querySelector('[data-update-progress-label="'+id+'"]'), pctEl=list.querySelector('[data-update-progress-percent="'+id+'"]'), bar=list.querySelector('[data-update-progress-bar="'+id+'"]');
+                            const buttons=[...list.querySelectorAll('[data-update-download]')]; activeUpdateDownload=true;
+                            buttons.forEach(b=>{b.disabled=true;b.classList.add('opacity-60');}); el.textContent='Starting…'; wrap?.classList.remove('hidden');
+                            if(status)status.textContent='Preparing download…';
                             let progressListener=null;
                             try{
                                 const cap=window.Capacitor;
                                 const native=!!(cap&&((typeof cap.isNativePlatform==='function'&&cap.isNativePlatform())||(typeof cap.getPlatform==='function'&&cap.getPlatform()==='android')));
                                 if(native){
                                     const plugin=cap.Plugins?.PaliaDownloader||(typeof cap.registerPlugin==='function'?cap.registerPlugin('PaliaDownloader'):null);
-                                    if(!plugin||typeof plugin.download!=='function'||typeof plugin.openDownloadedApk!=='function')throw new Error('In-app downloader is not available in this APK build. Update PaliaAPK HUB first.');
+                                    if(!plugin||typeof plugin.download!=='function'||typeof plugin.openDownloadedApk!=='function')throw new Error('Native downloader is not available in this APK build.');
                                     progressListener=await plugin.addListener('downloadProgress',p=>{
-                                        if(p.status==='completed')el.innerHTML='<i class="fa-solid fa-check mr-1"></i> Opening installer…';
-                                        else if(Number(p.totalBytes)>0)el.innerHTML='<i class="fa-solid fa-spinner fa-spin mr-1"></i> '+Math.min(99,Math.round(Number(p.downloadedBytes||0)/Number(p.totalBytes)*100))+'%';
-                                        else el.innerHTML='<i class="fa-solid fa-spinner fa-spin mr-1"></i> Downloading…';
+                                        const done=Math.max(0,Number(p.downloadedBytes||0)), total=Math.max(0,Number(p.totalBytes||0)), n=total?Math.min(99,Math.round(done/total*100)):0;
+                                        const fmt=v=>{if(!v)return '0 B';const u=['B','KB','MB','GB'],i=Math.min(3,Math.floor(Math.log(v)/Math.log(1024)));return (v/Math.pow(1024,i)).toFixed(i?1:0)+' '+u[i];};
+                                        if(pctEl)pctEl.textContent=total?n+'%':fmt(done);
+                                        if(bar&&total)bar.style.width=n+'%';
+                                        if(label)label.textContent=total?fmt(done)+' of '+fmt(total):fmt(done)+' downloaded';
+                                        if(status)status.textContent='Downloading update…';
+                                        el.textContent=total?n+'%':'Downloading…';
                                     });
                                     await plugin.download({url,filename:(String(app.name||'PaliaAPK-HUB').replace(/[^a-z0-9._-]+/gi,'_'))+'-update.apk'});
-                                    await plugin.openDownloadedApk();
-                                    el.innerHTML='<i class="fa-solid fa-check mr-1"></i> Installer opened';
-                                }else{
-                                    // Direct navigation avoids buffering a large APK in memory as a Blob.
-                                    window.location.href=url;
-                                }
+                                    if(status)status.textContent='Download complete · Opening Android installer';
+                                    if(label)label.textContent='Download complete'; if(pctEl)pctEl.textContent='100%'; if(bar)bar.style.width='100%';
+                                    el.textContent='Install'; await plugin.openDownloadedApk();
+                                    if(status)status.textContent='Installer opened. Follow Android instructions to finish updating.';
+                                }else{if(status)status.textContent='Opening APK download in browser…';window.location.href=url;}
                             }catch(e){
                                 console.error('Update APK download failed:',e);
-                                alert('Update download could not start: '+(e&&e.message?e.message:'Please check your connection and APK link.'));
+                                if(status)status.textContent='Download failed. Check connection or APK link and try again.';
+                                alert('Update download failed: '+(e&&e.message?e.message:'Check your connection and APK link.'));
                             }finally{
                                 if(progressListener&&typeof progressListener.remove==='function'){try{await progressListener.remove();}catch(e){}}
-                                el.disabled=false;
-                                if(el.isConnected)el.innerHTML='<i class="fa-solid fa-download mr-1"></i> Update';
+                                activeUpdateDownload=false;buttons.forEach(b=>{b.disabled=false;b.classList.remove('opacity-60');});
+                                if(el.isConnected&&el.textContent!=='Install')el.textContent='Update';
                             }
                         });
                     });
