@@ -1677,14 +1677,13 @@ document.addEventListener('click', function(e){
       var fields='id,name,version,apk_url,download_url,icon_url,telegram_message_id,description';
       var result=await client.from('apps').select(fields).eq('package_name','com.shanpalia.paliaapkhub').order('updated_at',{ascending:false}).limit(1);
       if(result.error||!result.data||!result.data.length){
-        result=await client.from('apps').select(fields).eq('name','PaliaAPK HUB').order('updated_at',{ascending:false}).limit(1);
+        result=await client.from('apps').select(fields).ilike('name','%PaliaAPK HUB%').order('updated_at',{ascending:false}).limit(1);
       }
       if(result.error||!result.data||!result.data.length)return;
-      var a=result.data[0],latest=String(a.version||'').trim(),current=String(window.PaliaAppVersion||'1.0.3');
+      var a=result.data[0],latest=String(a.version||'').trim(),current=String(window.PaliaAppVersion||'1.0.4');
       if(!latest||!compareVersions(current,latest))return;
       var apk=String(a.apk_url||a.download_url||'').trim();
       if(!apk&&a.telegram_message_id)apk='https://paliaapk-telegram-api.onrender.com/download-apk/'+encodeURIComponent(String(a.telegram_message_id));
-      if(!apk)apk='https://raw.githubusercontent.com/shanpalia/WebsitePaliaAPK_V.2/main/PaliaAPK-HUB.apk';
       var box=document.getElementById('paliaHubUpdateToast'),msg=document.getElementById('paliaHubUpdateMsg'),ico=document.getElementById('paliaHubUpdateIcon'),openBtn=document.getElementById('paliaHubUpdateOpen'),closeBtn=document.getElementById('paliaHubUpdateClose');
       if(!box||!openBtn||!closeBtn)return;
       if(ico&&a.icon_url)ico.src=a.icon_url;
@@ -1800,7 +1799,7 @@ body{padding-bottom:calc(82px + env(safe-area-inset-bottom))!important}
 (function(){
  function init(){
   const links=[...document.querySelectorAll('.store-nav-item')];
-  const byLabel=label=>links.find(el=>(el.getAttribute('aria-label')||'').toLowerCase()===label.toLowerCase());
+  const byLabel=label=>links.find(el=>(el.getAttribute('aria-label')||'').toLowerCase()===label.toLowerCase())||links.find(el=>(el.querySelector('span')?.textContent||'').trim().toLowerCase()===label.toLowerCase())||(label==='Games'?links.find(el=>(el.getAttribute('aria-label')||'').toLowerCase().startsWith('games')):null);
   const home=byLabel('Home'),search=byLabel('Search'),apps=byLabel('Apps'),games=byLabel('Games'),you=byLabel('Profile');
   function activate(target){links.forEach(el=>el.classList.toggle('active',el===target));}
   function scrollToApps(category){
