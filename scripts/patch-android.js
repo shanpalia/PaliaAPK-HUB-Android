@@ -19,8 +19,8 @@ if (fs.existsSync(firebaseConfigSource) && fs.existsSync(path.join(root, "app"))
   console.log("Firebase Android configuration copied");
 }
 const pkg = "com.shanpalia.paliaapkhub";
-const appVersionName = "1.0.4";
-const appVersionCode = 5;
+const appVersionName = "1.0.5";
+const appVersionCode = 6;
 
 // Expose the same version used by the signed Android build to the in-app updater.
 const bundledIndex = path.join(process.cwd(), "www", "index.html");
@@ -124,9 +124,10 @@ public class PaliaDownloaderPlugin extends Plugin {
             HttpURLConnection connection = null;
             try {
                 connection = (HttpURLConnection) new URL(url).openConnection();
-                connection.setConnectTimeout(15000);
-                connection.setReadTimeout(30000);
+                connection.setConnectTimeout(30000);
+                connection.setReadTimeout(120000);
                 connection.setInstanceFollowRedirects(true);
+                connection.setRequestProperty("Accept", "application/vnd.android.package-archive, application/octet-stream, */*");
                 connection.setRequestProperty("User-Agent", "PaliaAPK-HUB-Android");
                 connection.connect();
 
