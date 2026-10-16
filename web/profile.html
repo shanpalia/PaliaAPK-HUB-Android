@@ -438,7 +438,14 @@ window.paliaSupabase = (window.supabase && typeof window.supabase.createClient =
             }
 
             function closeModal(){
-                window.location.href = 'index.html';
+                // Follow Android/Play Store navigation: return to the actual previous screen.
+                if (window.history.length > 1) {
+                    window.history.back();
+                } else {
+                    // Keep the update screen available when there is no in-app history.
+                    modal?.classList.remove('hidden');
+                    modal?.classList.add('flex');
+                }
             }
 
             let profileUpdatesLoading = false;
@@ -614,6 +621,16 @@ window.paliaSupabase = (window.supabase && typeof window.supabase.createClient =
             refreshTopCount();
             closeBtn?.addEventListener('click', closeModal);
             modal?.addEventListener('click', e => { if(e.target === modal) closeModal(); });
+
+            // Make the Android system Back button follow the same navigation as Play Store.
+            // Push a lightweight history entry so Back first exits the updates screen state.
+            if (!window.__paliaUpdatesBackBound) {
+                window.__paliaUpdatesBackBound = true;
+                try { window.history.pushState({ paliaUpdatesScreen: true }, '', window.location.pathname + '#updates'); } catch (_) {}
+                window.addEventListener('popstate', function () {
+                    // Do not force a homepage redirect. Let the WebView/browser restore its previous route.
+                });
+            }
         })();
 
         // ===============================
