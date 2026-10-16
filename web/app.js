@@ -20,6 +20,7 @@ let progressListener=null;
 let pendingDownloadApp=null;
 let searchTimer=null;
 let speedSample={bytes:0,time:0};
+let storeUpdateCheckInFlight=false;
 
 function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 function size(v){if(!v)return"Unknown Size";const n=Number(v);if(!Number.isNaN(n))return n>1048576?(n/1048576).toFixed(1)+" MB":Math.round(n/1024)+" KB";return String(v);}
@@ -146,8 +147,10 @@ $("logoutBtn")?.addEventListener("click",()=>auth.signOut());
 $("googleLogin")?.addEventListener("click",async()=>{const b=$("googleLogin");b.disabled=true;b.textContent="Opening Google…";try{const cap=window.Capacitor;const native=!!(cap&&((typeof cap.isNativePlatform==="function"&&cap.isNativePlatform())||(typeof cap.getPlatform==="function"&&cap.getPlatform()!=="web")));let r;if(native){const googlePlugin=nativeGooglePlugin();if(!googlePlugin||typeof googlePlugin.signIn!=="function")throw new Error("Native Google Sign-In plugin is missing. Rebuild and install the latest APK.");const n=await googlePlugin.signIn();r=await auth.signInWithCredential(firebase.auth.GoogleAuthProvider.credential(n.idToken));}else{const p=new firebase.auth.GoogleAuthProvider();p.setCustomParameters({prompt:"select_account"});r=await auth.signInWithPopup(p);}hideAuth();if(pendingDownloadApp){const a=pendingDownloadApp;pendingDownloadApp=null;await startDownload(a);}}catch(e){console.error(e);$("authError").textContent=authError(e);}finally{b.disabled=false;b.textContent="Continue with Google";}});
 
 async function checkForStoreUpdate(){
+  if(storeUpdateCheckInFlight)return;
+  storeUpdateCheckInFlight=true;
   try{
-    const current=String(window.PaliaAppVersion||"1.0.2");
+    const current=String(window.PaliaAppVersion||"1.0.4");
     const {data,error}=await db.from("apps").select("id,name,package_name,version,apk_url,download_url,telegram_message_id,description").or("package_name.eq.com.shanpalia.paliaapkhub,name.eq.PaliaAPK HUB").order("created_at",{ascending:false}).limit(1).maybeSingle();
     if(error||!data)return;
     const latest=String(data.version||current);
@@ -168,13 +171,18 @@ async function checkForStoreUpdate(){
     $("appUpdateText").textContent=data.description||("Version "+latest+" is available on PaliaAPK HUB.");
     banner.style.display="block";
     $("appUpdateBtn").onclick=async()=>{
+      const button=$("appUpdateBtn");
+      if(button.disabled)return;
       const directUrl=String(data.apk_url||data.download_url||"").trim();
       const url=directUrl&&!/^(tg:|https?:\/\/(www\.)?(t\.me|telegram\.me)\/)/i.test(directUrl)?directUrl:(data.telegram_message_id?("https://paliaapk-telegram-api.onrender.com/download-apk/"+encodeURIComponent(String(data.telegram_message_id))):"");
-      if(!url){$("appUpdateText").textContent="Update APK link is not available yet. Please add a direct APK URL on the website.";return;}
+      if(!url){$("appUpdateText").textContent="Update APK direct link is missing. Please add the APK URL to the PaliaAPK HUB listing.";return;}
       if(!auth.currentUser){pendingDownloadApp={name:"PaliaAPK HUB",version:latest,apk_url:url,id:"paliaapk-hub-android-update"};showAuth();return;}
-      await startDownload({name:"PaliaAPK HUB Update",version:latest,apk_url:url,id:"paliaapk-hub-android-update"});
+      button.disabled=true;button.textContent="Downloading…";
+      try{await startDownload({name:"PaliaAPK HUB Update",version:latest,apk_url:url,id:"paliaapk-hub-android-update"});}
+      finally{button.disabled=false;button.textContent="Download update";}
     };
   }catch(e){console.warn("Store update check skipped:",e);}
+  finally{storeUpdateCheckInFlight=false;}
 }
 
 (async()=>{try{const keep=localStorage.getItem("palia_remember_me")==="true";if(keep)await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);}catch(e){}})();
