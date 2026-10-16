@@ -19,8 +19,8 @@ if (fs.existsSync(firebaseConfigSource) && fs.existsSync(path.join(root, "app"))
   console.log("Firebase Android configuration copied");
 }
 const pkg = "com.shanpalia.paliaapkhub";
-const appVersionName = "1.0.3";
-const appVersionCode = 4;
+const appVersionName = "1.0.4";
+const appVersionCode = 5;
 
 // Expose the same version used by the signed Android build to the in-app updater.
 const bundledIndex = path.join(process.cwd(), "www", "index.html");
