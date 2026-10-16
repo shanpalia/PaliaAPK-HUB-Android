@@ -67,7 +67,28 @@ const exactIconDest = path.join(res, "drawable", "palia_exact_icon.png");
 for (const d of ["drawable", "mipmap-anydpi-v26", "values", "xml"]) {
   fs.mkdirSync(path.join(res, d), { recursive: true });
 }
+
 if (fs.existsSync(exactIconSource)) fs.copyFileSync(exactIconSource, exactIconDest);
+
+// Branded native launch screen for cold starts (mint background + PaliaAPK HUB icon).
+const launchDrawable = path.join(res, "drawable", "palia_launch_screen.xml");
+fs.writeFileSync(launchDrawable, `<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="#F0FDF4" />
+    <item android:gravity="center">
+        <bitmap android:src="@drawable/palia_exact_icon" android:gravity="center" />
+    </item>
+</layer-list>`);
+const stylesXml = path.join(res, "values", "styles.xml");
+if (fs.existsSync(stylesXml)) {
+  let styles = fs.readFileSync(stylesXml, "utf8");
+  if (styles.includes("</style>")) {
+    styles = styles.replace(/<item name="android:windowBackground">[\\s\\S]*?<\\/item>/g, "");
+    styles = styles.replace("</style>", '<item name="android:windowBackground">@drawable/palia_launch_screen</item>\\n    </style>');
+    fs.writeFileSync(stylesXml, styles);
+    console.log("Branded native splash screen configured");
+  }
+}
 // Native downloader: stays inside the PaliaAPK HUB app process.
 // It does NOT use Android DownloadManager or its system notification.
 const newPlugin = `package ${pkg};
