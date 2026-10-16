@@ -76,6 +76,7 @@
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 
     <style>
+        header, body > main { display: none !important; }
         body {
             font-family: Arial, sans-serif;
         }
@@ -374,7 +375,7 @@ window.paliaSupabase = (window.supabase && typeof window.supabase.createClient =
 
 <!-- AVAILABLE UPDATES MODAL -->
 <div id="profileUpdatesModal"
-     class="fixed inset-0 z-[100] hidden items-center justify-center p-4 bg-slate-100">
+     class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-100">
   <div class="w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100">
     <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
       <div>
@@ -437,8 +438,7 @@ window.paliaSupabase = (window.supabase && typeof window.supabase.createClient =
             }
 
             function closeModal(){
-                modal?.classList.add('hidden');
-                modal?.classList.remove('flex');
+                window.location.href = 'index.html';
             }
 
             let profileUpdatesLoading = false;
@@ -606,13 +606,10 @@ window.paliaSupabase = (window.supabase && typeof window.supabase.createClient =
                 modal?.classList.add('flex');
                 await loadUpdates();
             });
-            if(window.location.hash === '#updates'){
-                setTimeout(async () => {
-                    modal?.classList.remove('hidden');
-                    modal?.classList.add('flex');
-                    await loadUpdates();
-                }, 150);
-            }
+            // This route is a dedicated App Updates screen; show only the list.
+            modal?.classList.remove('hidden');
+            modal?.classList.add('flex');
+            setTimeout(() => loadUpdates(), 0);
 
             refreshTopCount();
             closeBtn?.addEventListener('click', closeModal);
@@ -628,8 +625,6 @@ window.paliaSupabase = (window.supabase && typeof window.supabase.createClient =
             if (!user) {
 
                 // Login नहीं है
-                window.location.href = "user.html";
-
                 return;
             }
 
