@@ -553,6 +553,7 @@ window.paliaSupabase = (window.supabase && typeof window.supabase.createClient =
                                 el.disabled=false;
                                 if(el.isConnected)el.innerHTML='<i class="fa-solid fa-download mr-1"></i> Update';
                             }
+                        });
                     });
                 }catch(err){
                     console.error('Profile updates error:', err);
