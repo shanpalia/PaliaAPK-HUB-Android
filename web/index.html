@@ -1659,7 +1659,11 @@ document.addEventListener('click', function(e){
   async function check(){
     var client=window.paliaSupabaseClient;if(!client)return;
     try{
-      var result=await client.from('apps').select('id,name,package_name,version,apk_url,download_url,icon_url,telegram_message_id,description').or('package_name.eq.com.shanpalia.paliaapkhub,name.eq.PaliaAPK HUB').order('updated_at',{ascending:false}).limit(1);
+      var fields='id,name,version,apk_url,download_url,icon_url,telegram_message_id,description';
+      var result=await client.from('apps').select(fields).eq('package_name','com.shanpalia.paliaapkhub').order('updated_at',{ascending:false}).limit(1);
+      if(result.error||!result.data||!result.data.length){
+        result=await client.from('apps').select(fields).eq('name','PaliaAPK HUB').order('updated_at',{ascending:false}).limit(1);
+      }
       if(result.error||!result.data||!result.data.length)return;
       var a=result.data[0],latest=String(a.version||'').trim(),current=String(window.PaliaAppVersion||'1.0.3');
       if(!latest||!compareVersions(current,latest))return;
