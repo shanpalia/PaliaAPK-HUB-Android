@@ -441,19 +441,20 @@ window.paliaSupabase = (window.supabase && typeof window.supabase.createClient =
                 modal?.classList.remove('flex');
             }
 
+            let profileUpdatesLoading = false;
             async function loadUpdates(){
-                if(!list) return;
-                list.innerHTML = '<div class="py-10 text-center text-sm text-gray-500"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Checking for updates...</div>';
+                if(!list || profileUpdatesLoading) return;
+                profileUpdatesLoading = true;
+                list.innerHTML = '<div class="py-8 text-center text-sm text-gray-500"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Checking for updates…</div>';
 
-                if(!window.supabase || !window.paliaSupabase){
-                    list.innerHTML = '<div class="py-10 text-center text-sm text-red-500">Update service could not start. Check your connection and try again.</div><div class="text-center pb-5"><button type="button" id="retryProfileUpdates" class="px-4 py-2 rounded-xl bg-green-600 text-white text-sm font-bold">Try again</button></div>';
+                function showRetry(message){
+                    list.innerHTML = '<div class="py-8 text-center"><p class="text-sm text-gray-600">'+esc(message)+'</p><button type="button" id="retryProfileUpdates" class="mt-4 px-5 py-2.5 rounded-xl bg-green-600 text-white text-sm font-bold">Try again</button></div>';
                     document.getElementById('retryProfileUpdates')?.addEventListener('click', loadUpdates);
-                    return;
                 }
 
                 try{
                     const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 5000);
+                    const timeoutId = setTimeout(() => controller.abort(), 12000);
                     let response;
                     let data;
                     try {
@@ -559,8 +560,9 @@ window.paliaSupabase = (window.supabase && typeof window.supabase.createClient =
                     console.error('Profile updates error:', err);
                     count.textContent='0';
                     count.classList.add('hidden');
-                    list.innerHTML = '<div class="py-10 text-center text-sm text-red-500">Update check failed or timed out. Please check your connection and tap Try again.</div><div class="text-center pb-5"><button type="button" id="retryProfileUpdates" class="px-4 py-2 rounded-xl bg-green-600 text-white text-sm font-bold">Try again</button></div>';
-                    document.getElementById('retryProfileUpdates')?.addEventListener('click', loadUpdates);
+                    showRetry(err && err.name === 'AbortError' ? 'Update check timed out. Check your internet connection.' : 'Could not load updates. Please try again.');
+                } finally {
+                    profileUpdatesLoading = false;
                 }
             }
 
