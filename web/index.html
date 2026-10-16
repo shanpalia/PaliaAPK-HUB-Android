@@ -229,6 +229,32 @@
                 opacity: 0;
             }
         }
+        /* Play Store-inspired Android home layout; retains existing store features */
+        .play-home-tabs { scrollbar-width:none; -webkit-overflow-scrolling:touch; }
+        .play-home-chip {
+            display:inline-flex; align-items:center; justify-content:center; gap:8px;
+            white-space:nowrap; flex:0 0 auto; border-radius:999px; padding:10px 16px;
+            background:#f1f5f9; color:#334155; border:1px solid transparent;
+            font-size:14px; font-weight:650; min-height:42px; transition:background .18s ease;
+        }
+        .play-home-chip i { color:#2563eb; }
+        .play-home-chip.active { background:#e0f2fe; border-color:#bae6fd; color:#075985; }
+        .dark .play-home-chip { background:#1e293b; color:#e2e8f0; }
+        .dark .play-home-chip.active { background:#12364b; border-color:#155e75; color:#bae6fd; }
+        .hero-card { border-radius:24px; box-shadow:none; }
+        #categoriesSection h3, #topChartsSection h3, #recentlyUpdatedSection h3,
+        #featuredCollectionsSection h3 { text-transform:none !important; letter-spacing:-.025em; font-size:1.35rem; }
+        #categoriesContainer { display:flex !important; gap:10px; overflow-x:auto; padding:2px 2px 10px; scroll-snap-type:x proximity; }
+        #categoriesContainer > * { flex:0 0 124px; scroll-snap-align:start; }
+        #categoriesContainer .category-card { width:124px; border-radius:18px; }
+        .app-card { border-radius:18px; box-shadow:none; }
+        @media (max-width: 640px) {
+            main.container { padding-top:14px; padding-bottom:20px; }
+            .hero-card { margin-bottom:26px; }
+            .play-home-chip { padding:9px 14px; font-size:13px; }
+            #categoriesSection, #topChartsSection { margin-bottom:28px; }
+            .app-card:hover { transform:none; }
+        }
     </style>
 
 <style id="paliaMobileAppPromptCSS">
@@ -282,10 +308,7 @@
                     </div>
                 </div>
 
-                <!-- Invite friends: share the public PaliaAPK HUB website -->
-                <button id="paliaInviteFriendsBtn" type="button" onclick="triggerShareWebsite()" class="hidden sm:flex px-3 h-10 rounded-xl bg-mint-50 dark:bg-mint-900/30 text-mint-700 dark:text-mint-300 border border-mint-100 dark:border-mint-800 hover:bg-mint-100 dark:hover:bg-mint-900/50 items-center gap-2 text-xs font-black transition" aria-label="Invite friends to PaliaAPK HUB">
-                    <i class="fa-solid fa-user-plus"></i><span>Invite Friends</span>
-                </button>
+                <!-- Invite button removed from the app homepage as requested. -->
 
                 <!-- Dark Mode Toggle -->
                 <button id="darkModeToggle" class="w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-mint-50 text-gray-600 dark:text-gray-300 transition flex items-center justify-center border border-gray-200 dark:border-gray-700">
@@ -337,6 +360,13 @@
 
     <!-- Main Content Area -->
     <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-grow">
+        <!-- Play Store-style quick navigation chips -->
+        <nav class="play-home-tabs no-scrollbar flex items-center gap-2 overflow-x-auto mb-5" aria-label="Explore store">
+            <button type="button" class="play-home-chip active" onclick="document.getElementById('featured-slider')?.scrollIntoView({behavior:'smooth',block:'start'})"><i class="fa-solid fa-sparkles"></i> For you</button>
+            <button type="button" class="play-home-chip" onclick="document.getElementById('categoriesSection')?.scrollIntoView({behavior:'smooth',block:'start'})"><i class="fa-solid fa-shapes"></i> Categories</button>
+            <button type="button" class="play-home-chip" onclick="document.getElementById('topChartsSection')?.scrollIntoView({behavior:'smooth',block:'start'})"><i class="fa-solid fa-chart-column"></i> Top charts</button>
+            <button type="button" class="play-home-chip" onclick="document.getElementById('recentlyUpdatedSection')?.scrollIntoView({behavior:'smooth',block:'start'})"><i class="fa-solid fa-clock-rotate-left"></i> Recently updated</button>
+        </nav>
         
         <!-- Hero Slider Section -->
         <section class="hero-card relative mb-8">
