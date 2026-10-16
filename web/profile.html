@@ -465,7 +465,7 @@ window.paliaSupabase = (window.supabase && typeof window.supabase.createClient =
                     let response;
                     let data;
                     try {
-                        response = await fetch(PALIA_SUPABASE_URL + '/rest/v1/apps?select=id,name,version,update_available,icon_url,apk_url,download_url,telegram_message_id,updated_at&update_available=eq.true&order=updated_at.desc', {
+                        response = await fetch(PALIA_SUPABASE_URL + '/rest/v1/apps?select=id,name,version,update_available,icon_url,apk_url,updated_at&update_available=eq.true&order=updated_at.desc', {
                             method: 'GET',
                             cache: 'no-store',
                             signal: controller.signal,
@@ -535,7 +535,7 @@ window.paliaSupabase = (window.supabase && typeof window.supabase.createClient =
                             const id=el.getAttribute('data-update-download');
                             const app=apps.find(x=>String(x.id)===String(id)); if(!app)return;
                             let url=String(app.apk_url||app.download_url||'').trim();
-                            if(!url&&app.telegram_message_id)url='https://paliaapk-telegram-api.onrender.com/download-apk/'+encodeURIComponent(String(app.telegram_message_id));
+                            
                             if(!url){alert('Update APK direct link is not available. Add a direct APK URL to this store listing.');return;}
                             const status=list.querySelector('[data-update-status="'+id+'"]'), wrap=list.querySelector('[data-update-progress-wrap="'+id+'"]'), label=list.querySelector('[data-update-progress-label="'+id+'"]'), pctEl=list.querySelector('[data-update-progress-percent="'+id+'"]'), bar=list.querySelector('[data-update-progress-bar="'+id+'"]');
                             const buttons=[...list.querySelectorAll('[data-update-download]')]; activeUpdateDownload=true;
@@ -577,7 +577,7 @@ window.paliaSupabase = (window.supabase && typeof window.supabase.createClient =
                 }catch(err){
                     console.error('Profile updates error:', err);
                     if(count){ count.textContent='0'; count.classList.add('hidden'); }
-                    showRetry(err && err.name === 'AbortError' ? 'Update check timed out. Check your internet connection.' : 'Could not load updates. Please try again.');
+                    showRetry(err && err.name === 'AbortError' ? 'Update check timed out. Check your internet connection.' : 'Could not load updates. Please try again. Check your internet connection and Supabase app-table access.');
                 } finally {
                     profileUpdatesLoading = false;
                 }
