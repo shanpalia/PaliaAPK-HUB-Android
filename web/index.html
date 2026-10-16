@@ -1644,17 +1644,32 @@ document.addEventListener('click', function(e){
   async function downloadAndInstall(apkUrl){
     var msg=document.getElementById('paliaHubUpdateMsg'),btn=document.getElementById('paliaHubUpdateOpen'),close=document.getElementById('paliaHubUpdateClose'),p=plugin();
     if(!p||typeof p.download!=='function'||typeof p.openDownloadedApk!=='function'){if(msg)msg.textContent='In-app updater is unavailable in this APK build. Please install the latest signed PaliaAPK HUB build first.';return;}
-    if(!apkUrl){if(msg)msg.textContent='The latest APK link is missing. Add a direct APK URL to the PaliaAPK HUB listing on your website.';return;}
+    if(!apkUrl){if(msg)msg.textContent='The latest APK direct download link is missing. Update the APK URL in the PaliaAPK HUB listing.';return;}
     btn.disabled=true;close.disabled=true;btn.textContent='Downloading update…';installStarted=false;
     try{
       if(downloadListener&&typeof downloadListener.remove==='function'){try{await downloadListener.remove();}catch(e){}}
       downloadListener=await p.addListener('downloadProgress',function(ev){
         setProgress(Number(ev.downloadedBytes||0),Number(ev.totalBytes||0),Number(ev.speedBytesPerSecond||0));
-        if(ev.status==='completed'&&!installStarted){installStarted=true;var t=document.getElementById('paliaHubUpdateProgressText');if(t)t.textContent='Download complete · opening Android installer…';setTimeout(function(){p.openDownloadedApk().catch(function(err){if(msg)msg.textContent='APK downloaded, but Android Installer could not open: '+(err&&err.message?err.message:'Please try again.');btn.disabled=false;close.disabled=false;btn.textContent='Install Update';});},300);}
       });
+      // The native plugin resolves only after the APK has been completely written.
+      // Open the Android installer here once; don't also open it from the progress event.
       await p.download({url:String(apkUrl),filename:'PaliaAPK-HUB-update.apk'});
-      if(!installStarted){installStarted=true;var t=document.getElementById('paliaHubUpdateProgressText');if(t)t.textContent='Download complete · opening Android installer…';await p.openDownloadedApk();}
-    }catch(e){console.error('PaliaAPK HUB update failed:',e);if(msg)msg.textContent='Update download failed: '+(e&&e.message?e.message:'Check your internet connection and try again.');btn.disabled=false;close.disabled=false;btn.textContent='Retry Update';}
+      if(installStarted)return;
+      installStarted=true;
+      var t=document.getElementById('paliaHubUpdateProgressText');
+      if(t)t.textContent='Download complete · opening Android installer…';
+      btn.textContent='Opening installer…';
+      await p.openDownloadedApk();
+      if(msg)msg.textContent='Confirm installation in the Android installer to finish updating.';
+      btn.textContent='Installer opened';
+    }catch(e){
+      console.error('PaliaAPK HUB update failed:',e);
+      if(msg)msg.textContent='Update download failed: '+(e&&e.message?e.message:'Check your internet connection and APK link, then retry.');
+      btn.disabled=false;close.disabled=false;btn.textContent='Retry Update';
+    }finally{
+      if(downloadListener&&typeof downloadListener.remove==='function'){try{await downloadListener.remove();}catch(e){}}
+      downloadListener=null;
+    }
   }
   async function check(){
     var client=window.paliaSupabaseClient;if(!client)return;
@@ -1783,14 +1798,53 @@ body{padding-bottom:calc(82px + env(safe-area-inset-bottom))!important}
 </style>
 <script>
 (function(){
- const links=[...document.querySelectorAll('.store-nav-item')];
- function setActive(){
-   const hash=location.hash;
-   links.forEach((a,i)=>a.classList.toggle('active',
-     (i===0 && !hash) || (i===1 && hash==='#appsGrid') || (i===2 && hash==='#categoriesSection') || (i===3 && /profile|dashboard/.test(location.pathname))));
+ function init(){
+  const links=[...document.querySelectorAll('.store-nav-item')];
+  const byLabel=label=>links.find(el=>(el.getAttribute('aria-label')||'').toLowerCase()===label.toLowerCase());
+  const home=byLabel('Home'),search=byLabel('Search'),apps=byLabel('Apps'),games=byLabel('Games'),you=byLabel('Profile');
+  function activate(target){links.forEach(el=>el.classList.toggle('active',el===target));}
+  function scrollToApps(category){
+    if(typeof window.filterAndRenderApps==='function'){
+      window.currentCategory=category;
+      window.currentSearchQuery='';
+      const searchInput=document.getElementById('searchInput');
+      if(searchInput)searchInput.value='';
+      const mobileSearchInput=document.getElementById('mobileSearchInput');
+      if(mobileSearchInput)mobileSearchInput.value='';
+      const overlay=document.getElementById('mobileSearchOverlay');
+      if(overlay){overlay.classList.remove('open');overlay.setAttribute('aria-hidden','true');}
+      window.filterAndRenderApps();
+    }
+    history.replaceState(null,'',location.pathname+location.search+'#appsGrid');
+    document.getElementById('appsGrid')?.scrollIntoView({behavior:'smooth',block:'start'});
+  }
+  if(apps)apps.addEventListener('click',function(e){e.preventDefault();activate(apps);scrollToApps('All');});
+  if(games)games.addEventListener('click',function(e){e.preventDefault();activate(games);scrollToApps('Games');});
+  if(you)you.addEventListener('click',function(e){
+    e.preventDefault();activate(you);
+    const go=user=>{window.location.href=user?'profile.html':'user.html';};
+    try{
+      const auth=window.firebase&&window.firebase.apps&&window.firebase.apps.length?window.firebase.auth():null;
+      if(!auth){go(null);return;}
+      if(auth.currentUser){go(auth.currentUser);return;}
+      let finished=false;
+      const timer=setTimeout(function(){if(!finished){finished=true;go(auth.currentUser||null);}},1200);
+      const unsub=auth.onAuthStateChanged(function(user){if(finished)return;finished=true;clearTimeout(timer);if(typeof unsub==='function')unsub();go(user);});
+    }catch(err){console.warn('Profile navigation fallback:',err);go(null);}
+  });
+  if(home)home.addEventListener('click',function(){activate(home);});
+  if(search)search.addEventListener('click',function(){activate(search);});
+  function setActiveFromLocation(){
+    if(location.hash==='#appsGrid' && games && window.currentCategory==='Games')activate(games);
+    else if(location.hash==='#appsGrid' && apps)activate(apps);
+    else if(/profile\.html|dashboard\.html/.test(location.pathname) && you)activate(you);
+    else if(location.hash==='#categoriesSection' && games)activate(games);
+    else if(!location.hash && home)activate(home);
+  }
+  window.addEventListener('hashchange',setActiveFromLocation);
+  setActiveFromLocation();
  }
- links.forEach(a=>a.addEventListener('click',()=>{links.forEach(x=>x.classList.remove('active'));a.classList.add('active')}));
- window.addEventListener('hashchange',setActive);setActive();
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
 </script>
 
