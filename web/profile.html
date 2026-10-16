@@ -374,8 +374,8 @@ window.paliaSupabase = (window.supabase && typeof window.supabase.createClient =
 
 <!-- AVAILABLE UPDATES MODAL -->
 <div id="profileUpdatesModal"
-     class="fixed inset-0 z-[100] hidden items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-  <div class="w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden">
+     class="fixed inset-0 z-[100] hidden items-center justify-center p-4 bg-slate-100">
+  <div class="w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100">
     <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
       <div>
         <h3 class="font-black text-gray-900">Available Updates</h3>
@@ -428,7 +428,7 @@ window.paliaSupabase = (window.supabase && typeof window.supabase.createClient =
             const modal = document.getElementById('profileUpdatesModal');
             const closeBtn = document.getElementById('closeProfileUpdates');
             const list = document.getElementById('profileUpdatesList');
-            const count = document.getElementById('profileUpdatesCount');
+            const count = document.getElementById('profileUpdatesCountTop');
 
             function esc(v){
                 return String(v ?? '').replace(/[&<>"']/g, c => ({
@@ -475,9 +475,11 @@ window.paliaSupabase = (window.supabase && typeof window.supabase.createClient =
                     }
 
                     const apps = Array.isArray(data) ? data : [];
-                    count.textContent = String(apps.length);
-                    count.classList.toggle('hidden', apps.length === 0);
-                    count.classList.toggle('inline-flex', apps.length > 0);
+                    if(count){
+                        count.textContent = String(apps.length);
+                        count.classList.toggle('hidden', apps.length === 0);
+                        count.classList.toggle('inline-flex', apps.length > 0);
+                    }
 
                     if(!apps.length){
                         list.innerHTML = `
@@ -558,8 +560,7 @@ window.paliaSupabase = (window.supabase && typeof window.supabase.createClient =
                     });
                 }catch(err){
                     console.error('Profile updates error:', err);
-                    count.textContent='0';
-                    count.classList.add('hidden');
+                    if(count){ count.textContent='0'; count.classList.add('hidden'); }
                     showRetry(err && err.name === 'AbortError' ? 'Update check timed out. Check your internet connection.' : 'Could not load updates. Please try again.');
                 } finally {
                     profileUpdatesLoading = false;
