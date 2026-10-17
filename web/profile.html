@@ -481,7 +481,7 @@ window.paliaSupabase = (window.supabase && typeof window.supabase.createClient =
                         clearTimeout(timeoutId);
                     }
 
-                    const apps = Array.isArray(data) ? data : [];
+                    const apps = (Array.isArray(data) ? data : []).filter(app => { const name = String(app.name || '').trim().toLowerCase(); const isThisStore = name.includes('paliaapk hub') || name.includes('paliaapk-hub'); if (!isThisStore) return true; const parts = v => String(v || '0').split('.').map(x => parseInt(x, 10) || 0); const current = parts(window.PaliaAppVersion || '1.4.0'); const remote = parts(app.version || '0'); for (let i = 0; i < Math.max(current.length, remote.length); i++) { const a = current[i] || 0, b = remote[i] || 0; if (b > a) return true; if (b < a) return false; } return false; });
                     if(count){
                         count.textContent = String(apps.length);
                         count.classList.toggle('hidden', apps.length === 0);
