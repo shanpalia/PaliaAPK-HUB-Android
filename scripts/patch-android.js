@@ -74,7 +74,7 @@ if (fs.existsSync(exactIconSource)) fs.copyFileSync(exactIconSource, exactIconDe
 const launchDrawable = path.join(res, "drawable", "palia_launch_screen.xml");
 fs.writeFileSync(launchDrawable, `<?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:drawable="#F0FDF4" />
+    <item android:drawable="@android:color/white" />
     <item android:gravity="center">
         <bitmap android:src="@drawable/palia_exact_icon" android:gravity="center" />
     </item>
