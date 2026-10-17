@@ -626,11 +626,7 @@ window.paliaSupabase = (window.supabase && typeof window.supabase.createClient =
                 modal?.classList.add('flex');
                 await loadUpdates();
             });
-            // This route is a dedicated App Updates screen; show only the list.
-            modal?.classList.remove('hidden');
-            modal?.classList.add('flex');
-            setTimeout(() => loadUpdates(), 0);
-
+            // Keep the normal profile page visible. Open updates only when the user taps App Updates.
             refreshTopCount();
             closeBtn?.addEventListener('click', closeModal);
             modal?.addEventListener('click', e => { if(e.target === modal) closeModal(); });
