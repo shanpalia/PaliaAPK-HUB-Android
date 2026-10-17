@@ -440,18 +440,9 @@ window.paliaSupabase = (window.supabase && typeof window.supabase.createClient =
                 }[c]));
             }
 
-            function closeModal(){
-                // Follow Android/Play Store navigation: return to the actual previous screen.
-                if (window.history.length > 1) {
-                    window.history.back();
-                } else {
-                    // Keep the update screen available when there is no in-app history.
-                    modal?.classList.remove('hidden');
-                    modal?.classList.add('flex');
-                }
-            }
+            function closeModal(){modal?.classList.add('hidden');modal?.classList.remove('flex');}
 
-            let profileUpdatesLoading = false;
+             let profileUpdatesLoading = false;
             async function loadUpdates(){
                 if(!list || profileUpdatesLoading) return;
                 profileUpdatesLoading = true;
@@ -631,16 +622,8 @@ window.paliaSupabase = (window.supabase && typeof window.supabase.createClient =
             closeBtn?.addEventListener('click', closeModal);
             modal?.addEventListener('click', e => { if(e.target === modal) closeModal(); });
 
-            // Make the Android system Back button follow the same navigation as Play Store.
-            // Push a lightweight history entry so Back first exits the updates screen state.
-            if (!window.__paliaUpdatesBackBound) {
-                window.__paliaUpdatesBackBound = true;
-                // Do not add an #updates route on profile load; it caused the update modal to appear on You/profile.
-                window.addEventListener('popstate', function () {
-                    // Do not force a homepage redirect. Let the WebView/browser restore its previous route.
-                });
-            }
-        })();
+            // Do not intercept Android Back while the profile page is visible.
+            })();
 
         // ===============================
         // AUTH STATE
