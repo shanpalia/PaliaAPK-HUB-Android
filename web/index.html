@@ -1869,19 +1869,8 @@ body{padding-bottom:calc(82px + env(safe-area-inset-bottom))!important}
   }
   if(apps)apps.addEventListener('click',function(e){e.preventDefault();activate(apps);scrollToApps('All');});
   if(games)games.addEventListener('click',function(e){e.preventDefault();activate(games);scrollToApps('Games');});
-  if(you)you.addEventListener('click',function(e){
-    e.preventDefault();activate(you);
-    const go=user=>{window.location.href=user?'profile.html':'user.html';};
-    try{
-      const auth=window.firebase&&window.firebase.apps&&window.firebase.apps.length?window.firebase.auth():null;
-      if(!auth){go(null);return;}
-      if(auth.currentUser){go(auth.currentUser);return;}
-      let finished=false;
-      const timer=setTimeout(function(){if(!finished){finished=true;go(auth.currentUser||null);}},1200);
-      const unsub=auth.onAuthStateChanged(function(user){if(finished)return;finished=true;clearTimeout(timer);if(typeof unsub==='function')unsub();go(user);});
-    }catch(err){console.warn('Profile navigation fallback:',err);go(null);}
-  });
-  if(home)home.addEventListener('click',function(){activate(home);});
+  if(you)you.addEventListener('click',function(e){e.preventDefault();activate(you);window.location.href='profile.html';});
+   if(home)home.addEventListener('click',function(){activate(home);});
   if(search)search.addEventListener('click',function(){activate(search);});
   function setActiveFromLocation(){
     if(location.hash==='#appsGrid' && games && window.currentCategory==='Games')activate(games);
