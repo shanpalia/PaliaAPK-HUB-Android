@@ -1312,119 +1312,19 @@ window.openAppDetails = function(appId) {
        // ===============================
 // HOMEPAGE DOWNLOAD
 // ===============================
-window.handleDownloadClick = async function(appId, event) {
+window.handleDownloadClick = function(appId, event) {
     if (event) {
         event.preventDefault();
         event.stopPropagation();
     }
-
     if (!appId) {
         console.error("App ID missing");
-        return;
-    }
-
-    try {
-
-        const { data: app, error } = await supabaseClient
-            .from("apps")
-            .select("*")
-            .eq("id", appId)
-            .single();
-
-        if (error || !app) {
-            console.error("App loading error:", error);
-            alert("App information not found.");
-            return;
-        }
-
-        // Enforce login BEFORE selecting/opening any download URL.
-        // The homepage previously opened the APK directly, bypassing the login gate.
-        let currentUser = (typeof auth !== "undefined" && auth) ? auth.currentUser : null;
-        if (!currentUser && typeof auth !== "undefined" && auth && typeof auth.onAuthStateChanged === "function") {
-            currentUser = await new Promise(resolve => {
-                let settled = false;
-                const finish = user => {
-                    if (settled) return;
-                    settled = true;
-                    try { if (unsubscribe) unsubscribe(); } catch (_) {}
-                    resolve(user || null);
-                };
-                let unsubscribe = null;
-                const timer = setTimeout(() => finish(auth.currentUser || null), 1800);
-                unsubscribe = auth.onAuthStateChanged(user => {
-                    clearTimeout(timer);
-                    finish(user || null);
-                });
-            });
-        }
-        if (!currentUser) {
-            const returnTo = "app.html?id=" + encodeURIComponent(String(app.id));
-            window.location.href = "user.html?redirect=" + encodeURIComponent(returnTo);
-            return;
-        }
-
-        let downloadUrl = "";
-
-        // PaliaAPK HUB itself is bundled with this GitHub Pages website.
-        // Use the same-origin APK directly so the browser never redirects to Render.
-        const isPaliaHub = String(app.name || "").toLowerCase().includes("paliaapk hub");
-        if (isPaliaHub) {
-            downloadUrl = 'https://raw.githubusercontent.com/shanpalia/WebsitePaliaAPK_V.2/main/PaliaAPK-HUB.apk';
-        }
-        // Direct APK for other apps
-        else if (app.apk_url) {
-            downloadUrl = app.apk_url;
-        }
-        else {
-            alert("APK download is currently unavailable.");
-            return;
-        }
-
-        // Firebase logged-in user
-        const user =
-            typeof auth !== "undefined"
-                ? auth.currentUser
-                : null;
-
-        // Save download history
-        if (user) {
-
-            const { error: historyError } =
-                await supabaseClient
-                    .from("downloads")
-                    .insert({
-                        user_id: user.uid,
-                        app_id: app.id,
-                        app_name: app.name || "Unknown App",
-                        version: app.version || "Unknown",
-                        icon_url: app.icon_url || null,
-                        download_url: downloadUrl
-                    });
-
-            if (historyError) {
-                console.error(
-                    "Download history error:",
-                    historyError
-                );
-            }
-        }
-
-        // PaliaAPK HUB: open the direct APK file.
-        // Do not use fetch/blob or an HTML download route in Facebook's browser.
-        if (isPaliaHub && downloadUrl) {
-            window.open(downloadUrl, '_blank', 'noopener');
-        } else if (downloadUrl) {
-            window.open(downloadUrl, '_blank', 'noopener');
-        }
-
         return false;
-
-    } catch (error) {
-
-        console.error("Homepage download error:", error);
-        alert("Unable to start download.");
-
     }
+    // Both Download and Install on the store homepage should open the app details page.
+    // The actual APK download is available only after the user reaches that page.
+    window.location.href = "app.html?id=" + encodeURIComponent(String(appId));
+    return false;
 };
 
         // Share Website Feature (Native Android API, Desktop Clipboard, Fallback Dialog)
@@ -1594,7 +1494,8 @@ window.handleDownloadClick = async function(appId, event) {
       btn.onclick=function(e){
         e.preventDefault();
         e.stopPropagation();
-        downloadFromTable(url,(app.name || 'PaliaAPK-HUB')+'.apk',btn);
+        // The app promotion should lead to the PaliaAPK HUB details page, not directly to an APK or Render endpoint.
+        window.location.href = 'app.html?id=' + encodeURIComponent(String(app.id));
       };
 
       close.onclick=function(){
