@@ -108,6 +108,7 @@
                 <p class="text-xs text-gray-500">
                     PaliaAPK HUB
                 </p>
+                <p id="installedAppVersion" class="text-xs font-bold text-green-700 mt-2">PaliaAPK HUB · Version 1.4.0</p>
             </div>
 
         </div>
@@ -418,6 +419,8 @@ window.paliaSupabase = (window.supabase && typeof window.supabase.createClient =
 
 
         const auth = firebase.auth();
+        // Use durable local auth state in the Android WebView.
+        auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(err => console.warn('Auth persistence:', err));
 
 
 
