@@ -84,7 +84,7 @@ if (fs.existsSync(stylesXml)) {
   let styles = fs.readFileSync(stylesXml, "utf8");
   if (styles.includes("</style>")) {
     styles = styles.replace(/<item name="android:windowBackground">[\s\S]*?<\/item>/g, "");
-    styles = styles.replace("</style>", '<item name="android:windowBackground">@drawable/palia_launch_screen</item>\\n    </style>');
+    styles = styles.replace("</style>", '<item name="android:windowBackground">@drawable/palia_launch_screen</item>\n    </style>');
     fs.writeFileSync(stylesXml, styles);
     console.log("Branded native splash screen configured");
   }
