@@ -479,6 +479,8 @@
         };
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
+        // Keep Firebase sign-in across app exits and relaunches.
+        auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(err => console.warn('Auth persistence:', err));
 
         // Supabase Client
         const SUPABASE_URL = 'https://ralinnuegsbuvlhwpzln.supabase.co';
