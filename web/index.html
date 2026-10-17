@@ -264,6 +264,17 @@
 </style>
 </head>
 <body class="flex flex-col min-h-full selection:bg-mint-100 selection:text-mint-700">
+    <div id="palia-branded-splash" role="status" aria-label="PaliaAPK HUB starting" style="position:fixed;inset:0;z-index:99999;background:linear-gradient(145deg,#f0fdf4 0%,#ffffff 58%,#dcfce7 100%);display:flex;align-items:center;justify-content:center;transition:opacity .35s ease;">
+      <div style="text-align:center;padding:28px 24px;display:flex;flex-direction:column;align-items:center;">
+        <div style="width:104px;height:104px;border-radius:30px;background:#fff;box-shadow:0 14px 42px #16a34a30;display:flex;align-items:center;justify-content:center;padding:10px;margin-bottom:22px;"><img src="assets/icon.png" alt="PaliaAPK HUB" style="width:100%;height:100%;object-fit:contain" onerror="this.style.display='none';this.parentElement.innerHTML='<span style=&quot;font-size:42px;font-weight:900;color:#16a34a&quot;>P</span>'"></div>
+        <div style="font:900 29px/1.15 Inter,system-ui,sans-serif;letter-spacing:-1px;color:#111827;">PaliaAPK <span style="color:#16a34a">HUB</span></div>
+        <div style="font:700 11px/1.4 Inter,system-ui,sans-serif;letter-spacing:3px;color:#64748b;margin-top:9px;">ANDROID STORE</div>
+        <div style="font:600 13px/1.4 Inter,system-ui,sans-serif;color:#475569;margin-top:24px;">Developer by ShanPalia</div>
+        <div style="width:124px;height:3px;background:#dcfce7;border-radius:9px;overflow:hidden;margin-top:26px;"><div style="height:100%;width:40%;background:#16a34a;border-radius:9px;animation:paliaSplashLoad 1.1s ease-in-out infinite alternate;"></div></div>
+      </div>
+    </div>
+    <style>@keyframes paliaSplashLoad{from{transform:translateX(-20%)}to{transform:translateX(170%)}}@media(prefers-reduced-motion:reduce){#palia-branded-splash *{animation:none!important}}</style>
+    <script>(function(){function hide(){var el=document.getElementById('palia-branded-splash');if(!el)return;setTimeout(function(){el.style.opacity='0';setTimeout(function(){el.remove()},380)},1100)}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',hide,{once:true});else hide();window.addEventListener('load',hide,{once:true});setTimeout(hide,4500)})();</script>
 
     <!-- Header & Navigation -->
     <nav class="glass sticky top-0 z-50 border-b border-gray-200/80 py-3 transition-all duration-300">
@@ -627,18 +638,34 @@ recordSiteVisit();
             });
         }
 
+        let notificationRealtimeChannel = null;
+        let notificationPollingTimer = null;
+        let lastNotificationIds = new Set();
         async function loadRealNotifications(){
             if(!notificationList || !supabaseClient) return;
+            const loggedInUser = auth && auth.currentUser;
+            if(!loggedInUser){
+                notificationBadge.textContent='0';
+                notificationBadge.classList.add('hidden');
+                notificationBadge.style.display='none';
+                notificationList.innerHTML='<div class="p-4 text-center text-xs text-gray-500">Login to see new apps and update notifications.</div>';
+                return;
+            }
             try{
                 const {data, error} = await supabaseClient
                     .from('app_notifications')
                     .select('id,app_id,type,title,message,previous_version,new_version,created_at')
                     .order('created_at', {ascending:false})
                     .limit(30);
-
                 if(error) throw error;
-
                 const rows = Array.isArray(data) ? data : [];
+                const currentIds = new Set(rows.map(n=>String(n.id)));
+                const newIds = rows.filter(n=>!lastNotificationIds.has(String(n.id)));
+                if(lastNotificationIds.size && newIds.length && !document.hidden && 'Notification' in window && Notification.permission==='granted'){
+                    const n=newIds[0];
+                    try{new Notification(n.title || 'PaliaAPK HUB update',{body:n.message || 'New apps and updates are available.'});}catch(e){}
+                }
+                lastNotificationIds = currentIds;
                 const readIds = getReadNotificationIds();
                 const unread = rows.filter(n => !readIds.includes(n.id));
 
@@ -706,7 +733,27 @@ recordSiteVisit();
             notificationList.querySelectorAll('[data-notification-app]').forEach(x=>x.classList.remove('ring-1','ring-mint-200','dark:ring-mint-800'));
         };
 
-        loadRealNotifications();
+        if(notificationToggleBtn){
+            notificationToggleBtn.addEventListener('contextmenu',function(e){
+                e.preventDefault();
+                if('Notification' in window && Notification.permission==='default'){
+                    Notification.requestPermission().then(function(){});
+                }
+            });
+        }
+        auth.onAuthStateChanged(function(user){
+            if(notificationRealtimeChannel && supabaseClient){try{supabaseClient.removeChannel(notificationRealtimeChannel)}catch(e){} notificationRealtimeChannel=null;}
+            if(notificationPollingTimer){clearInterval(notificationPollingTimer);notificationPollingTimer=null;}
+            lastNotificationIds = new Set();
+            if(!user){loadRealNotifications();return;}
+            loadRealNotifications();
+            if(supabaseClient && typeof supabaseClient.channel==='function'){
+                notificationRealtimeChannel=supabaseClient.channel('palia-app-notifications-live')
+                  .on('postgres_changes',{event:'*',schema:'public',table:'app_notifications'},function(){loadRealNotifications()})
+                  .subscribe();
+            }
+            notificationPollingTimer=setInterval(loadRealNotifications,60000);
+        });
         window.addEventListener('focus', loadRealNotifications);
         document.addEventListener('visibilitychange', function(){ if(!document.hidden) loadRealNotifications(); });
 
