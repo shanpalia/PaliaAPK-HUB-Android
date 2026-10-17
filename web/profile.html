@@ -376,7 +376,7 @@ window.paliaSupabase = (window.supabase && typeof window.supabase.createClient =
 
 <!-- AVAILABLE UPDATES MODAL -->
 <div id="profileUpdatesModal"
-     class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-100">
+     class="hidden fixed inset-0 z-[100] items-center justify-center p-4 bg-slate-100">
   <div class="w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100">
     <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
       <div>
@@ -635,7 +635,7 @@ window.paliaSupabase = (window.supabase && typeof window.supabase.createClient =
             // Push a lightweight history entry so Back first exits the updates screen state.
             if (!window.__paliaUpdatesBackBound) {
                 window.__paliaUpdatesBackBound = true;
-                try { window.history.pushState({ paliaUpdatesScreen: true }, '', window.location.pathname + '#updates'); } catch (_) {}
+                // Do not add an #updates route on profile load; it caused the update modal to appear on You/profile.
                 window.addEventListener('popstate', function () {
                     // Do not force a homepage redirect. Let the WebView/browser restore its previous route.
                 });
