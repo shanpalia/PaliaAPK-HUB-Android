@@ -19,11 +19,11 @@ const admobAppId = "ca-app-pub-1717784184671933~5626098204";
 if (fs.existsSync(androidManifest)) {
   let manifestText = fs.readFileSync(androidManifest, "utf8");
   if (!manifestText.includes("com.google.android.gms.ads.APPLICATION_ID")) {
-    const metaData = '    <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="@string/admob_app_id" />\\n';
+    const metaData = '    <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="@string/admob_app_id" />\n';
     manifestText = manifestText.replace("</application>", metaData + "</application>");
   }
   if (!manifestText.includes("android.permission.INTERNET")) {
-    manifestText = manifestText.replace(/(<manifest[^>]*>)/, '$1\\n    <uses-permission android:name="android.permission.INTERNET" />');
+    manifestText = manifestText.replace(/(<manifest[^>]*>)/, '$1\n    <uses-permission android:name="android.permission.INTERNET" />');
   }
   fs.writeFileSync(androidManifest, manifestText);
 }
@@ -31,7 +31,7 @@ const admobValuesDir = path.join(root, "app", "src", "main", "res", "values");
 fs.mkdirSync(admobValuesDir, { recursive: true });
 fs.writeFileSync(
   path.join(admobValuesDir, "admob.xml"),
-  '<?xml version="1.0" encoding="utf-8"?>\\n<resources>\\n    <string name="admob_app_id">' + admobAppId + '</string>\\n</resources>\\n'
+  '<?xml version="1.0" encoding="utf-8"?>\n<resources>\n    <string name="admob_app_id">' + admobAppId + '</string>\n</resources>\n'
 );
 console.log("AdMob Android application ID configured");
 
