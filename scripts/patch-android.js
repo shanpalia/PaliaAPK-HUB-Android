@@ -1,7 +1,21 @@
 const fs = require("fs");
 const path = require("path");
+const { execFileSync } = require("child_process");
 
 const root = path.join(process.cwd(), "android");
+
+// Always regenerate Android launcher icons from the exact website icon asset.
+const websiteIcon = path.join(process.cwd(), "www", "assets", "icon.png");
+if (fs.existsSync(websiteIcon)) {
+  const capacitorAssetsSource = path.join(process.cwd(), "assets", "icon.png");
+  fs.mkdirSync(path.dirname(capacitorAssetsSource), { recursive: true });
+  fs.copyFileSync(websiteIcon, capacitorAssetsSource);
+  execFileSync(process.platform === "win32" ? "npx.cmd" : "npx",
+    ["capacitor-assets", "generate", "--android"], { stdio: "inherit" });
+  console.log("Android launcher icons regenerated from PaliaAPK HUB website icon");
+} else {
+  throw new Error("Website app icon is missing: " + websiteIcon);
+}
 // Copy Firebase configuration into the generated native Android project.
 const firebaseConfigSource = path.join(process.cwd(), "firebase", "google-services.json");
 const firebaseConfigTarget = path.join(root, "app", "google-services.json");
@@ -40,8 +54,8 @@ if (fs.existsSync(firebaseConfigSource) && fs.existsSync(path.join(root, "app"))
   console.log("Firebase Android configuration copied");
 }
 const pkg = "com.shanpalia.paliaapkhub";
-const appVersionName = "1.4.0";
-const appVersionCode = 7;
+const appVersionName = "1.4.1";
+const appVersionCode = 8;
 
 // Expose the same version used by the signed Android build to the in-app updater.
 const bundledIndex = path.join(process.cwd(), "www", "index.html");
