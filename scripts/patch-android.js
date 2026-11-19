@@ -345,6 +345,29 @@ if (fs.existsSync(mainJava)) {
   }
   fs.writeFileSync(mainKotlin, source);
 }
+// Configure release signing using the secure Codemagic Android keystore variables.
+const signingGradlePath = fs.existsSync(appGradle) ? appGradle : (fs.existsSync(appGradleKts) ? appGradleKts : null);
+if (signingGradlePath) {
+  let gradle = fs.readFileSync(signingGradlePath, "utf8");
+  if (signingGradlePath.endsWith(".kts")) {
+    if (!gradle.includes('create("release")')) {
+      gradle = gradle.replace(/android\\s*\\{/, 'android {\\n    signingConfigs {\\n        create("release") {\\n            storeFile = System.getenv("CM_KEYSTORE_PATH")?.let { file(it) }\\n            storePassword = System.getenv("CM_KEYSTORE_PASSWORD")\\n            keyAlias = System.getenv("CM_KEY_ALIAS")\\n            keyPassword = System.getenv("CM_KEY_PASSWORD")\\n        }\\n    }');
+    }
+    if (!gradle.includes('signingConfig = signingConfigs.getByName("release")')) {
+      gradle = gradle.replace(/buildTypes\\s*\\{\\s*release\\s*\\{/, 'buildTypes {\\n        release {\\n            signingConfig = signingConfigs.getByName("release")');
+    }
+  } else {
+    if (!gradle.includes("signingConfigs {")) {
+      gradle = gradle.replace(/android\\s*\\{/, 'android {\\n    signingConfigs {\\n        release {\\n            storeFile file(System.getenv("CM_KEYSTORE_PATH"))\\n            storePassword System.getenv("CM_KEYSTORE_PASSWORD")\\n            keyAlias System.getenv("CM_KEY_ALIAS")\\n            keyPassword System.getenv("CM_KEY_PASSWORD")\\n        }\\n    }');
+    }
+    if (!gradle.includes("signingConfig signingConfigs.release")) {
+      gradle = gradle.replace(/buildTypes\\s*\\{\\s*release\\s*\\{/, 'buildTypes {\\n        release {\\n            signingConfig signingConfigs.release');
+    }
+  }
+  fs.writeFileSync(signingGradlePath, gradle);
+  console.log("Codemagic release signing configuration applied");
+}
+
 const googleDeps = [
   "androidx.credentials:credentials:1.3.0",
   "androidx.credentials:credentials-play-services-auth:1.3.0",
